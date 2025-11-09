@@ -13,7 +13,7 @@ export default {
         background: '#f8fafc',
       },
       fontFamily: {
-        title: ['"Brygada 1918"', 'serif'],
+        title: ['Ubuntu', 'system-ui', 'sans-serif'],
         body: ['Ubuntu', 'system-ui', 'sans-serif'],
       },
     },

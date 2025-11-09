@@ -89,16 +89,16 @@ export default function NavBar() {
             </div>
 
             {/* Menu Bar */}
-            <div className="hidden lg:flex justify-between items-center py-3 pl-4 sm:pl-6 lg:pl-8 pr-4 sm:pr-6 lg:pr-8 bg-white text-primary">
+            <div className="hidden lg:flex justify-between items-center py-5 pl-4 sm:pl-6 lg:pl-8 pr-4 sm:pr-6 lg:pr-8 bg-white text-primary">
               {/* Navigation menu */}
               <div className="flex-1 flex justify-start items-center space-x-6">
-                <Link to="/" className="text-primary hover:text-accent transition-colors">
+                <Link to="/" className="text-primary hover:text-accent transition-colors font-medium text-base">
                   Home
                 </Link>
-                <Link to="/tours" className="text-primary hover:text-accent transition-colors">
+                <Link to="/tours" className="text-primary hover:text-accent transition-colors font-medium text-base">
                   Tour
                 </Link>
-                <Link to="/calendar" className="text-primary hover:text-accent transition-colors">
+                <Link to="/calendar" className="text-primary hover:text-accent transition-colors font-medium text-base">
                   Calendario
                 </Link>
               </div>
@@ -108,7 +108,7 @@ export default function NavBar() {
                 <div className="relative" ref={cartMenuRef}>
                   <button 
                     onClick={() => setCartMenuOpen(!cartMenuOpen)}
-                    className="relative text-primary hover:text-accent transition-colors"
+                    className="relative text-primary hover:text-accent transition-colors flex items-center justify-center"
                   >
                     <ShoppingCart className="w-5 h-5" />
                     <span className="absolute -top-2 -right-2 bg-accent text-primary text-xs rounded-full w-5 h-5 flex items-center justify-center">
@@ -134,8 +134,8 @@ export default function NavBar() {
                     </div>
                   )}
                 </div>
-                <Link to="/tours" className="btn-primary text-sm px-6 py-2">
-                  Scopri i tour
+                <Link to="/tours" className="btn-primary text-base px-12 py-3 font-medium">
+                  Scopri
                   </Link>
                 </div>
             </div>
@@ -234,7 +234,7 @@ export default function NavBar() {
                 className="block btn-primary text-center"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Scopri i tour
+                Scopri
               </Link>
             </div>
           </div>
