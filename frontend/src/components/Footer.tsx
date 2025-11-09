@@ -55,7 +55,7 @@ export default function Footer() {
           <div>
             <h4 className="font-bold mb-4">Contatti</h4>
             <ul className="space-y-2 text-sm text-muted">
-              <li>Email: info@fiatocorto.it</li>
+              <li>Email: info@fiatocortoadventures.it</li>
               <li>Tel: +39 123 456 7890</li>
             </ul>
           </div>
