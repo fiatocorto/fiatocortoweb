@@ -1,0 +1,96 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id            String    @id @default(uuid())
+  name          String
+  email         String    @unique
+  passwordHash  String    @map("password_hash")
+  role          String    @default("CUSTOMER")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  bookings Booking[]
+
+  @@map("users")
+}
+
+model Tour {
+  id            String   @id @default(uuid())
+  title         String
+  slug          String   @unique
+  description   String
+  priceAdult    Float    @map("price_adult")
+  priceChild    Float    @map("price_child")
+  language      String
+  itinerary     String
+  durationValue Int     @map("duration_value")
+  durationUnit  String   @map("duration_unit")
+  coverImage    String   @map("cover_image")
+  images        String   // JSON array as string
+  includes      String   // JSON array as string
+  excludes      String   // JSON array as string
+  terms         String
+  createdBy     String   @map("created_by")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  tourDates TourDate[]
+
+  @@map("tours")
+}
+
+model TourDate {
+  id            String        @id @default(uuid())
+  tourId        String        @map("tour_id")
+  dateStart     DateTime      @map("date_start")
+  dateEnd       DateTime?     @map("date_end")
+  capacityMin   Int           @default(1) @map("capacity_min")
+  capacityMax   Int           @map("capacity_max")
+  timezone      String        @default("Europe/Rome")
+  priceOverride Float?        @map("price_override")
+  status        String         @default("ACTIVE")
+
+  tour     Tour      @relation(fields: [tourId], references: [id], onDelete: Cascade)
+  bookings Booking[]
+
+  @@map("tour_dates")
+}
+
+model Booking {
+  id            String          @id @default(uuid())
+  userId        String          @map("user_id")
+  tourDateId    String          @map("tour_date_id")
+  adults        Int
+  children      Int             @default(0)
+  totalPrice    Float           @map("total_price")
+  paymentStatus String          @default("PENDING") @map("payment_status")
+  paymentMethod String          @default("ONSITE") @map("payment_method")
+  qrCode        String          @unique @map("qr_code")
+  notes         String?
+  checkedIn     Boolean         @default(false) @map("checked_in")
+  createdAt     DateTime        @default(now()) @map("created_at")
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tourDate TourDate @relation(fields: [tourDateId], references: [id], onDelete: Cascade)
+
+  @@map("bookings")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  type      String
+  payload   String   // JSON as string
+  seen      Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("notifications")
+}
+
