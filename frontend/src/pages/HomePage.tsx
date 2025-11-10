@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Search, MapPin, Calendar, Users, Star } from 'lucide-react';
+import { Search, MapPin, Calendar, Users, Star, ArrowRight } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import api from '../utils/api';
 import CardTour from '../components/CardTour';
@@ -7,6 +7,7 @@ import Footer from '../components/Footer';
 
 export default function HomePage() {
   const [tours, setTours] = useState<any[]>([]);
+  const [currentSlide, setCurrentSlide] = useState(0);
   const [searchForm, setSearchForm] = useState({
     destination: '',
     adults: 1,
@@ -14,9 +15,38 @@ export default function HomePage() {
     date: '',
   });
 
+  const slides = [
+    {
+      title: 'Respira l\'avventura',
+      subtitle: 'Scopri escursioni uniche nella natura, dai sentieri più selvaggi alle vette panoramiche',
+      buttonText: 'Esplora i tour',
+      buttonLink: '/tours',
+    },
+    {
+      title: 'Vivi ogni passo',
+      subtitle: 'Ogni escursione è un viaggio emozionante tra natura, storia e cultura locale',
+      buttonText: 'Le escursioni',
+      buttonLink: '/tours',
+    },
+    {
+      title: 'Viaggia con noi',
+      subtitle: 'Un team di appassionati di trekking che ti guida in esperienze uniche tra natura e panorami mozzafiato',
+      buttonText: 'Chi siamo',
+      buttonLink: '/about',
+    },
+  ];
+
   useEffect(() => {
     fetchTours();
   }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % slides.length);
+    }, 5000); // Cambia slide ogni 5 secondi
+
+    return () => clearInterval(interval);
+  }, [slides.length]);
 
   const fetchTours = async () => {
     try {
@@ -41,25 +71,59 @@ export default function HomePage() {
   return (
     <div>
       {/* Hero Section */}
-      <section className="relative h-[600px] flex items-center justify-center text-white">
+      <section className="relative h-[calc(100vh-120px)] flex items-center justify-center text-white overflow-hidden">
         <div
-          className="absolute inset-0 bg-cover bg-center"
+          className="absolute inset-0 bg-cover bg-no-repeat"
           style={{
-            backgroundImage:
-              'url(https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920)',
+            backgroundImage: 'url(/resources/28088.jpg)',
+            backgroundPosition: 'center center',
           }}
         >
-          <div className="absolute inset-0 bg-primary/60" />
-        </div>
-        <div className="relative z-10 text-center px-4">
-          <img 
-            src="/resources/Bianco.png" 
-            alt="Fiato Corto" 
-            className="h-24 md:h-32 w-auto mx-auto mb-8"
+          <div 
+            className="absolute inset-0" 
+            style={{ 
+              backgroundImage: 'linear-gradient(rgb(15 23 42 / 80), rgb(15 23 42 / 0%))'
+            }} 
           />
-          <Link to="/tours" className="btn-primary text-lg px-8 py-4">
-            Vedi Tour
-          </Link>
+        </div>
+        
+        {/* Carousel */}
+        <div className="relative z-10 w-full h-full overflow-hidden">
+          <div 
+            className="flex h-full transition-transform duration-1000 ease-in-out"
+            style={{ transform: `translateX(-${currentSlide * 100}%)` }}
+          >
+            {slides.map((slide, index) => (
+              <div
+                key={index}
+                className="min-w-full flex flex-col items-center justify-center text-center px-4"
+              >
+                <h1 className="text-5xl md:text-7xl font-bold mb-4">{slide.title}</h1>
+                <p className="text-xl md:text-2xl mb-8">{slide.subtitle}</p>
+                <Link
+                  to={slide.buttonLink}
+                  className="btn-primary text-lg px-8 py-4 flex items-center gap-2"
+                >
+                  {slide.buttonText}
+                  <ArrowRight className="w-5 h-5" />
+                </Link>
+              </div>
+            ))}
+          </div>
+
+          {/* Carousel Indicators */}
+          <div className="absolute right-8 top-1/2 transform -translate-y-1/2 flex flex-col space-y-2">
+            {slides.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentSlide(index)}
+                className={`h-3 rounded-full transition-all ${
+                  index === currentSlide ? 'bg-accent w-8' : 'bg-white/50 w-3'
+                }`}
+                aria-label={`Go to slide ${index + 1}`}
+              />
+            ))}
+          </div>
         </div>
       </section>
 

@@ -11,6 +11,8 @@ import AccountPage from './pages/AccountPage';
 import MyBookingsPage from './pages/MyBookingsPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import AboutPage from './pages/AboutPage';
+import ContactsPage from './pages/ContactsPage';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminTours from './pages/admin/AdminTours';
 import AdminBookings from './pages/admin/AdminBookings';
@@ -34,6 +36,8 @@ function AppContent() {
           <Route path="/tours" element={<ToursPage />} />
           <Route path="/tours/:slug" element={<TourDetailPage />} />
           <Route path="/calendar" element={<CalendarPage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/contacts" element={<ContactsPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           

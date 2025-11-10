@@ -33,7 +33,7 @@ export default function NavBar() {
   };
 
   return (
-    <nav className="bg-primary text-white shadow-lg sticky top-0 z-[100]">
+    <nav className="bg-primary text-white shadow-lg z-[100]">
       <div className="w-full">
         <div className="flex items-stretch">
           {/* Logo Section */}
@@ -100,6 +100,12 @@ export default function NavBar() {
                 </Link>
                 <Link to="/calendar" className="text-primary hover:text-accent transition-colors font-medium text-base">
                   Calendario
+                </Link>
+                <Link to="/about" className="text-primary hover:text-accent transition-colors font-medium text-base">
+                  Chi siamo
+                </Link>
+                <Link to="/contacts" className="text-primary hover:text-accent transition-colors font-medium text-base">
+                  Contatti
                 </Link>
               </div>
 
