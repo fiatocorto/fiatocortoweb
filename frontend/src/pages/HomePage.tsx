@@ -527,6 +527,138 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Destinazioni top */}
+      <section className="w-full py-32 relative">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+            {/* Contenuto a sinistra */}
+            <div>
+              <div className="text-accent uppercase font-semibold mb-2">
+                I nostri spot
+              </div>
+              <div className="relative inline-block mb-6">
+                <div className="absolute bg-yellow-100 w-3/4 h-8 top-8 left-0"></div>
+                <h2 className="font-title text-[48px] font-bold relative">
+                  Destinazioni top
+                </h2>
+              </div>
+              <p className="text-muted mb-6 text-lg max-w-lg">
+                Esplora le destinazioni più suggestive della Sicilia attraverso escursioni e trekking unici. Dalle vette delle Madonie ai sentieri di Ficuzza, scopri paesaggi mozzafiato e natura incontaminata che ti lasceranno senza fiato.
+              </p>
+              <Link 
+                to="/tours" 
+                className="inline-flex items-center gap-2 px-8 py-3 text-gray-800 font-medium rounded-full transition-colors"
+                style={{ 
+                  backgroundColor: '#f2f2f2'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#fbb017';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = '#f2f2f2';
+                }}
+              >
+                Vedi tutte le escursioni
+                <ArrowRight className="w-5 h-5" />
+              </Link>
+            </div>
+            
+            {/* Foto a destra */}
+            <div className="grid grid-cols-2 gap-6">
+              {/* Prima foto */}
+              <div className="relative rounded-3xl overflow-hidden">
+                <img
+                  src="/resources/madonie.jpg"
+                  alt="Destinazione top"
+                  className="w-full h-64 object-cover rounded-3xl"
+                />
+                <div 
+                  className="absolute inset-0 flex items-end justify-center pb-4"
+                  style={{
+                    background: 'linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.4) 50%, transparent 100%)'
+                  }}
+                >
+                  <h3 className="text-white text-2xl font-bold">Madonie</h3>
+                </div>
+              </div>
+              
+              {/* Seconda foto */}
+              <div className="relative rounded-3xl overflow-hidden">
+                <img
+                  src="/resources/ficuzza.jpg"
+                  alt="Destinazione top"
+                  className="w-full h-64 object-cover rounded-3xl"
+                />
+                <div 
+                  className="absolute inset-0 flex items-end justify-center pb-4"
+                  style={{
+                    background: 'linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.4) 50%, transparent 100%)'
+                  }}
+                >
+                  <h3 className="text-white text-2xl font-bold">Ficuzza</h3>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Tre foto aggiuntive */}
+        <div className="max-w-7xl mx-auto px-4 mt-12">
+          <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr_1fr] gap-6">
+            {/* Foto a sinistra */}
+            <div className="relative rounded-3xl overflow-hidden">
+              <img
+                src="/resources/inici.jpg"
+                alt="Destinazione"
+                className="w-full h-64 object-cover rounded-3xl"
+              />
+              <div 
+                className="absolute inset-0 flex items-end justify-center pb-4"
+                style={{
+                  background: 'linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.4) 50%, transparent 100%)'
+                }}
+              >
+                <h3 className="text-white text-2xl font-bold">Inici</h3>
+              </div>
+            </div>
+            
+            {/* Foto centrale (più larga) */}
+            <div className="relative rounded-3xl overflow-hidden">
+              <img
+                src="/resources/57165.jpg"
+                alt="Destinazione"
+                className="w-full h-64 object-cover rounded-3xl"
+              />
+              <div 
+                className="absolute inset-0 flex items-end justify-center pb-4"
+                style={{
+                  background: 'linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.4) 50%, transparent 100%)'
+                }}
+              >
+                <h3 className="text-white text-2xl font-bold">Sicilia</h3>
+              </div>
+            </div>
+            
+            {/* Foto a destra */}
+            <div className="relative rounded-3xl overflow-hidden">
+              <img
+                src="/resources/28088.jpg"
+                alt="Destinazione"
+                className="w-full h-64 object-cover rounded-3xl"
+              />
+              <div 
+                className="absolute inset-0 flex items-end justify-center pb-4"
+                style={{
+                  background: 'linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.4) 50%, transparent 100%)'
+                }}
+              >
+                <h3 className="text-white text-2xl font-bold">Natura</h3>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* best choices */}
       <section className="max-w-7xl mx-auto px-4 py-16">
         <div className="text-center mb-12">
