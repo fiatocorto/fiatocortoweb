@@ -502,7 +502,7 @@ export default function HomePage() {
       </section>
 
       {/* Chi siamo */}
-      <section className="w-full py-32 relative">
+      <section className="w-full py-32 relative overflow-hidden">
         <img
           src="/resources/plane shape.png"
           alt=""
