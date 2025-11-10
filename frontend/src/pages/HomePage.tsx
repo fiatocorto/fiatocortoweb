@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Search, MapPin, Calendar, Users, Star, ArrowRight, Plus, Minus, User, Baby, ChevronLeft, ChevronRight, BadgeCheck } from 'lucide-react';
+import { Search, MapPin, Calendar, Users, Star, ArrowRight, Plus, Minus, User, Baby, ChevronLeft, ChevronRight, BadgeCheck, Compass } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import DatePicker, { registerLocale } from 'react-datepicker';
 import { it } from 'date-fns/locale';
@@ -779,6 +779,68 @@ export default function HomePage() {
               <p className="text-muted max-w-xs mx-auto">{step.description}</p>
             </div>
           ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Viaggiare con standard più elevati */}
+      <section className="w-full py-32 relative">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+            {/* Contenuto a sinistra */}
+            <div>
+              <div className="text-accent uppercase font-semibold mb-2">
+                Appassionati di avventure in montagna
+              </div>
+              <div className="relative inline-block mb-6">
+                <div className="absolute bg-yellow-100 w-3/4 h-8 top-8 left-0"></div>
+                <h2 className="font-title text-[48px] font-bold relative">
+                  Viaggiare con standard più elevati di comfort e scoperta
+                </h2>
+              </div>
+              <p className="text-muted mb-8 text-lg">
+                Ogni escursione è pensata per offrirti il massimo del comfort senza rinunciare all'autenticità dell'esperienza. Le nostre guide esperte ti accompagnano alla scoperta di luoghi unici, garantendo sicurezza, professionalità e momenti indimenticabili immersi nella natura siciliana.
+              </p>
+              
+              <div className="grid grid-cols-2 gap-6">
+                {/* Prima: icona + titolo */}
+                <div className="flex items-center gap-4">
+                  <div className="flex-shrink-0">
+                    <div className="bg-accent/10 rounded-full p-4">
+                      <Calendar className="w-8 h-8 text-accent" />
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-title text-xl font-bold">
+                      Prenotazioni<br />facili
+                    </h3>
+                  </div>
+                </div>
+                
+                {/* Seconda: icona + titolo */}
+                <div className="flex items-center gap-4">
+                  <div className="flex-shrink-0">
+                    <div className="bg-accent/10 rounded-full p-4">
+                      <Compass className="w-8 h-8 text-accent" />
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-title text-xl font-bold">
+                      Guide con<br />Esperienza
+                    </h3>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Foto a destra */}
+            <div className="relative rounded-3xl overflow-hidden">
+              <img
+                src="/resources/IMG_5010.JPEG"
+                alt="Escursione in montagna"
+                className="w-full h-80 object-cover rounded-3xl"
+              />
+            </div>
           </div>
         </div>
       </section>
