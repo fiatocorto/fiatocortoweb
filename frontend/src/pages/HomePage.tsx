@@ -99,7 +99,7 @@ export default function HomePage() {
   };
 
   return (
-    <div>
+    <div className="bg-white">
       {/* Hero Section */}
       <section className="relative h-[calc(100vh-120px)] flex items-center justify-center text-white overflow-hidden">
         <div
@@ -128,7 +128,7 @@ export default function HomePage() {
                 key={index}
                 className="min-w-full flex flex-col items-center justify-center text-center px-4"
               >
-                <h1 className="text-5xl md:text-7xl font-bold mb-4">{slide.title}</h1>
+                <h1 className="text-[100px] font-bold mb-4">{slide.title}</h1>
                 <p className="text-xl md:text-2xl mb-8">{slide.subtitle}</p>
                 <Link
                   to={slide.buttonLink}
@@ -528,7 +528,7 @@ export default function HomePage() {
       </section>
 
       {/* best choices */}
-      <section className="max-w-7xl mx-auto px-4 py-16 bg-background">
+      <section className="max-w-7xl mx-auto px-4 py-16">
         <div className="text-center mb-12">
           <div className="text-accent uppercase font-semibold mb-2">
             ESCURSIONI
@@ -591,42 +591,68 @@ export default function HomePage() {
       </section>
 
       {/* How it works */}
-      <section className="max-w-7xl mx-auto px-4 py-16">
-        <h2 className="font-title text-4xl font-bold text-center mb-12">
-          Come Funziona
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <section className="w-full py-32 relative">
+        <div className="absolute inset-0" ></div>
+        <div 
+          className="absolute inset-0"
+          style={{
+            backgroundImage: 'url(/resources/24.jpg)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            opacity: 0.6
+          }}
+        ></div>
+        <div className="max-w-7xl mx-auto px-4 relative z-10">
+          <div className="text-center mb-12">
+            <div className="text-accent uppercase font-semibold mb-2">
+              PERCHÉ
+            </div>
+            <div className="relative inline-block mb-6">
+              <div className="absolute bg-yellow-100 w-3/4 h-8 top-8 left-0"></div>
+              <h2 className="font-title text-[48px] font-bold relative">
+                Perché sceglierci?
+              </h2>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {[
             {
-              icon: <Search className="w-12 h-12 text-accent" />,
+              icon: <Search className="w-8 h-8 text-accent" />,
               title: 'Scegli la tua avventura',
               description:
                 'Esplora la nostra selezione di escursioni e trova quella perfetta per te.',
             },
             {
-              icon: <Calendar className="w-12 h-12 text-accent" />,
+              icon: <Calendar className="w-8 h-8 text-accent" />,
               title: 'Prenota la data',
               description:
                 'Seleziona la data che preferisci e completa la prenotazione in pochi click.',
             },
             {
-              icon: <Users className="w-12 h-12 text-accent" />,
+              icon: <Users className="w-8 h-8 text-accent" />,
               title: 'Vivi l\'esperienza',
               description:
                 'Parti per la tua avventura e crea ricordi indimenticabili.',
             },
           ].map((step, index) => (
             <div key={index} className="text-center">
-              <div className="flex justify-center mb-4">{step.icon}</div>
+              <div className="flex justify-center mb-4">
+                <div className="bg-white rounded-full p-4 w-20 h-20 flex items-center justify-center relative group">
+                  {step.icon}
+                  <div className="absolute inset-0 rounded-full border-2 border-dashed border-accent opacity-0 group-hover:opacity-100 transition-opacity duration-300 -m-4"></div>
+                </div>
+              </div>
               <h3 className="font-title text-xl font-bold mb-2">{step.title}</h3>
-              <p className="text-muted">{step.description}</p>
+              <p className="text-muted max-w-xs mx-auto">{step.description}</p>
             </div>
           ))}
+          </div>
         </div>
       </section>
 
       {/* Reviews */}
-      <section className="max-w-7xl mx-auto px-4 py-16 bg-background">
+      <section className="max-w-7xl mx-auto px-4 py-16">
         <h2 className="font-title text-4xl font-bold text-center mb-12">
           Cosa Dicono i Nostri Clienti
         </h2>
