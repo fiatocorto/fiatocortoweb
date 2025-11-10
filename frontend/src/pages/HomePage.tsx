@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Search, MapPin, Calendar, Users, Star, ArrowRight, Plus, Minus, User, Baby, ChevronLeft, ChevronRight, BadgeCheck, Compass } from 'lucide-react';
+import { Search, MapPin, Calendar, Users, Star, ArrowRight, ArrowLeft, Plus, Minus, User, Baby, ChevronLeft, ChevronRight, BadgeCheck, Compass } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import DatePicker, { registerLocale } from 'react-datepicker';
 import { it } from 'date-fns/locale';
@@ -14,6 +14,40 @@ export default function HomePage() {
   const [tours, setTours] = useState<any[]>([]);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [currentTourIndex, setCurrentTourIndex] = useState(0);
+  const [currentReviewIndex, setCurrentReviewIndex] = useState(0);
+  
+  const reviews = [
+    {
+      name: 'Giulia B.',
+      rating: 5,
+      text: 'Esperienza fantastica! La guida era preparatissima e i panorami mozzafiato.',
+      location: 'Palermo, Sicilia',
+    },
+    {
+      name: 'Marco R.',
+      rating: 5,
+      text: 'Organizzazione perfetta, tutto è andato liscio. Consigliatissimo!',
+      location: 'Catania, Sicilia',
+    },
+    {
+      name: 'Sara M.',
+      rating: 5,
+      text: 'Una delle migliori escursioni che abbia mai fatto. Tornerò sicuramente!',
+      location: 'Messina, Sicilia',
+    },
+    {
+      name: 'Luca T.',
+      rating: 5,
+      text: 'Guida professionale e panorami spettacolari. Esperienza da ripetere!',
+      location: 'Trapani, Sicilia',
+    },
+    {
+      name: 'Elena F.',
+      rating: 5,
+      text: 'Tutto perfetto, dalla prenotazione all\'escursione. Super consigliato!',
+      location: 'Agrigento, Sicilia',
+    },
+  ];
   
   const getTodayDate = () => {
     const today = new Date();
@@ -846,38 +880,99 @@ export default function HomePage() {
       </section>
 
       {/* Reviews */}
-      <section className="max-w-7xl mx-auto px-4 py-16">
-        <h2 className="font-title text-4xl font-bold text-center mb-12">
-          Cosa Dicono i Nostri Clienti
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[
-            {
-              name: 'Giulia B.',
-              rating: 5,
-              text: 'Esperienza fantastica! La guida era preparatissima e i panorami mozzafiato.',
-            },
-            {
-              name: 'Marco R.',
-              rating: 5,
-              text: 'Organizzazione perfetta, tutto è andato liscio. Consigliatissimo!',
-            },
-            {
-              name: 'Sara M.',
-              rating: 5,
-              text: 'Una delle migliori escursioni che abbia mai fatto. Tornerò sicuramente!',
-            },
-          ].map((review, index) => (
-            <div key={index} className="card p-6">
-              <div className="flex items-center mb-4">
-                {[...Array(review.rating)].map((_, i) => (
-                  <Star key={i} className="w-5 h-5 fill-accent text-accent" />
-                ))}
+      <section className="w-full relative" style={{ paddingTop: '128px', paddingBottom: '128px' }}>
+        <div 
+          className="absolute inset-0"
+          style={{
+            backgroundImage: 'url(/resources/testimonial-bg.png)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'top',
+            backgroundRepeat: 'no-repeat'
+          }}
+        ></div>
+        <div className="max-w-7xl mx-auto px-4 relative z-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+            {/* Contenuto a sinistra */}
+            <div>
+              <div className="text-accent uppercase font-semibold mb-2">
+                TESTIMONIANZE
               </div>
-              <p className="text-muted mb-4">"{review.text}"</p>
-              <p className="font-medium text-primary">— {review.name}</p>
+              <div className="relative inline-block mb-6">
+                <div className="absolute bg-yellow-100 w-3/4 h-8 top-8 left-0"></div>
+                <h2 className="font-title text-[48px] font-bold relative">
+                  Cosa ne pensano i<br />nostri clienti?
+                </h2>
+              </div>
+              <p className="text-muted mb-8 text-lg max-w-lg">
+                I nostri partecipanti ai trekking condividono le loro esperienze: appassionati di montagna, amanti della natura e avventurieri che hanno scelto di esplorare la Sicilia con noi. Le loro voci raccontano emozioni, panorami mozzafiato e momenti indimenticabili vissuti insieme.
+              </p>
+              
+              {/* Navigation */}
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={() => {
+                    setCurrentReviewIndex((prev) => {
+                      const maxIndex = reviews.length - 2;
+                      if (prev === 0) return maxIndex;
+                      return prev - 1;
+                    });
+                  }}
+                  className="w-16 h-16 rounded-full bg-white flex items-center justify-center hover:bg-gray-100 transition-colors"
+                  aria-label="Recensione precedente"
+                >
+                  <ArrowLeft className="w-5 h-5 text-gray-500" />
+                </button>
+                <button
+                  onClick={() => {
+                    setCurrentReviewIndex((prev) => {
+                      const maxIndex = reviews.length - 2;
+                      if (prev >= maxIndex) return 0;
+                      return prev + 1;
+                    });
+                  }}
+                  className="w-16 h-16 rounded-full bg-white flex items-center justify-center hover:bg-gray-100 transition-colors"
+                  aria-label="Recensione successiva"
+                >
+                  <ArrowRight className="w-5 h-5 text-gray-500" />
+                </button>
+              </div>
             </div>
-          ))}
+            
+            {/* Carosello recensioni a destra */}
+            <div className="relative">
+              <div className="overflow-hidden py-4">
+                <div 
+                  className="flex gap-6 transition-transform duration-500 ease-in-out"
+                  style={{ 
+                    transform: `translateX(calc(-${currentReviewIndex} * ((100% - 1.5rem) / 2 + 1.5rem)))`
+                  }}
+                >
+                  {reviews.map((review, index) => (
+                    <div key={index} className="flex-shrink-0" style={{ width: `calc((100% - 1.5rem) / 2)` }}>
+                      <div className="card p-10 shadow-none h-full flex flex-col" style={{ filter: 'none' }}>
+                        <div className="flex items-center mb-6">
+                          {[...Array(review.rating)].map((_, i) => (
+                            <Star key={i} className="w-6 h-6 fill-accent text-accent" />
+                          ))}
+                        </div>
+                        <p className="text-muted mb-6 text-lg flex-grow">"{review.text}"</p>
+                        <div className="border-t border-gray-200 mb-6"></div>
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
+                            <User className="w-6 h-6 text-accent" />
+                          </div>
+                          <div>
+                            <p className="font-bold text-primary">{review.name}</p>
+                            <p className="text-muted text-sm">{review.location}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
