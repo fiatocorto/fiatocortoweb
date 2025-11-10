@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Search, MapPin, Calendar, Users, Star, ArrowRight, Plus, Minus, User, Baby, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, MapPin, Calendar, Users, Star, ArrowRight, Plus, Minus, User, Baby, ChevronLeft, ChevronRight, BadgeCheck } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import DatePicker, { registerLocale } from 'react-datepicker';
 import { it } from 'date-fns/locale';
@@ -13,6 +13,7 @@ registerLocale('it', it);
 export default function HomePage() {
   const [tours, setTours] = useState<any[]>([]);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [currentTourIndex, setCurrentTourIndex] = useState(0);
   
   const getTodayDate = () => {
     const today = new Date();
@@ -466,39 +467,121 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Top Destinations */}
-      <section className="max-w-7xl mx-auto px-4 py-16">
-        <h2 className="font-title text-4xl font-bold text-center mb-12">
-          Destinazioni Top
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {['Monte Bianco', 'Cinque Terre', 'Lago di Como'].map((dest) => (
-            <div key={dest} className="card overflow-hidden">
-              <img
-                src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800"
-                alt={dest}
-                className="w-full h-48 object-cover"
-              />
-              <div className="p-4">
-                <h3 className="font-title text-xl font-bold">{dest}</h3>
-                <p className="text-sm text-muted mt-2">
-                  Scopri le escursioni più belle in {dest}
-                </p>
-              </div>
+      {/* Chi siamo */}
+      <section className="w-full py-32 relative">
+        <img
+          src="/resources/plane shape.png"
+          alt=""
+          className="absolute -bottom-16 md:-bottom-24 -right-32 md:-right-48 w-96 h-96 md:w-[500px] md:h-[500px] object-contain z-10 pointer-events-none"
+        />
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+          {/* Immagine a sinistra */}
+          <div className="order-2 md:order-1 relative">
+            {/* Prima immagine - rettangolare in altezza */}
+            <img
+              src="/resources/11514.jpg"
+              alt="Chi siamo"
+              className="w-[440px] h-[588px] object-cover rounded-t-lg rounded-b-full"
+            />
+            {/* Seconda immagine - rotonda e sovrapposta */}
+            <img
+              src="/resources/28088.jpg"
+              alt=""
+              className="absolute -bottom-8 -right-8 w-[350px] h-[350px] rounded-full object-cover border-4 border-white"
+            />
+          </div>
+          
+          {/* Contenuto a destra */}
+          <div className="order-1 md:order-2">
+            <div className="text-accent uppercase font-semibold mb-2">
+              CHI SIAMO
             </div>
-          ))}
+            <div className="relative inline-block mb-6">
+              <div className="absolute bg-yellow-100 w-3/4 h-8 top-8 left-0"></div>
+              <h2 className="font-title text-[48px] font-bold relative">
+                Vivi esperienze uniche con noi
+              </h2>
+            </div>
+            <p className="text-muted mb-6 text-lg">
+              Siamo un team di appassionati di trekking e natura, dedicati a offrirti esperienze uniche e indimenticabili. La nostra missione è guidarti alla scoperta dei luoghi più belli e suggestivi, condividendo la nostra passione per l'avventura e il rispetto per l'ambiente.
+            </p>
+            <ul className="space-y-4 mb-8">
+              {[
+                'Esperienze autentiche',
+                'Professionalità',
+                'Emozioni condivise'
+              ].map((item, index) => (
+                <li key={index} className="flex items-start gap-3">
+                  <BadgeCheck className="w-6 h-6 text-accent flex-shrink-0 mt-0.5" />
+                  <span className="text-muted">{item}</span>
+                </li>
+              ))}
+            </ul>
+            <Link to="/about" className="btn-primary inline-flex items-center gap-2">
+              Chi Siamo
+              <ArrowRight className="w-5 h-5" />
+            </Link>
+          </div>
+          </div>
         </div>
       </section>
 
-      {/* Tours Carousel */}
+      {/* best choices */}
       <section className="max-w-7xl mx-auto px-4 py-16 bg-background">
-        <h2 className="font-title text-4xl font-bold text-center mb-12">
-          Escursioni Popolari
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {tours.map((tour) => (
-            <CardTour key={tour.id} tour={tour} />
-          ))}
+        <div className="text-center mb-12">
+          <div className="text-accent uppercase font-semibold mb-2">
+            ESCURSIONI
+          </div>
+          <div className="relative inline-block mb-6">
+            <div className="absolute bg-yellow-100 w-3/4 h-8 top-8 left-0"></div>
+            <h2 className="font-title text-[48px] font-bold relative">
+              Le più scelte
+            </h2>
+          </div>
+        </div>
+        <div className="relative px-16">
+          <div className="overflow-hidden py-10 px-4">
+            <div 
+              className="flex gap-6 transition-transform duration-500 ease-in-out"
+              style={{ 
+                transform: `translateX(calc(-${currentTourIndex} * ((100% - 3rem) / 3 + 1.5rem)))`
+              }}
+            >
+              {tours.slice(0, 5).map((tour) => (
+                <div key={tour.id} className="flex-shrink-0" style={{ width: `calc((100% - 3rem) / 3)` }}>
+                  <CardTour tour={tour} />
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          {/* Navigation buttons */}
+          <button
+            onClick={() => {
+              setCurrentTourIndex((prev) => {
+                if (prev === 0) return tours.slice(0, 5).length - 3;
+                return prev - 1;
+              });
+            }}
+            className="absolute left-0 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center hover:bg-gray-100 transition-colors z-10"
+            aria-label="Card precedente"
+          >
+            <ChevronLeft className="w-6 h-6 text-primary" />
+          </button>
+          <button
+            onClick={() => {
+              setCurrentTourIndex((prev) => {
+                const maxIndex = tours.slice(0, 5).length - 3;
+                if (prev >= maxIndex) return 0;
+                return prev + 1;
+              });
+            }}
+            className="absolute right-0 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center hover:bg-gray-100 transition-colors z-10"
+            aria-label="Card successiva"
+          >
+            <ChevronRight className="w-6 h-6 text-primary" />
+          </button>
         </div>
         <div className="text-center mt-8">
           <Link to="/tours" className="btn-secondary">

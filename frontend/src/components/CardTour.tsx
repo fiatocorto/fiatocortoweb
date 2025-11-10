@@ -33,8 +33,14 @@ export default function CardTour({ tour }: CardTourProps) {
   };
 
   return (
-    <Link to={`/tours/${tour.slug}`} className="card hover:shadow-lg transition-shadow">
-      <div className="relative">
+    <div 
+      className="rounded-2xl transition-transform duration-300 hover:-translate-y-2"
+    >
+    <Link 
+      to={`/tours/${tour.slug}`} 
+      className="card rounded-2xl block"
+    >
+      <div className="relative overflow-hidden rounded-t-2xl">
         <img
           src={tour.coverImage}
           alt={tour.title}
@@ -71,6 +77,7 @@ export default function CardTour({ tour }: CardTourProps) {
         </div>
       </div>
     </Link>
+    </div>
   );
 }
 
