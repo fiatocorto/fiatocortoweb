@@ -29,7 +29,7 @@ export default function TourGrid({ tours, viewMode = 'grid', variant = 'default'
     return (
       <div className="space-y-4">
         {tours.map((tour) => (
-          <CardTour key={tour.id} tour={tour} variant={variant} />
+          <CardTour key={tour.id} tour={tour} variant={variant} viewMode={viewMode} />
         ))}
       </div>
     );
