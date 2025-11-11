@@ -39,21 +39,26 @@ router.get(
       const tours = await prisma.tour.findMany({
         where,
         include: {
-          tourDates: {
-            where: date
-              ? {
+          tourDates: date
+            ? {
+                where: {
                   dateStart: {
                     gte: new Date(date as string),
                     lte: new Date(new Date(date as string).setHours(23, 59, 59)),
                   },
                   status: 'ACTIVE',
-                }
-              : { status: 'ACTIVE' },
-          },
+                },
+                orderBy: { dateStart: 'asc' },
+              }
+            : {
+                // Include tutte le date quando non c'è filtro data
+                orderBy: { dateStart: 'asc' },
+              },
         },
         orderBy: { createdAt: 'desc' },
       });
 
+      console.log(`Found ${tours.length} tours`);
       res.json({ tours });
     } catch (error) {
       console.error('Get tours error:', error);
