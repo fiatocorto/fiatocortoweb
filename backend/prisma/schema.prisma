@@ -31,6 +31,8 @@ model Tour {
   priceAdult    Float    @map("price_adult")
   priceChild    Float    @map("price_child")
   language      String
+  difficulty    String?
+  date          DateTime?
   itinerary     String
   durationValue Int     @map("duration_value")
   durationUnit  String   @map("duration_unit")
