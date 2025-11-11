@@ -7,6 +7,7 @@ import api from '../utils/api';
 import { useAuth } from '../contexts/AuthContext';
 import ImageGallery from '../components/ImageGallery';
 import QRBadge from '../components/QRBadge';
+import Footer from '../components/Footer';
 
 export default function TourDetailPage() {
   const { slug } = useParams();
@@ -65,8 +66,9 @@ export default function TourDetailPage() {
   const excludes = JSON.parse(tour.excludes || '[]');
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <>
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2">
           <h1 className="font-title text-4xl font-bold mb-4">{tour.title}</h1>
           <div className="flex items-center space-x-4 text-muted mb-6">
@@ -208,8 +210,10 @@ export default function TourDetailPage() {
             )}
           </div>
         </div>
+        </div>
       </div>
-    </div>
+      <Footer />
+    </>
   );
 }
 
