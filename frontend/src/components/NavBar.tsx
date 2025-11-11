@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { ShoppingCart, Menu, X, Mail, Phone, MapPin } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
@@ -7,9 +7,18 @@ import AvatarMenu from './AvatarMenu';
 export default function NavBar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [cartMenuOpen, setCartMenuOpen] = useState(false);
   const cartMenuRef = useRef<HTMLDivElement>(null);
+
+  // Helper function to check if a path is active
+  const isActive = (path: string) => {
+    if (path === '/') {
+      return location.pathname === '/';
+    }
+    return location.pathname.startsWith(path);
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -92,19 +101,34 @@ export default function NavBar() {
             <div className="hidden lg:flex justify-between items-center py-5 pl-4 sm:pl-6 lg:pl-8 pr-4 sm:pr-6 lg:pr-8 bg-white text-primary">
               {/* Navigation menu */}
               <div className="flex-1 flex justify-start items-center space-x-6">
-                <Link to="/" className="text-primary hover:text-accent transition-colors font-medium text-base">
+                <Link 
+                  to="/" 
+                  className={`transition-colors font-medium text-base ${isActive('/') ? 'text-accent' : 'text-primary hover:text-accent'}`}
+                >
                   Home
                 </Link>
-                <Link to="/tours" className="text-primary hover:text-accent transition-colors font-medium text-base">
+                <Link 
+                  to="/tours" 
+                  className={`transition-colors font-medium text-base ${isActive('/tours') ? 'text-accent' : 'text-primary hover:text-accent'}`}
+                >
                   Tour
                 </Link>
-                <Link to="/calendar" className="text-primary hover:text-accent transition-colors font-medium text-base">
+                <Link 
+                  to="/calendar" 
+                  className={`transition-colors font-medium text-base ${isActive('/calendar') ? 'text-accent' : 'text-primary hover:text-accent'}`}
+                >
                   Calendario
                 </Link>
-                <Link to="/about" className="text-primary hover:text-accent transition-colors font-medium text-base">
+                <Link 
+                  to="/about" 
+                  className={`transition-colors font-medium text-base ${isActive('/about') ? 'text-accent' : 'text-primary hover:text-accent'}`}
+                >
                   Chi siamo
                 </Link>
-                <Link to="/contacts" className="text-primary hover:text-accent transition-colors font-medium text-base">
+                <Link 
+                  to="/contacts" 
+                  className={`transition-colors font-medium text-base ${isActive('/contacts') ? 'text-accent' : 'text-primary hover:text-accent'}`}
+                >
                   Contatti
                 </Link>
               </div>
@@ -178,24 +202,45 @@ export default function NavBar() {
             {/* Mobile navigation */}
             <div className="space-y-2">
             <Link
+              to="/"
+              className={`block transition-colors ${isActive('/') ? 'text-accent' : 'hover:text-accent'}`}
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Home
+            </Link>
+            <Link
               to="/tours"
-              className="block hover:text-accent transition-colors"
+              className={`block transition-colors ${isActive('/tours') ? 'text-accent' : 'hover:text-accent'}`}
               onClick={() => setMobileMenuOpen(false)}
             >
               Tour
             </Link>
             <Link
               to="/calendar"
-              className="block hover:text-accent transition-colors"
+              className={`block transition-colors ${isActive('/calendar') ? 'text-accent' : 'hover:text-accent'}`}
               onClick={() => setMobileMenuOpen(false)}
             >
               Calendario
+            </Link>
+            <Link
+              to="/about"
+              className={`block transition-colors ${isActive('/about') ? 'text-accent' : 'hover:text-accent'}`}
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Chi siamo
+            </Link>
+            <Link
+              to="/contacts"
+              className={`block transition-colors ${isActive('/contacts') ? 'text-accent' : 'hover:text-accent'}`}
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Contatti
             </Link>
             {user && (
               <>
                 <Link
                   to="/bookings"
-                  className="block hover:text-accent transition-colors"
+                  className={`block transition-colors ${isActive('/bookings') ? 'text-accent' : 'hover:text-accent'}`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Le mie prenotazioni
@@ -203,7 +248,7 @@ export default function NavBar() {
                 {user.role === 'ADMIN' && (
                   <Link
                     to="/admin"
-                    className="block hover:text-accent transition-colors"
+                    className={`block transition-colors ${isActive('/admin') ? 'text-accent' : 'hover:text-accent'}`}
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Admin
