@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import NavBar from './components/NavBar';
 import AppLoader from './components/AppLoader';
+import ScrollToTop from './components/ScrollToTop';
 import HomePage from './pages/HomePage';
 import ToursPage from './pages/ToursPage';
 import TourDetailPage from './pages/TourDetailPage';
@@ -30,6 +31,7 @@ function AppContent() {
 
   return (
     <div className="min-h-screen bg-background">
+      <ScrollToTop />
       <NavBar />
       <Routes>
           <Route path="/" element={<HomePage />} />
