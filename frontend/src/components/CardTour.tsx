@@ -12,11 +12,9 @@ interface Tour {
   durationValue: number;
   durationUnit: string;
   difficulty?: string;
-  tourDates?: Array<{
-    availableSeats?: number;
-    capacityMax: number;
-    dateStart?: string;
-  }>;
+  dateStart?: string;
+  dateEnd?: string;
+  availableSeats?: number;
 }
 
 interface CardTourProps {
@@ -26,34 +24,16 @@ interface CardTourProps {
 }
 
 export default function CardTour({ tour, variant = 'default', viewMode = 'grid' }: CardTourProps) {
-  const minAvailableSeats = tour.tourDates
-    ? Math.min(...tour.tourDates.map((d) => d.availableSeats ?? d.capacityMax))
-    : 0;
+  const availableSeats = tour.availableSeats ?? 0;
 
   const getSeatsBadgeClass = () => {
-    if (minAvailableSeats === 0) return 'badge-danger';
-    if (minAvailableSeats <= 10) return 'badge-danger';
+    if (availableSeats === 0) return 'badge-danger';
+    if (availableSeats <= 10) return 'badge-danger';
     return 'badge-accent';
   };
 
   const isCompact = variant === 'compact';
   const isListView = viewMode === 'list';
-
-  // Get the next available date
-  const getNextDate = () => {
-    if (!tour.tourDates || tour.tourDates.length === 0) return null;
-    
-    const now = new Date();
-    const futureDates = tour.tourDates
-      .filter(d => d.dateStart && new Date(d.dateStart) >= now)
-      .sort((a, b) => {
-        const dateA = a.dateStart ? new Date(a.dateStart) : new Date(0);
-        const dateB = b.dateStart ? new Date(b.dateStart) : new Date(0);
-        return dateA.getTime() - dateB.getTime();
-      });
-    
-    return futureDates.length > 0 ? futureDates[0].dateStart : null;
-  };
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return 'Data da definire';
@@ -66,7 +46,7 @@ export default function CardTour({ tour, variant = 'default', viewMode = 'grid' 
     });
   };
 
-  const nextDate = getNextDate();
+  const nextDate = tour.dateStart;
 
   if (isCompact) {
     // List view layout: image on left, content on right
@@ -86,9 +66,9 @@ export default function CardTour({ tour, variant = 'default', viewMode = 'grid' 
                 />
                 <div className="absolute top-2 right-2">
                   <span className={`badge ${getSeatsBadgeClass()}`}>
-                    {minAvailableSeats === 0
+                    {availableSeats === 0
                       ? 'Esaurito'
-                      : `${minAvailableSeats} posti`}
+                      : `${availableSeats} posti`}
                   </span>
                 </div>
               </div>
@@ -140,9 +120,9 @@ export default function CardTour({ tour, variant = 'default', viewMode = 'grid' 
             />
             <div className="absolute top-2 right-2">
               <span className={`badge ${getSeatsBadgeClass()}`}>
-                {minAvailableSeats === 0
+                {availableSeats === 0
                   ? 'Esaurito'
-                  : `${minAvailableSeats} posti`}
+                  : `${availableSeats} posti`}
               </span>
             </div>
           </div>
@@ -193,9 +173,9 @@ export default function CardTour({ tour, variant = 'default', viewMode = 'grid' 
             />
             <div className="absolute top-2 right-2">
               <span className={`badge ${getSeatsBadgeClass()}`}>
-                {minAvailableSeats === 0
+                {availableSeats === 0
                   ? 'Esaurito'
-                  : `${minAvailableSeats} posti`}
+                  : `${availableSeats} posti`}
               </span>
             </div>
           </div>

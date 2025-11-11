@@ -3,7 +3,6 @@ import cors from 'cors';
 import { PrismaClient } from '@prisma/client';
 import authRoutes from './routes/auth';
 import toursRoutes from './routes/tours';
-import tourDatesRoutes from './routes/tour-dates';
 import bookingsRoutes from './routes/bookings';
 import qrcodeRoutes from './routes/qrcode';
 import notificationsRoutes from './routes/notifications';
@@ -27,7 +26,6 @@ app.get('/api/health', (req, res) => {
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/tours', toursRoutes);
-app.use('/api/tour-dates', tourDatesRoutes);
 app.use('/api/bookings', bookingsRoutes);
 app.use('/api/qrcode', qrcodeRoutes);
 app.use('/api/notifications', notificationsRoutes);

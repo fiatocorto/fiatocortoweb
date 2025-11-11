@@ -8,10 +8,10 @@ import { useAuth } from '../contexts/AuthContext';
 import QRBadge from '../components/QRBadge';
 
 export default function BookingPage() {
-  const { tourDateId } = useParams();
+  const { tourId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [tourDate, setTourDate] = useState<any>(null);
+  const [tour, setTour] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [booking, setBooking] = useState({
     adults: 1,
@@ -23,28 +23,26 @@ export default function BookingPage() {
   const [bookingResult, setBookingResult] = useState<any>(null);
 
   useEffect(() => {
-    fetchTourDate();
-  }, [tourDateId]);
+    fetchTour();
+  }, [tourId]);
 
-  const fetchTourDate = async () => {
+  const fetchTour = async () => {
     try {
-      const response = await api.get(`/api/tour-dates?tourId=${tourDateId}`);
-      const dates = response.data.tourDates;
-      const date = dates.find((d: any) => d.id === tourDateId);
-      if (date) {
-        setTourDate(date);
+      const response = await api.get(`/api/tours/${tourId}`);
+      if (response.data.tour) {
+        setTour(response.data.tour);
       }
     } catch (error) {
-      console.error('Failed to fetch tour date:', error);
+      console.error('Failed to fetch tour:', error);
     } finally {
       setLoading(false);
     }
   };
 
   const calculateTotal = () => {
-    if (!tourDate) return 0;
-    const priceAdult = tourDate.priceOverride || tourDate.tour.priceAdult;
-    const priceChild = tourDate.tour.priceChild;
+    if (!tour) return 0;
+    const priceAdult = tour.priceAdult;
+    const priceChild = tour.priceChild;
     return booking.adults * priceAdult + booking.children * priceChild;
   };
 
@@ -54,7 +52,7 @@ export default function BookingPage() {
 
     try {
       const response = await api.post('/api/bookings', {
-        tourDateId,
+        tourId,
         ...booking,
       });
       setBookingResult(response.data);
@@ -73,10 +71,10 @@ export default function BookingPage() {
     );
   }
 
-  if (!tourDate) {
+  if (!tour) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-12 text-center">
-        <p className="text-muted">Data tour non trovata</p>
+        <p className="text-muted">Tour non trovato</p>
       </div>
     );
   }
@@ -117,7 +115,7 @@ export default function BookingPage() {
   }
 
   const total = calculateTotal();
-  const availableSeats = tourDate.availableSeats || 0;
+  const availableSeats = tour.availableSeats || 0;
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
@@ -127,18 +125,21 @@ export default function BookingPage() {
         <div className="lg:col-span-2">
           <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
             <h2 className="font-title text-2xl font-bold mb-4">
-              {tourDate.tour.title}
+              {tour.title}
             </h2>
             <div className="space-y-3 text-muted">
               <div className="flex items-center">
                 <Calendar className="w-5 h-5 mr-2" />
-                {format(new Date(tourDate.dateStart), 'dd MMMM yyyy HH:mm', {
+                {format(new Date(tour.dateStart), 'dd MMMM yyyy HH:mm', {
                   locale: it,
                 })}
+                {tour.dateEnd && (
+                  <> - {format(new Date(tour.dateEnd), 'HH:mm', { locale: it })}</>
+                )}
               </div>
               <div className="flex items-center">
                 <MapPin className="w-5 h-5 mr-2" />
-                {tourDate.tour.language}
+                {tour.language}
               </div>
               <div className="flex items-center">
                 <Users className="w-5 h-5 mr-2" />
@@ -258,18 +259,14 @@ export default function BookingPage() {
               <div className="flex justify-between">
                 <span className="text-muted">Adulti x{booking.adults}</span>
                 <span>
-                  €
-                  {(
-                    booking.adults *
-                    (tourDate.priceOverride || tourDate.tour.priceAdult)
-                  ).toFixed(2)}
+                  €{(booking.adults * tour.priceAdult).toFixed(2)}
                 </span>
               </div>
               {booking.children > 0 && (
                 <div className="flex justify-between">
                   <span className="text-muted">Bambini x{booking.children}</span>
                   <span>
-                    €{(booking.children * tourDate.tour.priceChild).toFixed(2)}
+                    €{(booking.children * tour.priceChild).toFixed(2)}
                   </span>
                 </div>
               )}

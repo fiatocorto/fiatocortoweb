@@ -77,9 +77,9 @@ export default function AdminBookings() {
                         <p className="text-sm text-muted">{booking.user.email}</p>
                       </div>
                     </td>
-                    <td className="px-6 py-4">{booking.tourDate.tour.title}</td>
+                    <td className="px-6 py-4">{booking.tour.tour.title}</td>
                     <td className="px-6 py-4">
-                      {format(new Date(booking.tourDate.dateStart), 'dd MMM yyyy HH:mm', {
+                      {format(new Date(booking.tour.dateStart), 'dd MMM yyyy HH:mm', {
                         locale: it,
                       })}
                     </td>

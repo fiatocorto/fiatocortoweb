@@ -1,0 +1,1 @@
+-- This is an empty migration since the database already has the correct structure.

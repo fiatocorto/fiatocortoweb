@@ -15,7 +15,6 @@ export default function TourDetailPage() {
   const { user } = useAuth();
   const [tour, setTour] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedDate, setSelectedDate] = useState<any>(null);
 
   useEffect(() => {
     fetchTour();
@@ -25,9 +24,6 @@ export default function TourDetailPage() {
     try {
       const response = await api.get(`/api/tours/${slug}`);
       setTour(response.data.tour);
-      if (response.data.tour.tourDates?.length > 0) {
-        setSelectedDate(response.data.tour.tourDates[0]);
-      }
     } catch (error) {
       console.error('Failed to fetch tour:', error);
     } finally {
@@ -40,8 +36,8 @@ export default function TourDetailPage() {
       navigate('/login');
       return;
     }
-    if (selectedDate) {
-      navigate(`/booking/${selectedDate.id}`);
+    if (tour) {
+      navigate(`/booking/${tour.id}`);
     }
   };
 
@@ -139,7 +135,7 @@ export default function TourDetailPage() {
           <div className="bg-white rounded-lg shadow-lg p-6 sticky top-24">
             <div className="mb-6">
               <div className="text-4xl font-bold text-accent mb-2">
-                €{selectedDate?.priceOverride || tour.priceAdult}
+                €{tour.priceAdult}
               </div>
               <p className="text-sm text-muted">a persona (adulto)</p>
               {tour.priceChild > 0 && (
@@ -152,58 +148,38 @@ export default function TourDetailPage() {
             <div className="mb-6">
               <h3 className="font-bold mb-3 flex items-center">
                 <Calendar className="w-5 h-5 mr-2" />
-                Date Disponibili
+                Data Tour
               </h3>
-              <div className="space-y-2 max-h-64 overflow-y-auto">
-                {tour.tourDates?.map((date: any) => (
-                  <button
-                    key={date.id}
-                    onClick={() => setSelectedDate(date)}
-                    className={`w-full text-left p-3 rounded-lg border-2 transition-colors ${
-                      selectedDate?.id === date.id
-                        ? 'border-accent bg-accent/10'
-                        : 'border-muted hover:border-accent'
-                    }`}
-                  >
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <p className="font-medium">
-                          {format(new Date(date.dateStart), 'dd MMMM yyyy', { locale: it })}
-                        </p>
-                        {date.dateEnd && (
-                          <p className="text-sm text-muted">
-                            fino a {format(new Date(date.dateEnd), 'dd MMMM', { locale: it })}
-                          </p>
-                        )}
-                      </div>
-                      <div className="text-right">
-                        <p
-                          className={`text-sm font-medium ${
-                            date.availableSeats === 0
-                              ? 'text-red-600'
-                              : date.availableSeats <= 10
-                              ? 'text-orange-600'
-                              : 'text-green-600'
-                          }`}
-                        >
-                          {date.availableSeats === 0
-                            ? 'Esaurito'
-                            : `${date.availableSeats} posti`}
-                        </p>
-                      </div>
-                    </div>
-                  </button>
-                ))}
+              <div className="p-3 rounded-lg border border-muted">
+                <p className="font-medium">
+                  {format(new Date(tour.dateStart), 'dd MMMM yyyy', { locale: it })}
+                </p>
+                {tour.dateEnd && (
+                  <p className="text-sm text-muted mt-1">
+                    fino a {format(new Date(tour.dateEnd), 'dd MMMM yyyy', { locale: it })}
+                  </p>
+                )}
+                <p className={`text-sm font-medium mt-2 ${
+                  tour.availableSeats === 0
+                    ? 'text-red-600'
+                    : tour.availableSeats <= 10
+                    ? 'text-orange-600'
+                    : 'text-green-600'
+                }`}>
+                  {tour.availableSeats === 0
+                    ? 'Esaurito'
+                    : `${tour.availableSeats} posti disponibili`}
+                </p>
               </div>
             </div>
 
-            {selectedDate && selectedDate.availableSeats > 0 && (
+            {tour.availableSeats > 0 && (
               <button onClick={handleBook} className="btn-primary w-full">
                 Prenota Ora
               </button>
             )}
 
-            {selectedDate && selectedDate.availableSeats === 0 && (
+            {tour.availableSeats === 0 && (
               <button disabled className="btn-primary w-full opacity-50 cursor-not-allowed">
                 Esaurito
               </button>

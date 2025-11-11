@@ -71,12 +71,12 @@ export default function MyBookingsPage() {
               <div className="flex flex-col md:flex-row md:items-center md:justify-between">
                 <div className="flex-1">
                   <h3 className="font-title text-xl font-bold mb-2">
-                    {booking.tourDate.tour.title}
+                    {booking.tour.tour.title}
                   </h3>
                   <div className="space-y-1 text-sm text-muted">
                     <div className="flex items-center">
                       <Calendar className="w-4 h-4 mr-2" />
-                      {format(new Date(booking.tourDate.dateStart), 'dd MMMM yyyy HH:mm', {
+                      {format(new Date(booking.tour.dateStart), 'dd MMMM yyyy HH:mm', {
                         locale: it,
                       })}
                     </div>

@@ -36,25 +36,16 @@ router.get(
         if (maxPrice) where.priceAdult.lte = parseFloat(maxPrice as string);
       }
 
+      const whereDate: any = {};
+      if (date) {
+        whereDate.dateStart = {
+          gte: new Date(date as string),
+          lte: new Date(new Date(date as string).setHours(23, 59, 59)),
+        };
+      }
+
       const tours = await prisma.tour.findMany({
-        where,
-        include: {
-          tourDates: date
-            ? {
-                where: {
-                  dateStart: {
-                    gte: new Date(date as string),
-                    lte: new Date(new Date(date as string).setHours(23, 59, 59)),
-                  },
-                  status: 'ACTIVE',
-                },
-                orderBy: { dateStart: 'asc' },
-              }
-            : {
-                // Include tutte le date quando non c'è filtro data
-                orderBy: { dateStart: 'asc' },
-              },
-        },
+        where: { ...where, ...whereDate },
         orderBy: { createdAt: 'desc' },
       });
 
@@ -76,48 +67,32 @@ router.get('/:id', async (req, res) => {
       where: {
         OR: [{ id }, { slug: id }],
       },
-      include: {
-        tourDates: {
-          where: {
-            status: 'ACTIVE',
-            dateStart: { gte: new Date() },
-          },
-          orderBy: { dateStart: 'asc' },
-        },
-      },
     });
 
     if (!tour) {
       return res.status(404).json({ error: 'Tour non trovato' });
     }
 
-    // Calculate available seats for each date
-    const tourDatesWithAvailability = await Promise.all(
-      tour.tourDates.map(async (date) => {
-        const bookings = await prisma.booking.findMany({
-          where: {
-            tourDateId: date.id,
-            paymentStatus: { not: 'CANCELLED' },
-          },
-        });
+    // Calculate available seats
+    const bookings = await prisma.booking.findMany({
+      where: {
+        tourId: tour.id,
+        paymentStatus: { not: 'CANCELLED' },
+      },
+    });
 
-        const bookedSeats = bookings.reduce(
-          (sum, b) => sum + b.adults + b.children,
-          0
-        );
-
-        return {
-          ...date,
-          availableSeats: date.capacityMax - bookedSeats,
-          bookedSeats,
-        };
-      })
+    const bookedSeats = bookings.reduce(
+      (sum, b) => sum + b.adults + b.children,
+      0
     );
+
+    const availableSeats = tour.maxSeats - bookedSeats;
 
     res.json({
       tour: {
         ...tour,
-        tourDates: tourDatesWithAvailability,
+        availableSeats,
+        bookedSeats,
       },
     });
   } catch (error) {

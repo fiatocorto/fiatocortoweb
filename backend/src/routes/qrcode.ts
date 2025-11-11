@@ -28,15 +28,13 @@ router.post(
               email: true,
             },
           },
-          tourDate: {
-            include: {
-              tour: {
-                select: {
-                  id: true,
-                  title: true,
-                  slug: true,
-                },
-              },
+          tour: {
+            select: {
+              id: true,
+              title: true,
+              slug: true,
+              dateStart: true,
+              dateEnd: true,
             },
           },
         },
@@ -83,16 +81,14 @@ router.get('/:token', async (req, res) => {
             email: true,
           },
         },
-        tourDate: {
-          include: {
-            tour: {
-              select: {
-                id: true,
-                title: true,
-                slug: true,
-                coverImage: true,
-              },
-            },
+        tour: {
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+            coverImage: true,
+            dateStart: true,
+            dateEnd: true,
           },
         },
       },

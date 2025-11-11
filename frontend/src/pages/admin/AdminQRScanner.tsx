@@ -147,11 +147,11 @@ export default function AdminQRScanner() {
                 <strong>Cliente:</strong> {result.booking.user.name} ({result.booking.user.email})
               </p>
               <p>
-                <strong>Tour:</strong> {result.booking.tourDate.tour.title}
+                <strong>Tour:</strong> {result.booking.tour.tour.title}
               </p>
               <p>
                 <strong>Data:</strong>{' '}
-                {new Date(result.booking.tourDate.dateStart).toLocaleString('it-IT')}
+                {new Date(result.booking.tour.dateStart).toLocaleString('it-IT')}
               </p>
               <p>
                 <strong>Partecipanti:</strong> {result.booking.adults} adulti

@@ -31,16 +31,14 @@ router.get('/', authenticate, async (req: AuthRequest, res) => {
             email: true,
           },
         },
-        tourDate: {
-          include: {
-            tour: {
-              select: {
-                id: true,
-                title: true,
-                slug: true,
-                coverImage: true,
-              },
-            },
+        tour: {
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+            coverImage: true,
+            dateStart: true,
+            dateEnd: true,
           },
         },
       },
@@ -69,11 +67,7 @@ router.get('/:id', authenticate, async (req: AuthRequest, res) => {
             email: true,
           },
         },
-        tourDate: {
-          include: {
-            tour: true,
-          },
-        },
+        tour: true,
       },
     });
 
@@ -98,7 +92,7 @@ router.post(
   '/',
   authenticate,
   [
-    body('tourDateId').isUUID().withMessage('Tour date ID non valido'),
+    body('tourId').isUUID().withMessage('Tour ID non valido'),
     body('adults').isInt({ min: 1 }).withMessage('Numero adulti non valido'),
     body('children').optional().isInt({ min: 0 }),
     body('paymentMethod').isIn(['ONSITE', 'CARD_STUB']).withMessage('Metodo pagamento non valido'),
@@ -111,26 +105,21 @@ router.post(
     }
 
     try {
-      const { tourDateId, adults, children = 0, paymentMethod, notes } = req.body;
+      const { tourId, adults, children = 0, paymentMethod, notes } = req.body;
 
-      // Get tour date with tour info
-      const tourDate = await prisma.tourDate.findUnique({
-        where: { id: tourDateId },
-        include: { tour: true },
+      // Get tour info
+      const tour = await prisma.tour.findUnique({
+        where: { id: tourId },
       });
 
-      if (!tourDate) {
-        return res.status(404).json({ error: 'Data tour non trovata' });
-      }
-
-      if (tourDate.status !== 'ACTIVE') {
-        return res.status(400).json({ error: 'Data tour non disponibile' });
+      if (!tour) {
+        return res.status(404).json({ error: 'Tour non trovato' });
       }
 
       // Check availability
       const existingBookings = await prisma.booking.findMany({
         where: {
-          tourDateId,
+          tourId,
           paymentStatus: { not: 'CANCELLED' },
         },
       });
@@ -141,16 +130,16 @@ router.post(
       );
 
       const requestedSeats = adults + children;
-      if (bookedSeats + requestedSeats > tourDate.capacityMax) {
+      if (bookedSeats + requestedSeats > tour.maxSeats) {
         return res.status(400).json({
           error: 'Posti non disponibili',
-          availableSeats: tourDate.capacityMax - bookedSeats,
+          availableSeats: tour.maxSeats - bookedSeats,
         });
       }
 
       // Calculate price
-      const pricePerAdult = tourDate.priceOverride || tourDate.tour.priceAdult;
-      const pricePerChild = tourDate.tour.priceChild;
+      const pricePerAdult = tour.priceAdult;
+      const pricePerChild = tour.priceChild;
       const totalPrice = adults * pricePerAdult + children * pricePerChild;
 
       // Generate QR code token
@@ -160,7 +149,7 @@ router.post(
       const booking = await prisma.booking.create({
         data: {
           userId: req.userId!,
-          tourDateId,
+          tourId,
           adults,
           children,
           totalPrice,
@@ -170,15 +159,13 @@ router.post(
           notes,
         },
         include: {
-          tourDate: {
-            include: {
-              tour: {
-                select: {
-                  id: true,
-                  title: true,
-                  slug: true,
-                },
-              },
+          tour: {
+            select: {
+              id: true,
+              title: true,
+              slug: true,
+              dateStart: true,
+              dateEnd: true,
             },
           },
         },
@@ -187,7 +174,7 @@ router.post(
       // Create notification for admin
       await createNotification('NEW_BOOKING', {
         bookingId: booking.id,
-        tourTitle: tourDate.tour.title,
+        tourTitle: tour.title,
         userName: req.userId,
         totalPrice,
       });
@@ -219,7 +206,7 @@ router.put(
 
       const booking = await prisma.booking.findUnique({
         where: { id },
-        include: { tourDate: { include: { tour: true } } },
+        include: { tour: true },
       });
 
       if (!booking) {
@@ -241,8 +228,8 @@ router.put(
       if (updateData.adults !== undefined || updateData.children !== undefined) {
         const adults = updateData.adults ?? booking.adults;
         const children = updateData.children ?? booking.children;
-        const pricePerAdult = booking.tourDate.priceOverride || booking.tourDate.tour.priceAdult;
-        const pricePerChild = booking.tourDate.tour.priceChild;
+        const pricePerAdult = booking.tour.priceAdult;
+        const pricePerChild = booking.tour.priceChild;
         updateData.totalPrice = adults * pricePerAdult + children * pricePerChild;
       }
 
@@ -250,15 +237,13 @@ router.put(
         where: { id },
         data: updateData,
         include: {
-          tourDate: {
-            include: {
-              tour: {
-                select: {
-                  id: true,
-                  title: true,
-                  slug: true,
-                },
-              },
+          tour: {
+            select: {
+              id: true,
+              title: true,
+              slug: true,
+              dateStart: true,
+              dateEnd: true,
             },
           },
         },
@@ -286,7 +271,7 @@ router.delete('/:id', authenticate, async (req: AuthRequest, res) => {
 
     const booking = await prisma.booking.findUnique({
       where: { id },
-      include: { tourDate: { include: { tour: true } } },
+      include: { tour: true },
     });
 
     if (!booking) {
@@ -307,7 +292,7 @@ router.delete('/:id', authenticate, async (req: AuthRequest, res) => {
 
       await createNotification('REFUND_REQUESTED', {
         bookingId: booking.id,
-        tourTitle: booking.tourDate.tour.title,
+        tourTitle: booking.tour.title,
         amount: booking.totalPrice,
       });
 

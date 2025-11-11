@@ -7,20 +7,20 @@ import Modal from '../components/Modal';
 
 export default function CalendarPage() {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [tourDates, setTourDates] = useState<any[]>([]);
+  const [tours, setTours] = useState<any[]>([]);
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
   const [dayTours, setDayTours] = useState<any[]>([]);
 
   useEffect(() => {
-    fetchTourDates();
+    fetchTours();
   }, []);
 
-  const fetchTourDates = async () => {
+  const fetchTours = async () => {
     try {
-      const response = await api.get('/api/tour-dates');
-      setTourDates(response.data.tourDates);
+      const response = await api.get('/api/tours');
+      setTours(response.data.tours);
     } catch (error) {
-      console.error('Failed to fetch tour dates:', error);
+      console.error('Failed to fetch tours:', error);
     }
   };
 
@@ -29,8 +29,8 @@ export default function CalendarPage() {
   const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
 
   const getToursForDay = (day: Date) => {
-    return tourDates.filter((td) => {
-      const tourDate = new Date(td.dateStart);
+    return tours.filter((tour) => {
+      const tourDate = new Date(tour.dateStart);
       return isSameDay(tourDate, day);
     });
   };
@@ -116,31 +116,31 @@ export default function CalendarPage() {
         title={selectedDay ? format(selectedDay, 'dd MMMM yyyy', { locale: it }) : ''}
       >
         <div className="space-y-4">
-          {dayTours.map((tourDate) => (
-            <div key={tourDate.id} className="border rounded-lg p-4">
-              <h3 className="font-bold text-lg mb-2">{tourDate.tour.title}</h3>
+          {dayTours.map((tour) => (
+            <div key={tour.id} className="border rounded-lg p-4">
+              <h3 className="font-bold text-lg mb-2">{tour.title}</h3>
               <p className="text-sm text-muted mb-2">
-                {format(new Date(tourDate.dateStart), 'HH:mm', { locale: it })} -{' '}
-                {tourDate.dateEnd
-                  ? format(new Date(tourDate.dateEnd), 'HH:mm', { locale: it })
+                {format(new Date(tour.dateStart), 'HH:mm', { locale: it })} -{' '}
+                {tour.dateEnd
+                  ? format(new Date(tour.dateEnd), 'HH:mm', { locale: it })
                   : 'Fine'}
               </p>
               <div className="flex items-center justify-between">
                 <span className="text-accent font-bold">
-                  €{tourDate.priceOverride || tourDate.tour.priceAdult}
+                  €{tour.priceAdult}
                 </span>
                 <span
                   className={`badge ${
-                    tourDate.availableSeats === 0
+                    tour.availableSeats === 0
                       ? 'badge-danger'
-                      : tourDate.availableSeats <= 10
+                      : tour.availableSeats <= 10
                       ? 'badge-danger'
                       : 'badge-success'
                   }`}
                 >
-                  {tourDate.availableSeats === 0
+                  {tour.availableSeats === 0
                     ? 'Esaurito'
-                    : `${tourDate.availableSeats} posti`}
+                    : `${tour.availableSeats} posti`}
                 </span>
               </div>
             </div>

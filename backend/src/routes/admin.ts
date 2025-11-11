@@ -79,18 +79,17 @@ router.get('/dashboard/stats', authenticate, requireAdmin, async (req: AuthReque
     ]);
 
     // Calculate total available seats
-    const tourDates = await prisma.tourDate.findMany({
-      where: { status: 'ACTIVE' },
+    const tours = await prisma.tour.findMany({
       include: { bookings: { where: { paymentStatus: { not: 'CANCELLED' } } } },
     });
 
     let totalAvailableSeats = 0;
-    tourDates.forEach((date) => {
-      const bookedSeats = date.bookings.reduce(
+    tours.forEach((tour) => {
+      const bookedSeats = tour.bookings.reduce(
         (sum, b) => sum + b.adults + b.children,
         0
       );
-      totalAvailableSeats += date.capacityMax - bookedSeats;
+      totalAvailableSeats += tour.maxSeats - bookedSeats;
     });
 
     res.json({

@@ -151,12 +151,12 @@ export default function AccountPage() {
                 {bookings.map((booking) => (
                   <div key={booking.id} className="border border-gray-200 rounded-lg p-4">
                     <h3 className="font-title text-xl font-bold mb-2">
-                      {booking.tourDate?.tour?.title || 'Tour'}
+                      {booking.tour?.tour?.title || 'Tour'}
                     </h3>
                     <div className="space-y-1 text-sm text-muted mb-3">
                       <div className="flex items-center">
                         <Calendar className="w-4 h-4 mr-2" />
-                        {booking.tourDate?.dateStart && format(new Date(booking.tourDate.dateStart), 'dd MMMM yyyy HH:mm', {
+                        {booking.tour?.dateStart && format(new Date(booking.tour.dateStart), 'dd MMMM yyyy HH:mm', {
                           locale: it,
                         })}
                       </div>
@@ -174,7 +174,7 @@ export default function AccountPage() {
                       </div>
                     </div>
                     <Link 
-                      to={`/tours/${booking.tourDate?.tour?.slug}`}
+                      to={`/tours/${booking.tour?.tour?.slug}`}
                       className="text-accent hover:underline text-sm"
                     >
                       Vedi dettagli tour →

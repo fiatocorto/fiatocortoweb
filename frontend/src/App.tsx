@@ -44,7 +44,7 @@ function AppContent() {
           <Route path="/register" element={<RegisterPage />} />
           
           <Route
-            path="/booking/:tourDateId"
+            path="/booking/:tourId"
             element={
               <ProtectedRoute>
                 <BookingPage />
