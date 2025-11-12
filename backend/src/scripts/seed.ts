@@ -83,7 +83,7 @@ async function main() {
       dateStart: new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000), // 7 giorni da oggi
       dateEnd: new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000 + 12 * 60 * 60 * 1000),
       maxSeats: 20,
-      difficulty: 'Media-Alta',
+      difficulty: 'Difficile',
       isMultiDay: false,
       coverImage: '/resources/inici.jpg',
       images: JSON.stringify([
@@ -115,7 +115,7 @@ async function main() {
       dateStart: new Date(today.getTime() + 10 * 24 * 60 * 60 * 1000), // 10 giorni da oggi
       dateEnd: new Date(today.getTime() + 10 * 24 * 60 * 60 * 1000 + 7 * 60 * 60 * 1000),
       maxSeats: 25,
-      difficulty: 'Media',
+      difficulty: 'Intermedio',
       isMultiDay: false,
       coverImage: '/resources/ficuzza.jpg',
       images: JSON.stringify([
@@ -147,7 +147,7 @@ async function main() {
       dateStart: new Date(today.getTime() + 14 * 24 * 60 * 60 * 1000), // 14 giorni da oggi
       dateEnd: new Date(today.getTime() + 14 * 24 * 60 * 60 * 1000 + 8 * 60 * 60 * 1000),
       maxSeats: 18,
-      difficulty: 'Media',
+      difficulty: 'Intermedio',
       isMultiDay: false,
       coverImage: '/resources/madonie.jpg',
       images: JSON.stringify([
@@ -179,7 +179,7 @@ async function main() {
       dateStart: new Date(today.getTime() + 21 * 24 * 60 * 60 * 1000), // 21 giorni da oggi
       dateEnd: new Date(today.getTime() + 21 * 24 * 60 * 60 * 1000 + 12 * 60 * 60 * 1000),
       maxSeats: 15,
-      difficulty: 'Alta',
+      difficulty: 'Difficile',
       isMultiDay: false,
       coverImage: '/resources/IMG_3672.JPEG',
       images: JSON.stringify([
@@ -213,7 +213,7 @@ async function main() {
       dateStart: new Date(today.getTime() + 5 * 24 * 60 * 60 * 1000), // 5 giorni da oggi
       dateEnd: new Date(today.getTime() + 5 * 24 * 60 * 60 * 1000 + 8 * 60 * 60 * 1000),
       maxSeats: 22,
-      difficulty: 'Facile-Media',
+      difficulty: 'Intermedio',
       isMultiDay: false,
       coverImage: '/resources/IMG_4870.JPEG',
       images: JSON.stringify([
