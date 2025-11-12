@@ -6,6 +6,37 @@ import { authenticate, requireAdmin, AuthRequest } from '../middleware/auth';
 const router = express.Router();
 const prisma = new PrismaClient();
 
+// Helper function to generate slug from title
+function generateSlug(title: string): string {
+  return title
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // Remove accents
+    .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+    .trim()
+    .replace(/\s+/g, '-') // Replace spaces with hyphens
+    .replace(/-+/g, '-'); // Replace multiple hyphens with single hyphen
+}
+
+// Helper function to ensure unique slug
+async function ensureUniqueSlug(baseSlug: string): Promise<string> {
+  let slug = baseSlug;
+  let counter = 1;
+  
+  while (true) {
+    const existing = await prisma.tour.findUnique({
+      where: { slug },
+    });
+    
+    if (!existing) {
+      return slug;
+    }
+    
+    slug = `${baseSlug}-${counter}`;
+    counter++;
+  }
+}
+
 // Get all tours with filters
 router.get(
   '/',
@@ -108,15 +139,14 @@ router.post(
   requireAdmin,
   [
     body('title').notEmpty().withMessage('Titolo richiesto'),
-    body('slug').notEmpty().withMessage('Slug richiesto'),
     body('description').notEmpty().withMessage('Descrizione richiesta'),
     body('priceAdult').isFloat({ min: 0 }).withMessage('Prezzo adulto non valido'),
-    body('priceChild').isFloat({ min: 0 }).withMessage('Prezzo bambino non valido'),
+    body('priceChild').optional().isFloat({ min: 0 }).withMessage('Prezzo bambino non valido'),
     body('language').notEmpty().withMessage('Lingua richiesta'),
-    body('itinerary').notEmpty().withMessage('Itinerario richiesto'),
+    body('itinerary').optional().notEmpty().withMessage('Itinerario richiesto'),
     body('durationValue').isInt({ min: 1 }).withMessage('Durata non valida'),
     body('durationUnit').notEmpty().withMessage('Unità durata richiesta'),
-    body('coverImage').notEmpty().withMessage('Immagine copertina richiesta'),
+    body('coverImage').optional().isString().withMessage('Immagine copertina non valida'),
   ],
   async (req: AuthRequest, res) => {
     const errors = validationResult(req);
@@ -127,7 +157,6 @@ router.post(
     try {
       const {
         title,
-        slug,
         description,
         priceAdult,
         priceChild,
@@ -140,7 +169,17 @@ router.post(
         includes = [],
         excludes = [],
         terms = '',
+        maxSeats,
+        difficulty,
+        isMultiDay = false,
+        dateStart,
+        dateEnd,
+        gallery,
       } = req.body;
+
+      // Generate slug from title
+      const baseSlug = generateSlug(title);
+      const slug = await ensureUniqueSlug(baseSlug);
 
       const tour = await prisma.tour.create({
         data: {
@@ -148,16 +187,22 @@ router.post(
           slug,
           description,
           priceAdult,
-          priceChild,
+          priceChild: priceChild ?? 0,
           language,
-          itinerary,
+          itinerary: itinerary || '',
           durationValue,
           durationUnit,
-          coverImage,
+          coverImage: coverImage || '',
           images: JSON.stringify(images),
           includes: JSON.stringify(includes),
           excludes: JSON.stringify(excludes),
           terms,
+          maxSeats: maxSeats || 20,
+          difficulty: difficulty || null,
+          isMultiDay: isMultiDay || false,
+          dateStart: dateStart ? new Date(dateStart) : new Date(),
+          dateEnd: dateEnd ? new Date(dateEnd) : new Date(),
+          gallery: gallery || null,
           createdBy: req.userId!,
         },
       });
@@ -185,7 +230,6 @@ router.put(
 
       const allowedFields = [
         'title',
-        'slug',
         'description',
         'priceAdult',
         'priceChild',
@@ -198,12 +242,20 @@ router.put(
         'includes',
         'excludes',
         'terms',
+        'maxSeats',
+        'difficulty',
+        'isMultiDay',
+        'dateStart',
+        'dateEnd',
+        'gallery',
       ];
 
       allowedFields.forEach((field) => {
         if (req.body[field] !== undefined) {
           if (['images', 'includes', 'excludes'].includes(field)) {
             updateData[field] = JSON.stringify(req.body[field]);
+          } else if (['dateStart', 'dateEnd'].includes(field) && req.body[field]) {
+            updateData[field] = new Date(req.body[field]);
           } else {
             updateData[field] = req.body[field];
           }
