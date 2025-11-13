@@ -6,7 +6,6 @@ import { it } from 'date-fns/locale';
 import api from '../utils/api';
 import { useAuth } from '../contexts/AuthContext';
 import ImageGallery from '../components/ImageGallery';
-import QRBadge from '../components/QRBadge';
 import Footer from '../components/Footer';
 import Modal from '../components/Modal';
 

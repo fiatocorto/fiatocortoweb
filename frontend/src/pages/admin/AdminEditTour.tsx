@@ -63,10 +63,9 @@ export default function AdminEditTour() {
   const [submitting, setSubmitting] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
   const [uploadingGallery, setUploadingGallery] = useState(false);
-  const [uploadingImages, setUploadingImages] = useState<{ [key: number]: boolean }>({});
   const [showUnsavedWarning, setShowUnsavedWarning] = useState(false);
 
-  const handleFileUpload = async (file: File, type: 'cover' | 'gallery' | 'image', index?: number): Promise<string> => {
+  const handleFileUpload = async (file: File): Promise<string> => {
     const formData = new FormData();
     formData.append('image', file);
 
@@ -89,7 +88,7 @@ export default function AdminEditTour() {
 
     setUploadingCover(true);
     try {
-      const url = await handleFileUpload(file, 'cover');
+      const url = await handleFileUpload(file);
       setFormData({ ...formData, coverImage: url });
     } catch (error) {
       alert('Errore nel caricamento dell\'immagine di copertina');
@@ -104,7 +103,7 @@ export default function AdminEditTour() {
 
     setUploadingGallery(true);
     try {
-      const uploadPromises = Array.from(files).map(file => handleFileUpload(file, 'gallery'));
+      const uploadPromises = Array.from(files).map(file => handleFileUpload(file));
       const urls = await Promise.all(uploadPromises);
       const galleryString = urls.join(', ');
       setFormData({ ...formData, gallery: galleryString });
@@ -112,21 +111,6 @@ export default function AdminEditTour() {
       alert('Errore nel caricamento delle immagini della galleria');
     } finally {
       setUploadingGallery(false);
-    }
-  };
-
-  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setUploadingImages({ ...uploadingImages, [index]: true });
-    try {
-      const url = await handleFileUpload(file, 'image', index);
-      updateArrayItem('images', index, url);
-    } catch (error) {
-      alert('Errore nel caricamento dell\'immagine');
-    } finally {
-      setUploadingImages({ ...uploadingImages, [index]: false });
     }
   };
 
