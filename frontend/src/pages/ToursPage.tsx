@@ -11,6 +11,8 @@ export default function ToursPage() {
   const [searchParams] = useSearchParams();
   const [tours, setTours] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [hasSearched, setHasSearched] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState<SortOption>('recommended');
   const [filters, setFilters] = useState({
@@ -28,6 +30,7 @@ export default function ToursPage() {
 
   const fetchTours = async () => {
     setLoading(true);
+    setError(null);
     try {
       const params: any = {};
       if (filters.destination) params.destination = filters.destination;
@@ -36,10 +39,32 @@ export default function ToursPage() {
       if (filters.maxPrice) params.maxPrice = filters.maxPrice;
       if (filters.date) params.date = filters.date;
 
+      // Check if we have active filters
+      const hasActiveFilters = !!(filters.destination || filters.language || filters.minPrice || filters.maxPrice || filters.date || filters.difficulty);
+      if (hasActiveFilters) {
+        setHasSearched(true);
+      }
+
       const response = await api.get('/api/tours', { params });
-      setTours(response.data.tours);
-    } catch (error) {
+      console.log('Tours response:', response.data);
+      // Se la risposta è valida, anche se vuota, non è un errore
+      if (response.data && Array.isArray(response.data.tours)) {
+        setTours(response.data.tours);
+      } else {
+        setTours([]);
+      }
+    } catch (error: any) {
       console.error('Failed to fetch tours:', error);
+      // Mostra errore solo se è un vero errore (non 200/201)
+      if (error.response?.status && error.response.status >= 400) {
+        setError(error.response?.data?.error || 'Errore nel caricamento dei tour');
+      } else if (error.code === 'ECONNREFUSED' || error.code === 'ERR_NETWORK') {
+        setError('Impossibile connettersi al server. Verifica che il backend sia in esecuzione.');
+      } else {
+        // Per altri errori, non mostrare messaggio di errore se la risposta è valida
+        setError(null);
+      }
+      setTours([]);
     } finally {
       setLoading(false);
     }
@@ -233,9 +258,41 @@ export default function ToursPage() {
               <div className="text-center py-12">
                 <p className="text-muted">Caricamento...</p>
               </div>
+            ) : error ? (
+              <div className="text-center py-12">
+                <p className="text-red-500 mb-4">{error}</p>
+                <button
+                  onClick={fetchTours}
+                  className="px-4 py-2 bg-accent text-primary rounded-lg hover:bg-accent/90 transition-colors"
+                >
+                  Riprova
+                </button>
+              </div>
             ) : filteredTours.length === 0 ? (
               <div className="text-center py-12">
-                <p className="text-muted">Nessuna escursione trovata</p>
+                <p className="text-muted mb-4">
+                  {(hasSearched || filters.destination || filters.language || filters.minPrice || filters.maxPrice || filters.date || filters.difficulty)
+                    ? 'Nessuna escursione trovata con i filtri selezionati. Prova a modificare i criteri di ricerca.'
+                    : 'Nessun tour disponibile al momento.'}
+                </p>
+                {(hasSearched || filters.destination || filters.language || filters.minPrice || filters.maxPrice || filters.date || filters.difficulty) && (
+                  <button
+                    onClick={() => {
+                      setFilters({
+                        destination: '',
+                        language: '',
+                        minPrice: '',
+                        maxPrice: '',
+                        difficulty: '',
+                        date: '',
+                      });
+                      setHasSearched(false);
+                    }}
+                    className="px-4 py-2 bg-accent text-primary rounded-lg hover:bg-accent/90 transition-colors"
+                  >
+                    Rimuovi filtri
+                  </button>
+                )}
               </div>
             ) : (
               <TourGrid tours={filteredTours} viewMode={viewMode} variant="compact" />

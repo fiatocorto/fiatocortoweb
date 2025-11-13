@@ -139,7 +139,7 @@ export default function HomePage() {
         <div
           className="absolute inset-0 bg-cover bg-no-repeat"
           style={{
-            backgroundImage: 'url(/resources/11514.jpg)',
+            backgroundImage: 'url(/resources/2147665051.jpg)',
             backgroundPosition: 'center center',
           }}
         >

@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Response } from 'express';
 import { body, validationResult } from 'express-validator';
 import bcrypt from 'bcrypt';
 import { PrismaClient } from '@prisma/client';
@@ -17,7 +17,7 @@ router.post(
     body('email').isEmail().withMessage('Email non valida'),
     body('password').isLength({ min: 6 }).withMessage('Password minimo 6 caratteri'),
   ],
-  async (req: AuthRequest, res) => {
+  async (req: AuthRequest, res: Response) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
@@ -57,7 +57,7 @@ router.post(
 );
 
 // Get dashboard stats
-router.get('/dashboard/stats', authenticate, requireAdmin, async (req: AuthRequest, res) => {
+router.get('/dashboard/stats', authenticate, requireAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const [totalTours, totalBookings, todayBookings, totalRevenue] = await Promise.all([
       prisma.tour.count(),

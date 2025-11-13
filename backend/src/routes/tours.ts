@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Response } from 'express';
 import { body, validationResult, query } from 'express-validator';
 import { PrismaClient } from '@prisma/client';
 import { authenticate, requireAdmin, AuthRequest } from '../middleware/auth';
@@ -47,50 +47,132 @@ router.get(
     query('maxPrice').optional().isFloat(),
     query('date').optional().isISO8601(),
   ],
-  async (req, res) => {
+  async (req, res: Response) => {
+    // Check validation errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      console.error('Validation errors:', errors.array());
+      return res.status(400).json({ errors: errors.array() });
+    }
     try {
       const { destination, language, minPrice, maxPrice, date } = req.query;
 
-      const where: any = {};
-
+      // First, handle search separately to get tour IDs
+      let searchTourIds: string[] | null = null;
       if (destination) {
-        where.title = { contains: destination as string, mode: 'insensitive' };
+        const searchTerm = String(destination).trim();
+        if (searchTerm) {
+          try {
+            // Use raw SQL for case-insensitive search
+            const searchPattern = `%${searchTerm.toLowerCase()}%`;
+            const searchResults = await prisma.$queryRaw<Array<{ id: string }>>`
+              SELECT id FROM tours 
+              WHERE LOWER(title) LIKE ${searchPattern}
+                 OR LOWER(description) LIKE ${searchPattern}
+            `;
+            searchTourIds = searchResults.map(r => r.id);
+            console.log(`Search found ${searchTourIds.length} matching tours`);
+          } catch (rawError: any) {
+            console.error('Raw SQL search error, using Prisma fallback:', rawError);
+            // Fallback: get all tours and filter in memory (not ideal but works)
+            const allTours = await prisma.tour.findMany({
+              select: { id: true, title: true, description: true },
+            });
+            const lowerSearchTerm = searchTerm.toLowerCase();
+            searchTourIds = allTours
+              .filter(t => 
+                t.title.toLowerCase().includes(lowerSearchTerm) ||
+                t.description.toLowerCase().includes(lowerSearchTerm)
+              )
+              .map(t => t.id);
+          }
+        }
       }
 
+      // Build where clause step by step
+      const conditions: any[] = [];
+
+      // Add search filter if we have results
+      if (searchTourIds !== null) {
+        if (searchTourIds.length > 0) {
+          conditions.push({
+            id: { in: searchTourIds },
+          });
+        } else {
+          // If no search results, return empty array
+          return res.json({ tours: [] });
+        }
+      }
+
+      // Language filter
       if (language) {
-        where.language = language as string;
+        conditions.push({
+          language: String(language),
+        });
       }
 
+      // Price filters
       if (minPrice || maxPrice) {
-        where.priceAdult = {};
-        if (minPrice) where.priceAdult.gte = parseFloat(minPrice as string);
-        if (maxPrice) where.priceAdult.lte = parseFloat(maxPrice as string);
+        const priceFilter: any = {};
+        if (minPrice) priceFilter.gte = parseFloat(String(minPrice));
+        if (maxPrice) priceFilter.lte = parseFloat(String(maxPrice));
+        conditions.push({
+          priceAdult: priceFilter,
+        });
       }
 
-      const whereDate: any = {};
+      // Date filter
       if (date) {
-        whereDate.dateStart = {
-          gte: new Date(date as string),
-          lte: new Date(new Date(date as string).setHours(23, 59, 59)),
-        };
+        const dateObj = new Date(String(date));
+        const endDate = new Date(dateObj);
+        endDate.setHours(23, 59, 59, 999);
+        conditions.push({
+          dateStart: {
+            gte: dateObj,
+            lte: endDate,
+          },
+        });
       }
 
+      // Combine all conditions with AND
+      const finalWhere = conditions.length > 0 
+        ? { AND: conditions }
+        : {};
+
+      console.log('Search query:', { destination, language, minPrice, maxPrice, date });
+      console.log('Where clause:', JSON.stringify(finalWhere, null, 2));
+
+      // Execute query
       const tours = await prisma.tour.findMany({
-        where: { ...where, ...whereDate },
+        where: finalWhere,
         orderBy: { createdAt: 'desc' },
       });
 
       console.log(`Found ${tours.length} tours`);
+      if (tours.length > 0) {
+        console.log('Tours:', tours.map(t => ({ id: t.id, title: t.title })));
+      } else if (destination || language || minPrice || maxPrice || date) {
+        console.log('No tours found with the specified filters');
+      }
+      
       res.json({ tours });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Get tours error:', error);
-      res.status(500).json({ error: 'Errore nel recupero tour' });
+      console.error('Error details:', {
+        message: error.message,
+        code: error.code,
+        meta: error.meta,
+      });
+      res.status(500).json({ 
+        error: 'Errore nel recupero tour',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      });
     }
   }
 );
 
 // Get single tour by ID or slug
-router.get('/:id', async (req, res) => {
+router.get('/:id', async (req, res: Response) => {
   try {
     const { id } = req.params;
 
