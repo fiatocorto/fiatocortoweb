@@ -7,6 +7,7 @@ import bookingsRoutes from './routes/bookings';
 import qrcodeRoutes from './routes/qrcode';
 import notificationsRoutes from './routes/notifications';
 import adminRoutes from './routes/admin';
+import uploadRoutes from './routes/upload';
 
 const app = express();
 const prisma = new PrismaClient();
@@ -30,6 +31,7 @@ app.use('/api/bookings', bookingsRoutes);
 app.use('/api/qrcode', qrcodeRoutes);
 app.use('/api/notifications', notificationsRoutes);
 app.use('/api/admins', adminRoutes);
+app.use('/api/upload', uploadRoutes);
 
 // Export app for serverless (Vercel)
 export default app;

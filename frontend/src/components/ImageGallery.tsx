@@ -25,7 +25,7 @@ export default function ImageGallery({ images, coverImage }: ImageGalleryProps) 
         <img
           src={allImages[selectedIndex]}
           alt="Tour"
-          className="w-full h-96 object-cover rounded-lg cursor-pointer"
+          className="w-full h-96 object-cover rounded-2xl cursor-pointer"
           onClick={() => setLightboxOpen(true)}
         />
         {allImages.length > 1 && (
@@ -64,7 +64,7 @@ export default function ImageGallery({ images, coverImage }: ImageGalleryProps) 
               key={index}
               src={img}
               alt={`Thumbnail ${index + 1}`}
-              className={`w-full h-20 object-cover rounded cursor-pointer border-2 transition-colors ${
+              className={`w-full h-20 object-cover rounded-2xl cursor-pointer border-2 transition-colors ${
                 index === selectedIndex ? 'border-accent' : 'border-transparent'
               }`}
               onClick={() => setSelectedIndex(index)}

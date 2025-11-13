@@ -63,18 +63,7 @@ router.get(
         const searchTerm = String(destination).trim();
         if (searchTerm) {
           try {
-            // Use raw SQL for case-insensitive search
-            const searchPattern = `%${searchTerm.toLowerCase()}%`;
-            const searchResults = await prisma.$queryRaw<Array<{ id: string }>>`
-              SELECT id FROM tours 
-              WHERE LOWER(title) LIKE ${searchPattern}
-                 OR LOWER(description) LIKE ${searchPattern}
-            `;
-            searchTourIds = searchResults.map(r => r.id);
-            console.log(`Search found ${searchTourIds.length} matching tours`);
-          } catch (rawError: any) {
-            console.error('Raw SQL search error, using Prisma fallback:', rawError);
-            // Fallback: get all tours and filter in memory (not ideal but works)
+            // Use Prisma query with case-insensitive search (more reliable than raw SQL)
             const allTours = await prisma.tour.findMany({
               select: { id: true, title: true, description: true },
             });
@@ -85,6 +74,11 @@ router.get(
                 t.description.toLowerCase().includes(lowerSearchTerm)
               )
               .map(t => t.id);
+            console.log(`Search found ${searchTourIds.length} matching tours for "${searchTerm}"`);
+          } catch (searchError: any) {
+            console.error('Search error:', searchError);
+            // If search fails, return empty results
+            searchTourIds = [];
           }
         }
       }
@@ -142,10 +136,13 @@ router.get(
       console.log('Search query:', { destination, language, minPrice, maxPrice, date });
       console.log('Where clause:', JSON.stringify(finalWhere, null, 2));
 
-      // Execute query
+      // Execute query with safe ordering
       const tours = await prisma.tour.findMany({
         where: finalWhere,
-        orderBy: { createdAt: 'desc' },
+        orderBy: [
+          { createdAt: 'desc' },
+          { id: 'desc' } // Fallback ordering
+        ],
       });
 
       console.log(`Found ${tours.length} tours`);

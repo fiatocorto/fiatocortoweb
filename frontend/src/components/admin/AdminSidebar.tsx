@@ -8,7 +8,6 @@ import {
   QrCode,
   Settings,
 } from 'lucide-react';
-import NotificationBell from './NotificationBell';
 
 export default function AdminSidebar() {
   const location = useLocation();
@@ -24,22 +23,7 @@ export default function AdminSidebar() {
   ];
 
   return (
-    <div className="w-64 bg-primary text-white min-h-screen p-4">
-      <div className="mb-8">
-        <div className="flex items-center space-x-2 mb-2">
-          <img 
-            src="/resources/Bianco.png" 
-            alt="Fiato Corto" 
-            className="h-8 w-auto"
-          />
-        </div>
-        <h2 className="font-title text-2xl font-bold">Admin Panel</h2>
-      </div>
-
-      <div className="mb-6">
-        <NotificationBell />
-      </div>
-
+    <div className="w-[400px] bg-primary text-white min-h-screen pl-4 sm:pl-6 lg:pl-8 pr-32 py-4">
       <nav className="space-y-2">
         {menuItems.map((item) => {
           const Icon = item.icon;

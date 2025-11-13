@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Clock, Users, Calendar, Check, X, Globe, Activity, Headphones, Mail, HelpCircle } from 'lucide-react';
-import { format } from 'date-fns';
+import { Clock, Users, Calendar, Check, X, Globe, Activity, Headphones, Mail, HelpCircle, Share2, Copy } from 'lucide-react';
+import { format, isSameDay } from 'date-fns';
 import { it } from 'date-fns/locale';
 import api from '../utils/api';
 import { useAuth } from '../contexts/AuthContext';
 import ImageGallery from '../components/ImageGallery';
 import QRBadge from '../components/QRBadge';
 import Footer from '../components/Footer';
+import Modal from '../components/Modal';
 
 export default function TourDetailPage() {
   const { slug } = useParams();
@@ -15,6 +16,8 @@ export default function TourDetailPage() {
   const { user } = useAuth();
   const [tour, setTour] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     fetchTour();
@@ -41,6 +44,26 @@ export default function TourDetailPage() {
     }
   };
 
+  const getShareUrl = () => {
+    return window.location.href;
+  };
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(getShareUrl());
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      console.error('Failed to copy:', error);
+    }
+  };
+
+  const handleShareWhatsApp = () => {
+    const url = encodeURIComponent(getShareUrl());
+    const text = encodeURIComponent(`Guarda questo tour: ${tour?.title}`);
+    window.open(`https://wa.me/?text=${text}%20${url}`, '_blank');
+  };
+
   if (loading) {
     return (
       <div style={{ backgroundColor: '#ffffff' }}>
@@ -64,193 +87,274 @@ export default function TourDetailPage() {
   const images = JSON.parse(tour.images || '[]');
   const includes = JSON.parse(tour.includes || '[]');
   const excludes = JSON.parse(tour.excludes || '[]');
+  
+  // Parse gallery images (comma-separated string)
+  const galleryImages = tour.gallery 
+    ? tour.gallery.split(',').map((url: string) => url.trim()).filter((url: string) => url.length > 0)
+    : [];
+  
+  // Combine all images: coverImage, gallery images, and additional images
+  const allImages = [
+    ...(tour.coverImage ? [tour.coverImage] : []),
+    ...galleryImages,
+    ...images
+  ].filter(Boolean);
 
   return (
     <div style={{ backgroundColor: '#ffffff' }}>
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2">
-          <h1 className="font-title text-4xl font-bold mb-4">{tour.title}</h1>
-          <div className="flex items-center space-x-4 mb-6" style={{ color: 'rgb(73, 77, 89)' }}>
-            <span className="flex items-center">
-              <Calendar className="w-4 h-4 mr-1" />
-              {format(new Date(tour.dateStart), 'dd MMMM yyyy', { locale: it })}
-            </span>
-          </div>
-
-          <ImageGallery images={images} coverImage={tour.coverImage} />
-
-          <div className="mt-8">
-            <h3 className="font-bold mb-3">Descrizione</h3>
-            <p className="leading-relaxed" style={{ color: 'rgb(73, 77, 89)' }}>{tour.description}</p>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
-              <div className="rounded-2xl p-4" style={{ backgroundColor: '#f5f7ff' }}>
-                <div className="flex items-center mb-2">
-                  <Clock className="w-5 h-5 mr-2 text-accent" />
-                  <h4 className="font-bold" style={{ fontSize: '20px' }}>Durata</h4>
-                </div>
-                <p className="ml-7" style={{ fontSize: '16px', color: 'rgb(73, 77, 89)' }}>
-                  {tour.durationValue} {tour.durationUnit}
-                </p>
-              </div>
-              
-              <div className="rounded-2xl p-4" style={{ backgroundColor: '#f5f7ff' }}>
-                <div className="flex items-center mb-2">
-                  <Activity className="w-5 h-5 mr-2 text-accent" />
-                  <h4 className="font-bold" style={{ fontSize: '20px' }}>Difficoltà</h4>
-                </div>
-                <p className="ml-7" style={{ fontSize: '16px', color: 'rgb(73, 77, 89)' }}>
-                  {tour.difficulty || 'N/A'}
-                </p>
-              </div>
-              
-              <div className="rounded-2xl p-4" style={{ backgroundColor: '#f5f7ff' }}>
-                <div className="flex items-center mb-2">
-                  <Users className="w-5 h-5 mr-2 text-accent" />
-                  <h4 className="font-bold" style={{ fontSize: '20px' }}>Partecipanti</h4>
-                </div>
-                <p className="ml-7" style={{ fontSize: '16px', color: 'rgb(73, 77, 89)' }}>
-                  {tour.maxSeats} persone
-                </p>
-              </div>
-              
-              <div className="rounded-2xl p-4" style={{ backgroundColor: '#f5f7ff' }}>
-                <div className="flex items-center mb-2">
-                  <Globe className="w-5 h-5 mr-2 text-accent" />
-                  <h4 className="font-bold" style={{ fontSize: '20px' }}>Lingua</h4>
-                </div>
-                <p className="ml-7" style={{ fontSize: '16px', color: 'rgb(73, 77, 89)' }}>
-                  {tour.language}
-                </p>
-              </div>
+        {/* Prima riga: Titolo, Data, Condividi */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+          <div className="flex-1">
+            <h1 className="font-title text-4xl font-bold mb-2">{tour.title}</h1>
+            <div className="flex items-center space-x-4" style={{ color: 'rgb(73, 77, 89)' }}>
+              <span className="flex items-center">
+                <Calendar className="w-4 h-4 mr-1" />
+                {format(new Date(tour.dateStart), 'dd MMMM yyyy', { locale: it })}
+              </span>
+              {tour.dateEnd && !isSameDay(new Date(tour.dateStart), new Date(tour.dateEnd)) && (
+                <>
+                  <span>-</span>
+                  <span className="flex items-center">
+                    {format(new Date(tour.dateEnd), 'dd MMMM yyyy', { locale: it })}
+                  </span>
+                </>
+              )}
             </div>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-            <div className="rounded-2xl p-4" style={{ backgroundColor: '#f5f7ff' }}>
-              <h3 className="font-bold mb-3 flex items-center">
-                Incluso
-              </h3>
-              <ul className="space-y-2">
-                {includes.map((item: string, index: number) => (
-                  <li key={index} className="flex items-center" style={{ fontSize: '16px', color: 'rgb(73, 77, 89)' }}>
-                    <Check className="w-4 h-4 text-green-600 mr-2" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="rounded-2xl p-4" style={{ backgroundColor: '#f5f7ff' }}>
-              <h3 className="font-bold mb-3 flex items-center">
-                Escluso
-              </h3>
-              <ul className="space-y-2">
-                {excludes.map((item: string, index: number) => (
-                  <li key={index} className="flex items-center" style={{ fontSize: '16px', color: 'rgb(73, 77, 89)' }}>
-                    <X className="w-4 h-4 text-red-600 mr-2" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          <div className="mt-8">
-            <h3 className="font-bold mb-3">Itinerario</h3>
-            <p className="leading-relaxed whitespace-pre-line" style={{ color: 'rgb(73, 77, 89)' }}>
-              {tour.itinerary}
-            </p>
-          </div>
-
-          {tour.terms && (
-            <div className="mt-8">
-              <h3 className="font-bold mb-3">Termini e Condizioni</h3>
-              <p className="leading-relaxed whitespace-pre-line" style={{ color: 'rgb(73, 77, 89)' }}>{tour.terms}</p>
-            </div>
-          )}
+          <button
+            onClick={() => setShowShareModal(true)}
+            className="flex items-center justify-center space-x-2 px-4 py-3 border-2 border-gray-200 rounded-xl hover:border-accent hover:bg-accent/5 transition-colors whitespace-nowrap"
+          >
+            <Share2 className="w-5 h-5 text-primary" />
+            <span className="font-semibold text-primary">Condividi</span>
+          </button>
         </div>
 
-        <div className="lg:col-span-1">
-          <div className="space-y-6  top-24 self-start">
-            {/* Prezzo, Data e Posti */}
-            <div className="rounded-2xl p-6" style={{ backgroundColor: '#f5f7ff' }}>
-              <div className="mb-4">
-                <div className="text-4xl font-bold mb-2" style={{ color: '#1e293b' }}>
-                  €{tour.priceAdult} <span className="text-sm font-normal" style={{ color: 'rgb(73, 77, 89)' }}>a persona</span>
+        {/* Seconda riga: Immagine a sinistra, Riquadro prezzi a destra */}
+        <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-8 mb-8">
+          <div>
+            <ImageGallery images={allImages.slice(1)} coverImage={allImages[0] || tour.coverImage} />
+            
+            {/* Contenuto principale */}
+            <div className="mt-8">
+              <h3 className="font-bold mb-3">Descrizione</h3>
+              <p className="leading-relaxed" style={{ color: 'rgb(73, 77, 89)' }}>{tour.description}</p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+                <div className="rounded-2xl p-4" style={{ backgroundColor: '#fffcf7' }}>
+                  <div className="flex items-center mb-2">
+                    <Clock className="w-5 h-5 mr-2 text-accent" />
+                    <h4 className="font-bold" style={{ fontSize: '20px' }}>Durata</h4>
+                  </div>
+                  <p className="ml-7" style={{ fontSize: '16px', color: 'rgb(73, 77, 89)' }}>
+                    {tour.durationValue} {tour.durationUnit}
+                  </p>
+                </div>
+                
+                <div className="rounded-2xl p-4" style={{ backgroundColor: '#fffcf7' }}>
+                  <div className="flex items-center mb-2">
+                    <Activity className="w-5 h-5 mr-2 text-accent" />
+                    <h4 className="font-bold" style={{ fontSize: '20px' }}>Difficoltà</h4>
+                  </div>
+                  <p className="ml-7" style={{ fontSize: '16px', color: 'rgb(73, 77, 89)' }}>
+                    {tour.difficulty || 'N/A'}
+                  </p>
+                </div>
+                
+                <div className="rounded-2xl p-4" style={{ backgroundColor: '#fffcf7' }}>
+                  <div className="flex items-center mb-2">
+                    <Users className="w-5 h-5 mr-2 text-accent" />
+                    <h4 className="font-bold" style={{ fontSize: '20px' }}>Partecipanti</h4>
+                  </div>
+                  <p className="ml-7" style={{ fontSize: '16px', color: 'rgb(73, 77, 89)' }}>
+                    {tour.maxSeats} persone
+                  </p>
+                </div>
+                
+                <div className="rounded-2xl p-4" style={{ backgroundColor: '#fffcf7' }}>
+                  <div className="flex items-center mb-2">
+                    <Globe className="w-5 h-5 mr-2 text-accent" />
+                    <h4 className="font-bold" style={{ fontSize: '20px' }}>Lingua</h4>
+                  </div>
+                  <p className="ml-7" style={{ fontSize: '16px', color: 'rgb(73, 77, 89)' }}>
+                    {tour.language}
+                  </p>
                 </div>
               </div>
 
-              <div className="mb-4">
-                <h4 className="font-bold mb-2" style={{ fontSize: '20px' }}>Data</h4>
-                <p style={{ fontSize: '16px', color: 'rgb(73, 77, 89)' }}>
-                  {format(new Date(tour.dateStart), 'dd MMMM yyyy', { locale: it })}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+                <div className="rounded-2xl p-4" style={{ backgroundColor: '#fffcf7' }}>
+                  <h3 className="font-bold mb-3 flex items-center">
+                    Incluso
+                  </h3>
+                  <ul className="space-y-2">
+                    {includes.map((item: string, index: number) => (
+                      <li key={index} className="flex items-center" style={{ fontSize: '16px', color: 'rgb(73, 77, 89)' }}>
+                        <Check className="w-4 h-4 text-green-600 mr-2" />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="rounded-2xl p-4" style={{ backgroundColor: '#fffcf7' }}>
+                  <h3 className="font-bold mb-3 flex items-center">
+                    Escluso
+                  </h3>
+                  <ul className="space-y-2">
+                    {excludes.map((item: string, index: number) => (
+                      <li key={index} className="flex items-center" style={{ fontSize: '16px', color: 'rgb(73, 77, 89)' }}>
+                        <X className="w-4 h-4 text-red-600 mr-2" />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              <div className="mt-8">
+                <h3 className="font-bold mb-3">Itinerario</h3>
+                <p className="leading-relaxed whitespace-pre-line" style={{ color: 'rgb(73, 77, 89)' }}>
+                  {tour.itinerary}
                 </p>
               </div>
 
-              <div className="mb-6">
-                <h4 className="font-bold mb-2" style={{ fontSize: '20px' }}>Posti rimanenti</h4>
-                <p style={{ fontSize: '16px', color: 'rgb(73, 77, 89)' }}>
-                  {tour.availableSeats === 0
-                    ? 'Esaurito'
-                    : `${tour.availableSeats} posti disponibili`}
+              {tour.terms && (
+                <div className="mt-8">
+                  <h3 className="font-bold mb-3">Termini e Condizioni</h3>
+                  <p className="leading-relaxed whitespace-pre-line" style={{ color: 'rgb(73, 77, 89)' }}>{tour.terms}</p>
+                </div>
+              )}
+            </div>
+          </div>
+          
+          <div>
+            <div className="space-y-6">
+              {/* Prezzo, Data e Posti */}
+              <div className="rounded-2xl p-6" style={{ backgroundColor: '#fffcf7' }}>
+                <div className="mb-4">
+                  <div className="text-4xl font-bold mb-2" style={{ color: '#1e293b' }}>
+                    €{tour.priceAdult} <span className="text-sm font-normal" style={{ color: 'rgb(73, 77, 89)' }}>a persona</span>
+                  </div>
+                </div>
+
+                <div className="mb-4">
+                  <h4 className="font-bold mb-2" style={{ fontSize: '20px' }}>Data</h4>
+                  <p style={{ fontSize: '16px', color: 'rgb(73, 77, 89)' }}>
+                    {format(new Date(tour.dateStart), 'dd MMMM yyyy', { locale: it })}
+                  </p>
+                </div>
+
+                <div className="mb-6">
+                  <h4 className="font-bold mb-2" style={{ fontSize: '20px' }}>Posti rimanenti</h4>
+                  <p style={{ fontSize: '16px', color: 'rgb(73, 77, 89)' }}>
+                    {tour.availableSeats === 0
+                      ? 'Esaurito'
+                      : `${tour.availableSeats} posti disponibili`}
+                  </p>
+                </div>
+
+                {tour.availableSeats > 0 && (
+                  <button onClick={handleBook} className="btn-primary w-full">
+                    Prenota Ora
+                  </button>
+                )}
+
+                {tour.availableSeats === 0 && (
+                  <button disabled className="btn-primary w-full opacity-50 cursor-not-allowed">
+                    Esaurito
+                  </button>
+                )}
+              </div>
+
+              {/* Informazioni di contatto */}
+              <div className="rounded-2xl p-6" style={{ backgroundColor: '#fffcf7' }}>
+                <h3 className="font-bold mb-4" style={{ fontSize: '20px' }}>Informazioni di contatto</h3>
+                
+                <div className="flex items-center mb-3">
+                  <div className="bg-white rounded-lg p-2 mr-3">
+                    <Headphones className="w-5 h-5 text-accent" />
+                  </div>
+                  <p style={{ fontSize: '16px', color: 'rgb(73, 77, 89)' }}>+39 123 456 7890</p>
+                </div>
+                
+                <div className="flex items-center">
+                  <div className="bg-white rounded-lg p-2 mr-3">
+                    <Mail className="w-5 h-5 text-accent" />
+                  </div>
+                  <p style={{ fontSize: '16px', color: 'rgb(73, 77, 89)' }}>info@fiatocortoadventures.it</p>
+                </div>
+              </div>
+
+              {/* Hai domande? */}
+              <div className="rounded-2xl p-6" style={{ backgroundColor: '#fffcf7' }}>
+                <div className="flex justify-center mb-4">
+                  <div className="rounded-full flex items-center justify-center" style={{ width: '64px', height: '64px', backgroundColor: '#e0e7ff' }}>
+                    <HelpCircle className="w-8 h-8 text-accent" />
+                  </div>
+                </div>
+                <h3 className="font-bold mb-3 text-center" style={{ fontSize: '20px' }}>Hai domande?</h3>
+                <p className="mb-4" style={{ fontSize: '16px', color: 'rgb(73, 77, 89)' }}>
+                  Sei in cerca di informazioni? Inviaci una richiesta dalla pagina contatti.
                 </p>
-              </div>
-
-              {tour.availableSeats > 0 && (
-                <button onClick={handleBook} className="btn-primary w-full">
-                  Prenota Ora
+                <button 
+                  onClick={() => navigate('/contacts')} 
+                  className="btn-primary w-full"
+                >
+                  Contattaci
                 </button>
-              )}
-
-              {tour.availableSeats === 0 && (
-                <button disabled className="btn-primary w-full opacity-50 cursor-not-allowed">
-                  Esaurito
-                </button>
-              )}
-            </div>
-
-            {/* Informazioni di contatto */}
-            <div className="rounded-2xl p-6" style={{ backgroundColor: '#f5f7ff' }}>
-              <h3 className="font-bold mb-4" style={{ fontSize: '20px' }}>Informazioni di contatto</h3>
-              
-              <div className="flex items-center mb-3">
-                <div className="bg-white rounded-lg p-2 mr-3">
-                  <Headphones className="w-5 h-5 text-accent" />
-                </div>
-                <p style={{ fontSize: '16px', color: 'rgb(73, 77, 89)' }}>+39 123 456 7890</p>
-              </div>
-              
-              <div className="flex items-center">
-                <div className="bg-white rounded-lg p-2 mr-3">
-                  <Mail className="w-5 h-5 text-accent" />
-                </div>
-                <p style={{ fontSize: '16px', color: 'rgb(73, 77, 89)' }}>info@fiatocortoadventures.it</p>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
 
-            {/* Hai domande? */}
-            <div className="rounded-2xl p-6" style={{ backgroundColor: '#f5f7ff' }}>
-              <div className="flex justify-center mb-4">
-                <div className="rounded-full flex items-center justify-center" style={{ width: '64px', height: '64px', backgroundColor: '#e0e7ff' }}>
-                  <HelpCircle className="w-8 h-8 text-accent" />
-                </div>
-              </div>
-              <h3 className="font-bold mb-3 text-center" style={{ fontSize: '20px' }}>Hai domande?</h3>
-              <p className="mb-4" style={{ fontSize: '16px', color: 'rgb(73, 77, 89)' }}>
-                Sei in cerca di informazioni? Inviaci una richiesta dalla pagina contatti.
-              </p>
-              <button 
-                onClick={() => navigate('/contacts')} 
-                className="btn-primary w-full"
+      {/* Modal Condividi */}
+      <Modal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        title="Condividi questo tour"
+        size="sm"
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-semibold text-primary mb-2">
+              Link del tour
+            </label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                readOnly
+                value={getShareUrl()}
+                className="flex-1 px-4 py-2 border border-gray-200 rounded-xl bg-gray-50 text-sm"
+              />
+              <button
+                onClick={handleCopyLink}
+                className="px-4 py-2 bg-accent text-white rounded-xl hover:bg-accent/90 transition-colors flex items-center space-x-2"
               >
-                Contattaci
+                <Copy className="w-4 h-4" />
+                <span>{copied ? 'Copiato!' : 'Copia'}</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="pt-4 border-t border-gray-200">
+            <p className="text-sm font-semibold text-primary mb-3">Condividi su:</p>
+            <div className="space-y-2">
+              <button
+                onClick={handleShareWhatsApp}
+                className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-colors"
+              >
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+                </svg>
+                <span className="font-semibold">WhatsApp</span>
               </button>
             </div>
           </div>
         </div>
-        </div>
-      </div>
+      </Modal>
+
       <Footer />
     </div>
   );

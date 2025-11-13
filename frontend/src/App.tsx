@@ -16,6 +16,7 @@ import AboutPage from './pages/AboutPage';
 import ContactsPage from './pages/ContactsPage';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminTours from './pages/admin/AdminTours';
+import AdminEditTour from './pages/admin/AdminEditTour';
 import AdminBookings from './pages/admin/AdminBookings';
 import AdminCalendar from './pages/admin/AdminCalendar';
 import AdminQRScanner from './pages/admin/AdminQRScanner';
@@ -82,6 +83,14 @@ function AppContent() {
             element={
               <ProtectedRoute requireAdmin>
                 <AdminTours />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/tours/:id/edit"
+            element={
+              <ProtectedRoute requireAdmin>
+                <AdminEditTour />
               </ProtectedRoute>
             }
           />

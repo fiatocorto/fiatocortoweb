@@ -57,26 +57,52 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const login = async (email: string, password: string) => {
-    const response = await axios.post(`${API_URL}/api/auth/login`, {
-      email,
-      password,
-    });
-    const { user, token } = response.data;
-    setUser(user);
-    setToken(token);
-    localStorage.setItem('token', token);
+    try {
+      const response = await axios.post(`${API_URL}/api/auth/login`, {
+        email,
+        password,
+      });
+      const { user, token } = response.data;
+      setUser(user);
+      setToken(token);
+      localStorage.setItem('token', token);
+    } catch (error: any) {
+      console.error('Login error:', error);
+      // Propaga l'errore con un messaggio più chiaro
+      if (error.response) {
+        // Errore dal server
+        throw new Error(error.response.data?.error || 'Errore nel login');
+      } else if (error.request) {
+        // Richiesta fatta ma nessuna risposta
+        throw new Error('Impossibile connettersi al server. Verifica che il backend sia in esecuzione.');
+      } else {
+        // Errore nella configurazione della richiesta
+        throw new Error('Errore nella configurazione della richiesta');
+      }
+    }
   };
 
   const register = async (name: string, email: string, password: string) => {
-    const response = await axios.post(`${API_URL}/api/auth/register`, {
-      name,
-      email,
-      password,
-    });
-    const { user, token } = response.data;
-    setUser(user);
-    setToken(token);
-    localStorage.setItem('token', token);
+    try {
+      const response = await axios.post(`${API_URL}/api/auth/register`, {
+        name,
+        email,
+        password,
+      });
+      const { user, token } = response.data;
+      setUser(user);
+      setToken(token);
+      localStorage.setItem('token', token);
+    } catch (error: any) {
+      console.error('Register error:', error);
+      if (error.response) {
+        throw new Error(error.response.data?.error || 'Errore nella registrazione');
+      } else if (error.request) {
+        throw new Error('Impossibile connettersi al server. Verifica che il backend sia in esecuzione.');
+      } else {
+        throw new Error('Errore nella configurazione della richiesta');
+      }
+    }
   };
 
   const logout = () => {

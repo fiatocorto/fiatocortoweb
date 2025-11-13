@@ -41,7 +41,7 @@ export default function AdminDashboard() {
         <h1 className="font-title text-4xl font-bold mb-8">Dashboard</h1>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="bg-white rounded-2xl shadow-md p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted mb-1">Totale Tour</p>
@@ -51,7 +51,7 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="bg-white rounded-2xl shadow-md p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted mb-1">Prenotazioni Oggi</p>
@@ -61,7 +61,7 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="bg-white rounded-2xl shadow-md p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted mb-1">Totale Prenotazioni</p>
@@ -71,7 +71,7 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="bg-white rounded-2xl shadow-md p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted mb-1">Incassi Totali</p>
@@ -87,7 +87,7 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Link
             to="/admin/tours"
-            className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow"
+            className="bg-white rounded-2xl shadow-md p-6 hover:shadow-lg transition-shadow"
           >
             <h2 className="font-title text-2xl font-bold mb-2">Gestisci Tour</h2>
             <p className="text-muted mb-4">Crea e modifica le escursioni</p>
@@ -98,7 +98,7 @@ export default function AdminDashboard() {
 
           <Link
             to="/admin/bookings"
-            className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow"
+            className="bg-white rounded-2xl shadow-md p-6 hover:shadow-lg transition-shadow"
           >
             <h2 className="font-title text-2xl font-bold mb-2">Gestisci Prenotazioni</h2>
             <p className="text-muted mb-4">Visualizza e gestisci tutte le prenotazioni</p>

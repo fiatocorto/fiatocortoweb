@@ -46,12 +46,12 @@ export default function NavBar() {
       <div className="w-full">
         <div className="flex items-stretch">
           {/* Logo Section */}
-          <div className="relative flex items-center pl-4 sm:pl-6 lg:pl-8 pr-32 bg-[#0f172a] overflow-hidden">
+          <div className="relative flex items-center pl-4 sm:pl-6 lg:pl-8 pr-32 bg-[#0f172a] overflow-hidden w-[400px]">
             <Link to="/" className="flex items-center relative z-10">
               <img 
                 src="/resources/Bianco.png" 
                 alt="Fiato Corto" 
-                className="h-12 w-auto"
+                className="h-12 w-auto object-contain"
               />
           </Link>
 
@@ -80,7 +80,17 @@ export default function NavBar() {
               {/* Auth section */}
               <div className="flex items-center space-x-2">
                 {user ? (
-                  <AvatarMenu user={user} onLogout={handleLogout} />
+                  <>
+                    {user.role === 'ADMIN' && (
+                      <Link
+                        to="/admin"
+                        className={`px-4 py-2 rounded-full hover:text-accent transition-colors text-sm ${isActive('/admin') ? 'text-accent' : ''}`}
+                      >
+                        Gestisci
+                      </Link>
+                    )}
+                    <AvatarMenu user={user} onLogout={handleLogout} />
+                  </>
                 ) : (
                   <div className="flex items-center space-x-2">
                     <Link

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, X } from 'lucide-react';
+import { Plus, Edit, Trash2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import api from '../../utils/api';
 import AdminSidebar from '../../components/admin/AdminSidebar';
 import Modal from '../../components/Modal';
@@ -8,7 +9,6 @@ export default function AdminTours() {
   const [tours, setTours] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [editingTour, setEditingTour] = useState<any>(null);
 
   useEffect(() => {
     fetchTours();
@@ -75,7 +75,10 @@ export default function AdminTours() {
                 {tours.map((tour) => (
                   <tr key={tour.id}>
                     <td className="px-6 py-4">
-                      <div className="flex items-center">
+                      <Link
+                        to={`/admin/tours/${tour.id}/edit`}
+                        className="flex items-center hover:opacity-80 transition-opacity cursor-pointer"
+                      >
                         <img
                           src={tour.coverImage}
                           alt={tour.title}
@@ -85,7 +88,7 @@ export default function AdminTours() {
                           <p className="font-medium">{tour.title}</p>
                           <p className="text-sm text-muted">{tour.slug}</p>
                         </div>
-                      </div>
+                      </Link>
                     </td>
                     <td className="px-6 py-4">
                       €{tour.priceAdult} / €{tour.priceChild}
@@ -93,12 +96,12 @@ export default function AdminTours() {
                     <td className="px-6 py-4">{tour.language}</td>
                     <td className="px-6 py-4">
                       <div className="flex space-x-2">
-                        <button
-                          onClick={() => setEditingTour(tour)}
+                        <Link
+                          to={`/admin/tours/${tour.id}/edit`}
                           className="text-accent hover:text-accent/80"
                         >
                           <Edit className="w-5 h-5" />
-                        </button>
+                        </Link>
                         <button
                           onClick={() => handleDelete(tour.id)}
                           className="text-red-600 hover:text-red-800"
@@ -115,19 +118,17 @@ export default function AdminTours() {
         )}
 
         <Modal
-          isOpen={showCreateModal || editingTour !== null}
+          isOpen={showCreateModal}
           onClose={() => {
             setShowCreateModal(false);
-            setEditingTour(null);
           }}
-          title={editingTour ? 'Modifica Tour' : 'Crea Nuovo Tour'}
+          title="Crea Nuovo Tour"
           size="xl"
         >
           <TourForm
-            tour={editingTour}
+            tour={null}
             onSuccess={() => {
               setShowCreateModal(false);
-              setEditingTour(null);
               fetchTours();
             }}
           />
@@ -296,7 +297,7 @@ function TourForm({ tour, onSuccess }: { tour: any; onSuccess: () => void }) {
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-2">Immagine Copertina</label>
+        <label className="block text-sm font-medium mb-2">Copertina</label>
         <input
           type="url"
           className="w-full px-4 py-2 border border-muted rounded-lg"

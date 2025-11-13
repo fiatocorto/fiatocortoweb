@@ -21,7 +21,7 @@ export default function LoginPage() {
       await login(formData.email, formData.password);
       navigate('/');
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Errore nel login');
+      setError(err.message || err.response?.data?.error || 'Errore nel login');
     } finally {
       setLoading(false);
     }
