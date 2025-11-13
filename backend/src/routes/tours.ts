@@ -225,7 +225,8 @@ router.post(
     body('itinerary').optional().notEmpty().withMessage('Itinerario richiesto'),
     body('durationValue').isInt({ min: 1 }).withMessage('Durata non valida'),
     body('durationUnit').notEmpty().withMessage('Unità durata richiesta'),
-    body('coverImage').optional().isString().withMessage('Immagine copertina non valida'),
+    body('coverImage').notEmpty().withMessage('Immagine copertina richiesta'),
+    body('difficulty').notEmpty().withMessage('Difficoltà richiesta'),
   ],
   async (req: AuthRequest, res) => {
     const errors = validationResult(req);
@@ -277,7 +278,7 @@ router.post(
           excludes: JSON.stringify(excludes),
           terms,
           maxSeats: maxSeats || 20,
-          difficulty: difficulty || null,
+          difficulty,
           isMultiDay: isMultiDay || false,
           dateStart: dateStart ? new Date(dateStart) : new Date(),
           dateEnd: dateEnd ? new Date(dateEnd) : new Date(),
@@ -340,6 +341,16 @@ router.put(
           }
         }
       });
+
+      // Ensure coverImage is not empty if provided
+      if (updateData.coverImage !== undefined && (!updateData.coverImage || (typeof updateData.coverImage === 'string' && updateData.coverImage.trim() === ''))) {
+        return res.status(400).json({ error: 'Immagine copertina richiesta' });
+      }
+
+      // Ensure difficulty is not empty if provided
+      if (updateData.difficulty !== undefined && (!updateData.difficulty || (typeof updateData.difficulty === 'string' && updateData.difficulty.trim() === ''))) {
+        return res.status(400).json({ error: 'Difficoltà richiesta' });
+      }
 
       const tour = await prisma.tour.update({
         where: { id },

@@ -314,7 +314,7 @@ export default function AdminEditTour() {
             <div className="space-y-6">
               <div>
                 <label className="block text-sm font-semibold text-primary mb-2">
-                  Titolo *
+                  Titolo <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -327,7 +327,7 @@ export default function AdminEditTour() {
 
               <div>
                 <label className="block text-sm font-semibold text-primary mb-2">
-                  Descrizione *
+                  Descrizione <span className="text-red-500">*</span>
                 </label>
                 <textarea
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-accent focus:border-transparent transition-all outline-none resize-none"
@@ -352,7 +352,7 @@ export default function AdminEditTour() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
                 <label className="block text-sm font-semibold text-primary mb-2">
-                  Prezzo Adulto *
+                  Prezzo Adulto <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted">€</span>
@@ -387,7 +387,7 @@ export default function AdminEditTour() {
               </div>
               <div>
                 <label className="block text-sm font-semibold text-primary mb-2">
-                  Lingua *
+                  Lingua <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <Globe className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
@@ -415,7 +415,7 @@ export default function AdminEditTour() {
             <div className="space-y-6">
               <div>
                 <label className="block text-sm font-semibold text-primary mb-2">
-                  Copertina
+                  Copertina <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <input
@@ -541,7 +541,7 @@ export default function AdminEditTour() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-semibold text-primary mb-2">
-                    Valore (Numero di giorni o ore) *
+                    Valore (Numero di giorni o ore) <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="number"
@@ -555,7 +555,7 @@ export default function AdminEditTour() {
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-primary mb-2">
-                    Unità (ore o giorni) *
+                    Unità (ore o giorni) <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -571,7 +571,7 @@ export default function AdminEditTour() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-semibold text-primary mb-2">
-                    Data Inizio *
+                    Data Inizio <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
                     <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted pointer-events-none z-10" />
@@ -603,7 +603,7 @@ export default function AdminEditTour() {
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-primary mb-2">
-                    Data Fine *
+                    Data Fine <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
                     <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted pointer-events-none z-10" />
@@ -640,7 +640,7 @@ export default function AdminEditTour() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-semibold text-primary mb-2">
-                  Posti Massimi *
+                  Posti Massimi <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <Users className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
@@ -656,7 +656,7 @@ export default function AdminEditTour() {
               </div>
               <div>
                 <label className="block text-sm font-semibold text-primary mb-2">
-                  Difficoltà
+                  Difficoltà <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <Mountain className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted z-10" />
