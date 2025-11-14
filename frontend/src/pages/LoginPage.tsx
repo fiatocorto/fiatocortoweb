@@ -95,7 +95,7 @@ export default function LoginPage() {
             type="button"
             onClick={handleGoogleClick}
             disabled={loading || googleLoading}
-            className="w-full flex items-center justify-center gap-3 px-4 py-2 border border-muted rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mb-4"
+            className="w-full flex items-center justify-center gap-3 px-4 py-2 border border-muted rounded-full hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mb-4"
           >
             {googleLoading ? (
               <span>Caricamento...</span>
