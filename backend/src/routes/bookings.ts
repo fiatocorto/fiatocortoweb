@@ -95,7 +95,7 @@ router.post(
     body('tourId').isUUID().withMessage('Tour ID non valido'),
     body('adults').isInt({ min: 1 }).withMessage('Numero adulti non valido'),
     body('children').optional().isInt({ min: 0 }),
-    body('paymentMethod').isIn(['ONSITE', 'CARD_STUB']).withMessage('Metodo pagamento non valido'),
+    body('paymentMethod').isIn(['ONSITE', 'CARD_STUB', 'FREE']).withMessage('Metodo pagamento non valido'),
     body('notes').optional().isString(),
   ],
   async (req: AuthRequest, res) => {
@@ -154,7 +154,7 @@ router.post(
           children,
           totalPrice,
           paymentMethod,
-          paymentStatus: paymentMethod === 'CARD_STUB' ? 'PENDING' : 'PENDING',
+          paymentStatus: paymentMethod === 'FREE' ? 'PAID' : paymentMethod === 'CARD_STUB' ? 'PENDING' : 'PENDING',
           qrCode: qrToken,
           notes,
         },

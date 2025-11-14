@@ -8,6 +8,7 @@ import { useAuth } from '../contexts/AuthContext';
 import ImageGallery from '../components/ImageGallery';
 import Footer from '../components/Footer';
 import Modal from '../components/Modal';
+import QRBadge from '../components/QRBadge';
 
 export default function TourDetailPage() {
   const { slug } = useParams();
@@ -17,6 +18,15 @@ export default function TourDetailPage() {
   const [loading, setLoading] = useState(true);
   const [showShareModal, setShowShareModal] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [showBookingModal, setShowBookingModal] = useState(false);
+  const [booking, setBooking] = useState({
+    adults: 1,
+    children: 0,
+    paymentMethod: 'ONSITE' as 'ONSITE' | 'CARD_STUB' | 'FREE',
+    notes: '',
+  });
+  const [submitting, setSubmitting] = useState(false);
+  const [bookingResult, setBookingResult] = useState<any>(null);
 
   useEffect(() => {
     fetchTour();
@@ -39,7 +49,40 @@ export default function TourDetailPage() {
       return;
     }
     if (tour) {
-      navigate(`/booking/${tour.id}`);
+      // Reset booking state
+      setBooking({
+        adults: 1,
+        children: 0,
+        paymentMethod: tour.priceAdult === 0 && tour.priceChild === 0 ? 'FREE' : 'ONSITE',
+        notes: '',
+      });
+      setBookingResult(null);
+      setShowBookingModal(true);
+    }
+  };
+
+  const calculateTotal = () => {
+    if (!tour) return 0;
+    const priceAdult = tour.priceAdult || 0;
+    const priceChild = tour.priceChild || 0;
+    return booking.adults * priceAdult + booking.children * priceChild;
+  };
+
+  const handleBookingSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!tour) return;
+
+    setSubmitting(true);
+    try {
+      const response = await api.post('/api/bookings', {
+        tourId: tour.id,
+        ...booking,
+      });
+      setBookingResult(response.data);
+    } catch (error: any) {
+      alert(error.response?.data?.error || 'Errore nella prenotazione');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -390,6 +433,223 @@ export default function TourDetailPage() {
             </div>
           </div>
         </div>
+      </Modal>
+
+      {/* Modal Prenotazione */}
+      <Modal
+        isOpen={showBookingModal}
+        onClose={() => {
+          setShowBookingModal(false);
+          setBookingResult(null);
+        }}
+        size="lg"
+        title={bookingResult ? undefined : "Conferma Prenotazione"}
+      >
+        {bookingResult ? (
+          <div className="text-center">
+            <div className="text-6xl mb-4">✅</div>
+            <h2 className="font-title text-3xl font-bold mb-4">
+              Prenotazione Confermata!
+            </h2>
+            <p className="text-muted mb-6">
+              La tua prenotazione è stata creata con successo. Riceverai una conferma via email.
+            </p>
+            <div className="flex justify-center mb-6">
+              <QRBadge qrCode={bookingResult.qrToken} />
+            </div>
+            <div className="space-y-2 mb-6">
+              <p className="text-sm text-muted">
+                <strong>Codice prenotazione:</strong> {bookingResult.booking.id}
+              </p>
+              <p className="text-sm text-muted">
+                <strong>Totale:</strong> {calculateTotal() === 0 ? 'Free' : `€${bookingResult.booking.totalPrice.toFixed(2)}`}
+              </p>
+            </div>
+            <div className="flex space-x-4 justify-center">
+              <button 
+                onClick={() => {
+                  setShowBookingModal(false);
+                  navigate('/bookings');
+                }} 
+                className="btn-primary"
+              >
+                Le mie prenotazioni
+              </button>
+              <button 
+                onClick={() => {
+                  setShowBookingModal(false);
+                  setBookingResult(null);
+                }} 
+                className="btn-secondary"
+              >
+                Chiudi
+              </button>
+            </div>
+          </div>
+        ) : (
+          <form onSubmit={handleBookingSubmit}>
+            {/* Nome del tour e date */}
+            <div className="mb-6">
+              <h2 className="font-title text-2xl font-bold mb-2">{tour?.title}</h2>
+              <div className="flex items-center text-muted">
+                <Calendar className="w-4 h-4 mr-2" />
+                <span>
+                  {tour && format(new Date(tour.dateStart), 'dd MMMM yyyy', { locale: it })}
+                  {tour && tour.dateEnd && !isSameDay(new Date(tour.dateStart), new Date(tour.dateEnd)) && (
+                    <> - {format(new Date(tour.dateEnd), 'dd MMMM yyyy', { locale: it })}</>
+                  )}
+                </span>
+              </div>
+            </div>
+
+            {/* Dettagli prenotazione */}
+            <div className="mb-6">
+              <h3 className="font-semibold text-lg mb-4">Dettagli prenotazione</h3>
+              
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Numero adulti
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    max={tour?.availableSeats || 0}
+                    className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-accent focus:border-transparent transition-all outline-none"
+                    value={booking.adults}
+                    onChange={(e) =>
+                      setBooking({ ...booking, adults: parseInt(e.target.value) || 1 })
+                    }
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Numero bambini
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    max={(tour?.availableSeats || 0) - booking.adults}
+                    className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-accent focus:border-transparent transition-all outline-none"
+                    value={booking.children}
+                    onChange={(e) =>
+                      setBooking({ ...booking, children: parseInt(e.target.value) || 0 })
+                    }
+                  />
+                </div>
+              </div>
+
+              {/* Metodo di pagamento */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium mb-2">
+                  Il metodo di pagamento
+                </label>
+                {tour && (tour.priceAdult === 0 && tour.priceChild === 0) ? (
+                  <div className="p-4 border border-gray-200 rounded-xl bg-gray-50">
+                    <div className="flex items-center">
+                      <input
+                        type="radio"
+                        checked={true}
+                        readOnly
+                        className="mr-3"
+                      />
+                      <div>
+                        <div className="font-medium">Free</div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <label className="flex items-center p-4 border border-gray-200 rounded-xl cursor-pointer hover:bg-accent/5 transition-colors">
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        value="ONSITE"
+                        checked={booking.paymentMethod === 'ONSITE'}
+                        onChange={(e) =>
+                          setBooking({ ...booking, paymentMethod: e.target.value as any })
+                        }
+                        className="mr-3"
+                      />
+                      <div>
+                        <div className="font-medium">Paga in loco</div>
+                      </div>
+                    </label>
+                    <label className="flex items-center p-4 border border-gray-200 rounded-xl cursor-pointer hover:bg-accent/5 transition-colors opacity-50">
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        value="CARD_STUB"
+                        disabled
+                        className="mr-3"
+                      />
+                      <div>
+                        <div className="font-medium">Paga online (non disponibile)</div>
+                      </div>
+                    </label>
+                  </div>
+                )}
+              </div>
+
+              {/* Note */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium mb-2">
+                  Note (opzionale)
+                </label>
+                <textarea
+                  className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-accent focus:border-transparent transition-all outline-none resize-none"
+                  rows={3}
+                  value={booking.notes}
+                  onChange={(e) => setBooking({ ...booking, notes: e.target.value })}
+                  placeholder="Allergie, richieste speciali, ecc."
+                />
+              </div>
+            </div>
+
+            {/* Riepilogo */}
+            <div className="mb-6 p-4 bg-gray-50 rounded-xl">
+              <h3 className="font-semibold text-lg mb-4">Riepilogo</h3>
+              <div className="space-y-2 mb-4">
+                <div className="flex justify-between">
+                  <span className="text-muted">Adulti x{booking.adults}</span>
+                  <span>
+                    {booking.adults * (tour?.priceAdult || 0) === 0 
+                      ? 'Free' 
+                      : `€${(booking.adults * (tour?.priceAdult || 0)).toFixed(2)}`}
+                  </span>
+                </div>
+                {booking.children > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-muted">Bambini x{booking.children}</span>
+                    <span>
+                      {booking.children * (tour?.priceChild || 0) === 0 
+                        ? 'Free' 
+                        : `€${(booking.children * (tour?.priceChild || 0)).toFixed(2)}`}
+                    </span>
+                  </div>
+                )}
+              </div>
+              <div className="border-t pt-4">
+                <div className="flex justify-between font-bold text-lg">
+                  <span>Totale</span>
+                  <span className="text-accent">
+                    {calculateTotal() === 0 ? 'Free' : `€${calculateTotal().toFixed(2)}`}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Pulsante conferma */}
+            <button
+              type="submit"
+              disabled={submitting || (booking.adults + booking.children > (tour?.availableSeats || 0))}
+              className="w-full px-6 py-3 bg-accent rounded-full hover:bg-accent/90 transition-colors font-semibold text-primary disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {submitting ? 'Conferma in corso...' : 'Conferma prenotazione'}
+            </button>
+          </form>
+        )}
       </Modal>
 
       <Footer />
