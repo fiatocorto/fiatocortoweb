@@ -259,14 +259,18 @@ export default function BookingPage() {
               <div className="flex justify-between">
                 <span className="text-muted">Adulti x{booking.adults}</span>
                 <span>
-                  €{(booking.adults * tour.priceAdult).toFixed(2)}
+                  {booking.adults * tour.priceAdult === 0 
+                    ? 'Free' 
+                    : `€${(booking.adults * tour.priceAdult).toFixed(2)}`}
                 </span>
               </div>
               {booking.children > 0 && (
                 <div className="flex justify-between">
                   <span className="text-muted">Bambini x{booking.children}</span>
                   <span>
-                    €{(booking.children * tour.priceChild).toFixed(2)}
+                    {booking.children * tour.priceChild === 0 
+                      ? 'Free' 
+                      : `€${(booking.children * tour.priceChild).toFixed(2)}`}
                   </span>
                 </div>
               )}

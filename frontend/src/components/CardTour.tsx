@@ -23,6 +23,15 @@ interface CardTourProps {
   viewMode?: 'grid' | 'list';
 }
 
+// Helper function to format price
+const formatPrice = (price: number | string | null | undefined): string => {
+  const numPrice = typeof price === 'string' ? parseFloat(price) : price;
+  if (numPrice === 0 || numPrice === null || numPrice === undefined || isNaN(numPrice)) {
+    return 'Free';
+  }
+  return `€${numPrice}`;
+};
+
 export default function CardTour({ tour, variant = 'default', viewMode = 'grid' }: CardTourProps) {
   const availableSeats = tour.availableSeats ?? 0;
 
@@ -35,7 +44,7 @@ export default function CardTour({ tour, variant = 'default', viewMode = 'grid' 
   const isCompact = variant === 'compact';
   const isListView = viewMode === 'list';
 
-  const formatDate = (dateString: string | null) => {
+  const formatDate = (dateString: string | null | undefined) => {
     if (!dateString) return 'Data da definire';
     
     const date = new Date(dateString);
@@ -90,9 +99,11 @@ export default function CardTour({ tour, variant = 'default', viewMode = 'grid' 
                 <div className="flex items-center justify-between pt-4 border-t border-gray-100 -mx-5 px-5">
                   <div>
                     <span className="text-xl font-bold text-accent">
-                      €{tour.priceAdult}
+                      {formatPrice(tour.priceAdult)}
                     </span>
-                    <span className="text-xs text-muted ml-1">a persona</span>
+                    {tour.priceAdult !== 0 && tour.priceAdult !== null && tour.priceAdult !== undefined && (
+                      <span className="text-xs text-muted ml-1">a persona</span>
+                    )}
                   </div>
                   <span className="text-sm font-semibold text-accent hover:text-accent/80 transition-colors">
                     Dettagli →
@@ -142,9 +153,11 @@ export default function CardTour({ tour, variant = 'default', viewMode = 'grid' 
             <div className="flex items-center justify-between pt-4 border-t border-gray-100">
               <div>
                 <span className="text-xl font-bold text-accent">
-                  €{tour.priceAdult}
+                  {formatPrice(tour.priceAdult)}
                 </span>
-                <span className="text-xs text-muted ml-1">a persona</span>
+                {tour.priceAdult !== 0 && tour.priceAdult !== null && tour.priceAdult !== undefined && (
+                  <span className="text-xs text-muted ml-1">a persona</span>
+                )}
               </div>
               <span className="text-sm font-semibold text-accent hover:text-accent/80 transition-colors">
                 Dettagli →
@@ -196,9 +209,11 @@ export default function CardTour({ tour, variant = 'default', viewMode = 'grid' 
             </div>
             <div className="flex items-center justify-between">
               <span className="text-2xl font-bold text-accent">
-                €{tour.priceAdult}
+                {formatPrice(tour.priceAdult)}
               </span>
-              <span className="text-sm text-muted">a persona</span>
+              {tour.priceAdult !== 0 && tour.priceAdult !== null && tour.priceAdult !== undefined && (
+                <span className="text-sm text-muted">a persona</span>
+              )}
             </div>
           </div>
         </Link>

@@ -93,7 +93,7 @@ export default function AdminTours() {
                       </Link>
                     </td>
                     <td className="px-6 py-4">
-                      €{tour.priceAdult} / €{tour.priceChild}
+                      {tour.priceAdult === 0 ? 'Free' : `€${tour.priceAdult}`} / {tour.priceChild === 0 ? 'Free' : `€${tour.priceChild}`}
                     </td>
                     <td className="px-6 py-4">{tour.language}</td>
                     <td className="px-6 py-4">

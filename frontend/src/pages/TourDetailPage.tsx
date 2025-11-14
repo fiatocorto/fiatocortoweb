@@ -253,7 +253,11 @@ export default function TourDetailPage() {
               <div className="rounded-2xl p-6" style={{ backgroundColor: '#fffcf7' }}>
               <div className="mb-4">
                 <div className="text-4xl font-bold mb-2" style={{ color: '#1e293b' }}>
-                  €{tour.priceAdult} <span className="text-sm font-normal" style={{ color: 'rgb(73, 77, 89)' }}>a persona</span>
+                  {tour.priceAdult === 0 ? 'Free' : (
+                    <>
+                      €{tour.priceAdult} <span className="text-sm font-normal" style={{ color: 'rgb(73, 77, 89)' }}>a persona</span>
+                    </>
+                  )}
                 </div>
               </div>
 

@@ -127,7 +127,7 @@ export default function CalendarPage() {
               </p>
               <div className="flex items-center justify-between">
                 <span className="text-accent font-bold">
-                  €{tour.priceAdult}
+                  {tour.priceAdult === 0 ? 'Free' : `€${tour.priceAdult}`}
                 </span>
                 <span
                   className={`badge ${
