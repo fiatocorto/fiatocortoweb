@@ -83,9 +83,29 @@ export default function TourDetailPage() {
     );
   }
 
-  const images = JSON.parse(tour.images || '[]');
-  const includes = JSON.parse(tour.includes || '[]');
-  const excludes = JSON.parse(tour.excludes || '[]');
+  // Helper function to safely parse JSON or return array
+  const safeParseArray = (value: any): string[] => {
+    if (Array.isArray(value)) {
+      return value;
+    }
+    if (!value || value === '') {
+      return [];
+    }
+    if (typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        // If it's not valid JSON, try splitting by comma
+        return value.split(',').map((item: string) => item.trim()).filter((item: string) => item.length > 0);
+      }
+    }
+    return [];
+  };
+
+  const images = safeParseArray(tour.images);
+  const includes = safeParseArray(tour.includes);
+  const excludes = safeParseArray(tour.excludes);
   
   // Parse gallery images (comma-separated string)
   const galleryImages = tour.gallery 

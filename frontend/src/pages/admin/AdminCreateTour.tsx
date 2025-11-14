@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import { X, Type, DollarSign, Globe, Image, MapPin, Clock, Calendar, Users, Mountain, Camera, CheckCircle, XCircle, FileText, ArrowLeft } from 'lucide-react';
+import { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { Type, DollarSign, Globe, Image, MapPin, Clock, Calendar, Users, Mountain, Camera, CheckCircle, XCircle, FileText, ArrowLeft, X } from 'lucide-react';
 import DatePicker, { registerLocale } from 'react-datepicker';
 import { it } from 'date-fns/locale';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -9,32 +9,8 @@ import AdminSidebar from '../../components/admin/AdminSidebar';
 
 registerLocale('it', it);
 
-// Helper function to safely parse JSON or return array
-const safeParseArray = (value: any): string[] => {
-  if (Array.isArray(value)) {
-    return value;
-  }
-  if (!value || value === '') {
-    return [];
-  }
-  if (typeof value === 'string') {
-    try {
-      const parsed = JSON.parse(value);
-      return Array.isArray(parsed) ? parsed : [];
-    } catch {
-      // If it's not valid JSON, try splitting by comma
-      return value.split(',').map((item: string) => item.trim()).filter((item: string) => item.length > 0);
-    }
-  }
-  return [];
-};
-
-export default function AdminEditTour() {
-  const { id } = useParams<{ id: string }>();
+export default function AdminCreateTour() {
   const navigate = useNavigate();
-  const [tour, setTour] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [originalData, setOriginalData] = useState<any>(null);
 
   // Helper to format date for DatePicker
   const formatDateForInput = (date: string | Date | null | undefined): Date | null => {
@@ -51,7 +27,6 @@ export default function AdminEditTour() {
     if (!startDate) return null;
     const start = new Date(startDate);
     if (durationUnit === 'ore') {
-      // Per le ore, consideriamo comunque un giorno
       start.setDate(start.getDate() + 1);
     } else if (durationUnit === 'giorni') {
       start.setDate(start.getDate() + durationValue);
@@ -83,7 +58,6 @@ export default function AdminEditTour() {
   const [submitting, setSubmitting] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
   const [uploadingGallery, setUploadingGallery] = useState(false);
-  const [showUnsavedWarning, setShowUnsavedWarning] = useState(false);
 
   const handleFileUpload = async (file: File): Promise<string> => {
     const formData = new FormData();
@@ -111,7 +85,7 @@ export default function AdminEditTour() {
       const url = await handleFileUpload(file);
       setFormData({ ...formData, coverImage: url });
     } catch (error) {
-      alert('Errore nel caricamento dell\'immagine di copertina');
+      alert('Errore nel caricamento dell\'immagine');
     } finally {
       setUploadingCover(false);
     }
@@ -125,91 +99,14 @@ export default function AdminEditTour() {
     try {
       const uploadPromises = Array.from(files).map(file => handleFileUpload(file));
       const urls = await Promise.all(uploadPromises);
-      const galleryString = urls.join(', ');
-      setFormData({ ...formData, gallery: galleryString });
+      const existingGallery = formData.gallery ? formData.gallery.split(',').filter(Boolean) : [];
+      setFormData({ ...formData, gallery: [...existingGallery, ...urls].join(',') });
     } catch (error) {
-      alert('Errore nel caricamento delle immagini della galleria');
+      alert('Errore nel caricamento delle immagini');
     } finally {
       setUploadingGallery(false);
     }
   };
-
-  const fetchTour = useCallback(async () => {
-    if (!id) return;
-    try {
-      const response = await api.get(`/api/tours/${id}`);
-      const fetchedTour = response.data.tour;
-      setTour(fetchedTour);
-
-      // Update form data when tour is loaded
-      const defaultStartDate = formatDateForInput(fetchedTour?.dateStart);
-      const defaultEndDate = fetchedTour?.dateEnd 
-        ? formatDateForInput(fetchedTour.dateEnd) 
-        : getDefaultEndDate(defaultStartDate, fetchedTour?.durationValue || 1, fetchedTour?.durationUnit || 'ore');
-
-      const initialFormData = {
-        title: fetchedTour?.title || '',
-        description: fetchedTour?.description || '',
-        priceAdult: fetchedTour?.priceAdult || 0,
-        priceChild: fetchedTour?.priceChild || 0,
-        language: fetchedTour?.language || 'Italiano',
-        itinerary: fetchedTour?.itinerary || '',
-        durationValue: fetchedTour?.durationValue || 1,
-        durationUnit: fetchedTour?.durationUnit || 'ore',
-        coverImage: fetchedTour?.coverImage || '',
-        images: safeParseArray(fetchedTour?.images),
-        includes: safeParseArray(fetchedTour?.includes),
-        excludes: safeParseArray(fetchedTour?.excludes),
-        terms: fetchedTour?.terms || '',
-        maxSeats: fetchedTour?.maxSeats || 20,
-        difficulty: fetchedTour?.difficulty || '',
-        isMultiDay: fetchedTour?.isMultiDay || false,
-        dateStart: defaultStartDate,
-        dateEnd: defaultEndDate,
-        gallery: fetchedTour?.gallery || '',
-      };
-      
-      setFormData(initialFormData);
-      setOriginalData(JSON.parse(JSON.stringify(initialFormData)));
-    } catch (error) {
-      console.error('Failed to fetch tour:', error);
-      alert('Errore nel caricamento del tour');
-      navigate('/admin/tours');
-    } finally {
-      setLoading(false);
-    }
-  }, [id, navigate]);
-
-  useEffect(() => {
-    if (id) {
-      fetchTour();
-    }
-  }, [id, fetchTour]);
-
-  if (loading) {
-    return (
-      <div>
-        <AdminSidebar />
-        <div className="ml-[300px] p-8 text-center">
-          <p className="text-muted">Caricamento...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!tour) {
-    return (
-      <div>
-        <AdminSidebar />
-        <div className="ml-[300px] p-8 text-center">
-          <p className="text-muted">Tour non trovato</p>
-          <Link to="/admin/tours" className="text-accent hover:text-accent/80 mt-4 inline-block">
-            Torna alla lista tour
-          </Link>
-        </div>
-      </div>
-    );
-  }
 
   const addArrayItem = (field: 'images' | 'includes' | 'excludes', value: string = '') => {
     setFormData({
@@ -235,39 +132,25 @@ export default function AdminEditTour() {
     });
   };
 
-  const hasChanges = () => {
-    if (!originalData) return false;
-    return JSON.stringify(formData) !== JSON.stringify(originalData);
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!hasChanges()) return;
-    
     setSubmitting(true);
 
     try {
-      // Converti le Date in stringhe ISO per il backend
-      const dataToSend = {
+      const submitData = {
         ...formData,
-        dateStart: formData.dateStart ? formData.dateStart.toISOString() : '',
-        dateEnd: formData.dateEnd ? formData.dateEnd.toISOString() : '',
+        dateStart: formData.dateStart?.toISOString(),
+        dateEnd: formData.dateEnd?.toISOString(),
+        images: JSON.stringify(formData.images),
+        includes: JSON.stringify(formData.includes),
+        excludes: JSON.stringify(formData.excludes),
       };
-      await api.put(`/api/tours/${id}`, dataToSend);
-      // Aggiorna i dati originali con quelli salvati
-      setOriginalData(JSON.parse(JSON.stringify(formData)));
-      setShowUnsavedWarning(false);
+      await api.post('/api/tours', submitData);
+      navigate('/admin/tours');
     } catch (error) {
       alert('Errore nel salvataggio');
     } finally {
       setSubmitting(false);
-    }
-  };
-
-  const handleBackClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    if (hasChanges()) {
-      e.preventDefault();
-      setShowUnsavedWarning(true);
     }
   };
 
@@ -279,33 +162,29 @@ export default function AdminEditTour() {
           <div>
             <Link 
               to="/admin/tours" 
-              onClick={handleBackClick}
               className="inline-flex items-center text-muted hover:text-primary transition-colors mb-4"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Torna alla lista
             </Link>
-            {showUnsavedWarning && (
-              <p className="text-sm text-red-600 mt-1 mb-4">Ci sono delle modifiche da salvare</p>
-            )}
           </div>
           <div className="flex items-start justify-between">
             <div>
-              <h1 className="font-title text-4xl font-bold text-primary">Modifica Tour</h1>
-              <p className="text-muted mt-2">Modifica le informazioni del tour</p>
+              <h1 className="font-title text-4xl font-bold text-primary">Crea Nuovo Tour</h1>
+              <p className="text-muted mt-2">Inserisci le informazioni per creare un nuovo tour</p>
             </div>
             <button 
               type="submit" 
-              form="edit-tour-form"
-              disabled={submitting || !hasChanges()} 
+              form="create-tour-form"
+              disabled={submitting} 
               className="px-6 py-3 bg-accent text-white rounded-full hover:bg-accent/90 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {submitting ? 'Salvataggio...' : 'Salva Modifiche'}
+              {submitting ? 'Salvataggio...' : 'Crea Tour'}
             </button>
           </div>
         </div>
 
-        <form id="edit-tour-form" onSubmit={handleSubmit} className="space-y-8">
+        <form id="create-tour-form" onSubmit={handleSubmit} className="space-y-8">
           {/* Informazioni Base */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
             <div className="flex items-center mb-6">
@@ -583,7 +462,6 @@ export default function AdminEditTour() {
                       selected={formData.dateStart}
                       onChange={(date: Date | null) => {
                         setFormData({ ...formData, dateStart: date });
-                        // Aggiorna anche la data fine se necessario
                         if (date && formData.durationValue && formData.durationUnit) {
                           const endDate = getDefaultEndDate(date, formData.durationValue, formData.durationUnit);
                           setFormData(prev => ({ ...prev, dateStart: date, dateEnd: endDate }));
@@ -668,6 +546,7 @@ export default function AdminEditTour() {
                     className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-accent focus:border-transparent transition-all outline-none appearance-none bg-white"
                     value={formData.difficulty}
                     onChange={(e) => setFormData({ ...formData, difficulty: e.target.value })}
+                    required
                   >
                     <option value="">Seleziona difficoltà</option>
                     <option value="Facile">Facile</option>
@@ -679,14 +558,13 @@ export default function AdminEditTour() {
             </div>
           </div>
 
-
-          {/* Include e Exclude */}
+          {/* Include ed Esclude */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
             <div className="flex items-center mb-6">
               <div className="p-2 bg-accent/10 rounded-lg mr-3">
                 <CheckCircle className="w-5 h-5 text-accent" />
               </div>
-              <h2 className="text-xl font-semibold text-primary">Cosa Include e Non Include</h2>
+              <h2 className="text-xl font-semibold text-primary">Include ed Esclude</h2>
             </div>
             
             <div className="space-y-6">
@@ -804,4 +682,3 @@ export default function AdminEditTour() {
     </div>
   );
 }
-
