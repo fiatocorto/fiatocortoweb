@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { Calendar, Users, ArrowLeft, CheckCircle, Clock, XCircle } from 'lucide-react';
+import { Calendar, Users, ArrowLeft, CheckCircle, Clock, XCircle, X } from 'lucide-react';
 import { format, isSameDay } from 'date-fns';
 import { it } from 'date-fns/locale';
 import api from '../utils/api';
 import { useAuth } from '../contexts/AuthContext';
 import QRBadge from '../components/QRBadge';
 import Footer from '../components/Footer';
+import Modal from '../components/Modal';
 
 export default function BookingDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -15,6 +16,8 @@ export default function BookingDetailPage() {
   const [booking, setBooking] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -76,6 +79,25 @@ export default function BookingDetailPage() {
         return 'bg-red-100 text-red-800';
       default:
         return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const handleCancelBooking = async () => {
+    if (!booking || !id) return;
+
+    setCancelling(true);
+    try {
+      await api.put(`/api/bookings/${id}`, {
+        paymentStatus: 'CANCELLED',
+      });
+      // Ricarica i dati della prenotazione
+      await fetchBooking();
+      setShowCancelModal(false);
+      alert('Prenotazione annullata con successo. I posti sono stati resi disponibili.');
+    } catch (error: any) {
+      alert(error.response?.data?.error || 'Errore nell\'annullamento della prenotazione');
+    } finally {
+      setCancelling(false);
     }
   };
 
@@ -220,9 +242,53 @@ export default function BookingDetailPage() {
                 </Link>
               </div>
             )}
+
+            {/* Pulsante Annulla prenotazione */}
+            {booking.paymentStatus !== 'CANCELLED' && (
+              <div className="pt-4 border-t">
+                <button
+                  onClick={() => setShowCancelModal(true)}
+                  className="w-full px-6 py-3 border-2 border-red-500 rounded-full hover:bg-red-50 transition-colors font-semibold text-red-600"
+                >
+                  <X className="w-5 h-5 inline mr-2" />
+                  Annulla prenotazione
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
+
+      {/* Modal conferma annullamento */}
+      <Modal
+        isOpen={showCancelModal}
+        onClose={() => setShowCancelModal(false)}
+        title="Conferma Annullamento"
+        size="sm"
+      >
+        <div className="space-y-4">
+          <p className="text-muted">
+            Sei sicuro di voler annullare questa prenotazione? I posti occupati verranno resi disponibili per il tour.
+          </p>
+          <div className="flex space-x-3 justify-end">
+            <button
+              onClick={() => setShowCancelModal(false)}
+              className="px-4 py-2 rounded-full border border-gray-300 text-primary hover:bg-gray-50 transition-colors"
+              disabled={cancelling}
+            >
+              Annulla
+            </button>
+            <button
+              onClick={handleCancelBooking}
+              disabled={cancelling}
+              className="px-4 py-2 rounded-full bg-red-600 text-white hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {cancelling ? 'Annullamento...' : 'Conferma Annullamento'}
+            </button>
+          </div>
+        </div>
+      </Modal>
+
       <Footer />
     </div>
   );

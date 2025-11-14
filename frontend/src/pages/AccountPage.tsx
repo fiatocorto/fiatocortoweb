@@ -247,9 +247,15 @@ export default function AccountPage() {
                             <span className={`px-3 py-1 rounded-full text-xs font-medium ${
                               booking.paymentStatus === 'PAID' 
                                 ? 'bg-green-100 text-green-800' 
+                                : booking.paymentStatus === 'CANCELLED'
+                                ? 'bg-red-100 text-red-800'
                                 : 'bg-yellow-100 text-yellow-800'
                             }`}>
-                              {booking.paymentStatus === 'PAID' ? 'Pagato' : 'In attesa di pagamento'}
+                              {booking.paymentStatus === 'PAID' 
+                                ? 'Pagato' 
+                                : booking.paymentStatus === 'CANCELLED'
+                                ? 'Annullato'
+                                : 'In attesa di pagamento'}
                             </span>
                           </div>
                         </div>
