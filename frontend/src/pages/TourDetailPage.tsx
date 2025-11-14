@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Clock, Users, Calendar, Check, X, Globe, Activity, Headphones, Mail, HelpCircle, Share2, Copy } from 'lucide-react';
+import { Clock, Users, Calendar, Check, X, Globe, Activity, Headphones, Mail, HelpCircle, Share2, Copy, Edit } from 'lucide-react';
 import { format, isSameDay } from 'date-fns';
 import { it } from 'date-fns/locale';
 import api from '../utils/api';
@@ -141,13 +141,24 @@ export default function TourDetailPage() {
               )}
             </div>
           </div>
-          <button
-            onClick={() => setShowShareModal(true)}
-            className="flex items-center justify-center space-x-2 px-4 py-3 border-2 border-gray-200 rounded-xl hover:border-accent hover:bg-accent/5 transition-colors whitespace-nowrap"
-          >
-            <Share2 className="w-5 h-5 text-primary" />
-            <span className="font-semibold text-primary">Condividi</span>
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowShareModal(true)}
+              className="flex items-center justify-center space-x-2 px-4 py-3 border-2 border-gray-200 rounded-full hover:border-accent hover:bg-accent/5 transition-colors whitespace-nowrap"
+            >
+              <Share2 className="w-5 h-5 text-primary" />
+              <span className="font-semibold text-primary">Condividi</span>
+            </button>
+            {user?.role === 'ADMIN' && tour && (
+              <button
+                onClick={() => navigate(`/admin/tours/${tour.id}/edit`)}
+                className="flex items-center justify-center space-x-2 px-4 py-3 border-2 border-gray-200 rounded-full hover:border-accent hover:bg-accent/5 transition-colors whitespace-nowrap"
+              >
+                <Edit className="w-5 h-5 text-primary" />
+                <span className="font-semibold text-primary">Modifica</span>
+              </button>
+            )}
+          </div>
           </div>
 
         {/* Seconda riga: Immagine a sinistra, Riquadro prezzi a destra */}

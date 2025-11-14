@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2 } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../../utils/api';
 import AdminSidebar from '../../components/admin/AdminSidebar';
@@ -102,14 +102,25 @@ export default function AdminTours() {
                     <td className="px-6 py-4">
                       <div className="flex space-x-2">
                         <Link
+                          to={`/tours/${tour.slug}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:text-blue-800"
+                          title="Visualizza nel frontend"
+                        >
+                          <Eye className="w-5 h-5" />
+                        </Link>
+                        <Link
                           to={`/admin/tours/${tour.id}/edit`}
                           className="text-accent hover:text-accent/80"
+                          title="Modifica"
                         >
                           <Edit className="w-5 h-5" />
                         </Link>
                         <button
                           onClick={() => handleDelete(tour.id)}
                           className="text-red-600 hover:text-red-800"
+                          title="Elimina"
                         >
                           <Trash2 className="w-5 h-5" />
                         </button>
