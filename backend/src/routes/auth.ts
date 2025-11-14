@@ -25,30 +25,53 @@ if (!admin.apps.length) {
       try {
         const path = require('path');
         const fs = require('fs');
-        const serviceAccountPath = path.join(__dirname, '../../fiato-corto-ba53e-firebase-adminsdk-fbsvc-6ecef97388.json');
-        if (fs.existsSync(serviceAccountPath)) {
+        // Try multiple possible paths
+        const possiblePaths = [
+          path.join(__dirname, '../../fiato-corto-ba53e-firebase-adminsdk-fbsvc-6ecef97388.json'), // From src/routes
+          path.join(process.cwd(), 'fiato-corto-ba53e-firebase-adminsdk-fbsvc-6ecef97388.json'), // From backend root
+          path.join(process.cwd(), 'backend', 'fiato-corto-ba53e-firebase-adminsdk-fbsvc-6ecef97388.json'), // From project root
+        ];
+        
+        let serviceAccountPath: string | null = null;
+        for (const possiblePath of possiblePaths) {
+          if (fs.existsSync(possiblePath)) {
+            serviceAccountPath = possiblePath;
+            console.log('Found service account file at:', serviceAccountPath);
+            break;
+          }
+        }
+        
+        if (serviceAccountPath) {
           const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
           admin.initializeApp({
             credential: admin.credential.cert(serviceAccount),
           });
           console.log('Firebase Admin initialized from service account file');
         } else {
+          console.error('Service account file not found. Tried paths:', possiblePaths);
           throw new Error('Service account file not found');
         }
-      } catch (fileError) {
+      } catch (fileError: any) {
+        console.error('Error loading service account file:', fileError.message);
         // If file doesn't exist, try GOOGLE_APPLICATION_CREDENTIALS
         if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-          admin.initializeApp({
-            credential: admin.credential.applicationDefault(),
-          });
-          console.log('Firebase Admin initialized from GOOGLE_APPLICATION_CREDENTIALS');
+          try {
+            admin.initializeApp({
+              credential: admin.credential.applicationDefault(),
+            });
+            console.log('Firebase Admin initialized from GOOGLE_APPLICATION_CREDENTIALS');
+          } catch (appDefaultError: any) {
+            console.error('Error initializing with application default credentials:', appDefaultError.message);
+            console.warn('Firebase Admin not initialized. Set FIREBASE_SERVICE_ACCOUNT environment variable or place service account file in backend/ directory.');
+          }
         } else {
           console.warn('Firebase Admin not initialized. Set FIREBASE_SERVICE_ACCOUNT environment variable or place service account file in backend/ directory.');
         }
       }
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error initializing Firebase Admin:', error);
+    console.error('Error details:', error.message, error.stack);
   }
 }
 
@@ -182,16 +205,25 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
 
+    // Check if Firebase Admin is initialized
+    if (!admin.apps.length) {
+      console.error('Firebase Admin not initialized');
+      return res.status(500).json({ error: 'Firebase Admin non configurato. Verifica la configurazione del backend.' });
+    }
+
     try {
-      const { token, email, displayName, photoURL } = req.body;
+      const { token, email, displayName, photoURL, firstName, lastName } = req.body;
+
+      console.log('Firebase auth request received:', { email, hasToken: !!token, hasFirstName: !!firstName });
 
       // Verify Firebase token
       let decodedToken;
       try {
         decodedToken = await admin.auth().verifyIdToken(token);
+        console.log('Firebase token verified successfully:', { uid: decodedToken.uid, email: decodedToken.email });
       } catch (error: any) {
         console.error('Firebase token verification error:', error);
-        return res.status(401).json({ error: 'Token Firebase non valido' });
+        return res.status(401).json({ error: 'Token Firebase non valido', details: error.message });
       }
 
       const firebaseUid = decodedToken.uid;
@@ -201,11 +233,10 @@ router.post(
         return res.status(400).json({ error: 'Email non disponibile' });
       }
 
-      // Parse display name
-      const nameParts = displayName ? displayName.split(' ') : [];
-      const firstName = nameParts[0] || null;
-      const lastName = nameParts.slice(1).join(' ') || null;
-      const fullName = displayName || firebaseEmail.split('@')[0];
+      // Use provided firstName/lastName or parse from displayName
+      const finalFirstName = firstName || (displayName ? displayName.split(' ')[0] : null);
+      const finalLastName = lastName || (displayName ? displayName.split(' ').slice(1).join(' ') : null);
+      const fullName = displayName || (finalFirstName && finalLastName ? `${finalFirstName} ${finalLastName}`.trim() : firebaseEmail.split('@')[0]);
 
       // Check if user exists by email or firebaseUid (stored in googleId field)
       let user = await prisma.user.findFirst({
@@ -225,8 +256,8 @@ router.post(
             where: { id: user.id },
             data: {
               googleId: firebaseUid,
-              firstName: firstName || user.firstName,
-              lastName: lastName || user.lastName,
+              firstName: finalFirstName || user.firstName,
+              lastName: finalLastName || user.lastName,
               name: fullName || user.name,
             },
             select: {
@@ -255,8 +286,8 @@ router.post(
         finalUser = await prisma.user.create({
           data: {
             googleId: firebaseUid,
-            firstName: firstName,
-            lastName: lastName,
+            firstName: finalFirstName,
+            lastName: finalLastName,
             name: fullName,
             email: firebaseEmail,
             passwordHash: null, // No password for Firebase users
@@ -290,7 +321,11 @@ router.post(
       });
     } catch (error: any) {
       console.error('Firebase auth error:', error);
-      res.status(500).json({ error: 'Errore durante l\'autenticazione Firebase' });
+      console.error('Error stack:', error.stack);
+      res.status(500).json({ 
+        error: 'Errore durante l\'autenticazione Firebase',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      });
     }
   }
 );

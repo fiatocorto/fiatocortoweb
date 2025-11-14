@@ -117,16 +117,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       // Create user in Firebase
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      
-      // Update display name
-      await userCredential.user.updateProfile({
-        displayName: `${firstName} ${lastName}`.trim(),
-      });
 
       const firebaseToken = await getIdToken(userCredential.user);
       
-      // Sync with backend
-      await syncUserWithBackend(firebaseToken, userCredential.user);
+      // Sync with backend - pass firstName and lastName explicitly
+      try {
+        const response = await axios.post(`${API_URL}/api/auth/firebase`, {
+          token: firebaseToken,
+          email: userCredential.user.email,
+          displayName: `${firstName} ${lastName}`.trim(),
+          photoURL: userCredential.user.photoURL,
+          firstName: firstName,
+          lastName: lastName,
+        });
+        const { user: backendUser, token: backendToken } = response.data;
+        setUser(backendUser);
+        setToken(backendToken);
+        localStorage.setItem('token', backendToken);
+      } catch (backendError: any) {
+        console.error('Backend sync error:', backendError);
+        // If backend fails, we still have Firebase auth, but show a warning
+        if (backendError.code === 'ECONNREFUSED' || backendError.message?.includes('Network Error')) {
+          throw new Error('Impossibile connettersi al server. Verifica che il backend sia in esecuzione su http://localhost:3001');
+        }
+        throw backendError;
+      }
     } catch (error: any) {
       console.error('Register error:', error);
       let errorMessage = 'Errore nella registrazione';
