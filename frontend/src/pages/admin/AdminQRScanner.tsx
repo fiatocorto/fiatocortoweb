@@ -76,9 +76,9 @@ export default function AdminQRScanner() {
   };
 
   return (
-    <div className="flex">
+    <div>
       <AdminSidebar />
-      <div className="flex-1 p-8">
+      <div className="ml-[300px] p-8">
         <h1 className="font-title text-4xl font-bold mb-8">QR Code Scanner</h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

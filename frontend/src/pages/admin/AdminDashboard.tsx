@@ -25,9 +25,9 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="flex">
+      <div>
         <AdminSidebar />
-        <div className="flex-1 p-8 text-center">
+        <div className="ml-[300px] p-8 text-center">
           <p className="text-muted">Caricamento...</p>
         </div>
       </div>
@@ -35,9 +35,9 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="flex">
+    <div>
       <AdminSidebar />
-      <div className="flex-1 p-8">
+      <div className="ml-[300px] p-8">
         <h1 className="font-title text-4xl font-bold mb-8">Dashboard</h1>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

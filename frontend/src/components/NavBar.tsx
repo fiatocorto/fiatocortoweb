@@ -41,26 +41,31 @@ export default function NavBar() {
     navigate('/');
   };
 
+  // Check if we're on an admin route
+  const isAdminRoute = location.pathname.startsWith('/admin');
+
   return (
-    <nav className="bg-primary text-white shadow-lg z-[100]">
+    <nav className={`${isAdminRoute ? 'bg-accent' : 'bg-primary'} text-white shadow-lg z-[100]`}>
       <div className="w-full">
         <div className="flex items-stretch">
-          {/* Logo Section */}
-          <div className="relative flex items-center pl-4 sm:pl-6 lg:pl-8 pr-32 bg-[#0f172a] overflow-hidden w-[400px]">
+          {/* Logo Section - Hidden on admin routes */}
+          {!isAdminRoute && (
+          <div className="relative flex items-center pl-4 sm:pl-6 lg:pl-8 pr-16 overflow-hidden w-[400px] bg-[#0f172a]">
             <Link to="/" className="flex items-center relative z-10">
               <img 
                 src="/resources/Bianco.png" 
                 alt="Fiato Corto" 
-                className="h-12 w-auto object-contain"
+                className="h-16 w-auto object-contain"
               />
           </Link>
 
           </div>
+          )}
 
           {/* Right side: Two vertical rows */}
-          <div className="flex-1 flex flex-col">
+          <div className={`flex-1 flex flex-col ${isAdminRoute ? 'bg-accent ml-[300px]' : ''}`}>
             {/* Top Bar */}
-            <div className="hidden lg:flex justify-between items-center py-0.5 pl-4 sm:pl-6 lg:pl-8 pr-4 sm:pr-6 lg:pr-8 bg-[#1e293b] border-b border-[#334155]">
+            <div className={`hidden lg:flex justify-between items-center py-0.5 pr-4 sm:pr-6 lg:pr-8 border-b ${isAdminRoute ? 'bg-accent border-accent/80 text-primary pl-4 sm:pl-6 lg:pl-8' : 'bg-[#1e293b] border-[#334155] text-white pl-4 sm:pl-6 lg:pl-8'}`}>
               {/* Contact boxes */}
               <div className="flex items-center space-x-2">
                 <div className="flex items-center space-x-1 pr-3 py-1.5 rounded-full text-sm">
@@ -84,7 +89,7 @@ export default function NavBar() {
                     {user.role === 'ADMIN' && (
                       <Link
                         to="/admin"
-                        className={`px-4 py-2 rounded-full hover:text-accent transition-colors text-sm ${isActive('/admin') ? 'text-accent' : ''}`}
+                        className={`px-4 py-2 rounded-full transition-colors text-sm ${isAdminRoute ? (isActive('/admin') ? 'text-primary font-semibold' : 'text-primary hover:text-primary/80') : (isActive('/admin') ? 'text-accent' : 'hover:text-accent')}`}
                       >
                         Gestisci
                       </Link>
@@ -95,11 +100,11 @@ export default function NavBar() {
                   <div className="flex items-center space-x-2">
                     <Link
                       to="/login"
-                      className="px-4 py-2 rounded-full hover:text-accent transition-colors text-sm"
+                      className={`px-4 py-2 rounded-full transition-colors text-sm ${isAdminRoute ? 'text-primary hover:text-primary/80' : 'hover:text-accent'}`}
                     >
                       Login
                     </Link>
-                    <Link to="/register" className="px-4 py-2 rounded-full hover:text-accent transition-colors text-sm">
+                    <Link to="/register" className={`px-4 py-2 rounded-full transition-colors text-sm ${isAdminRoute ? 'text-primary hover:text-primary/80' : 'hover:text-accent'}`}>
                       Registrati
                     </Link>
                   </div>
@@ -107,7 +112,8 @@ export default function NavBar() {
               </div>
             </div>
 
-            {/* Menu Bar */}
+            {/* Menu Bar - Hidden on admin routes */}
+            {!isAdminRoute && (
             <div className="hidden lg:flex justify-between items-center py-5 pl-4 sm:pl-6 lg:pl-8 pr-4 sm:pr-6 lg:pr-8 bg-white text-primary">
               {/* Navigation menu */}
               <div className="flex-1 flex justify-start items-center space-x-6">
@@ -179,19 +185,22 @@ export default function NavBar() {
                   </Link>
                 </div>
             </div>
+            )}
           </div>
 
-          {/* Mobile menu button */}
+          {/* Mobile menu button - Hidden on admin routes */}
+          {!isAdminRoute && (
           <button
             className="lg:hidden ml-auto"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
+          )}
         </div>
 
-        {/* Mobile menu */}
-        {mobileMenuOpen && (
+        {/* Mobile menu - Hidden on admin routes */}
+        {!isAdminRoute && mobileMenuOpen && (
           <div className="lg:hidden py-4 space-y-4 border-t border-white/10">
             {/* Mobile contacts */}
             <div className="space-y-2 pb-4 border-b border-white/10">

@@ -33,9 +33,9 @@ export default function AdminBookings() {
   };
 
   return (
-    <div className="flex">
+    <div>
       <AdminSidebar />
-      <div className="flex-1 p-8">
+      <div className="ml-[300px] p-8">
         <h1 className="font-title text-4xl font-bold mb-8">Gestione Prenotazioni</h1>
 
         {loading ? (

@@ -3,9 +3,9 @@ import CalendarPage from '../CalendarPage';
 
 export default function AdminCalendar() {
   return (
-    <div className="flex">
+    <div>
       <AdminSidebar />
-      <div className="flex-1">
+      <div className="ml-[300px]">
         <CalendarPage />
       </div>
     </div>

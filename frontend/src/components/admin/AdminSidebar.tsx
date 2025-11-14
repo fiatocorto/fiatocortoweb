@@ -23,7 +23,16 @@ export default function AdminSidebar() {
   ];
 
   return (
-    <div className="w-[400px] bg-primary text-white min-h-screen pl-4 sm:pl-6 lg:pl-8 pr-32 py-4">
+    <div className="fixed left-0 top-0 h-screen w-[300px] bg-primary text-white pl-4 sm:pl-6 lg:pl-8 pr-8 py-4 z-50">
+      {/* Logo */}
+      <Link to="/" className="flex items-center mb-12">
+        <img 
+          src="/resources/Bianco.png" 
+          alt="Fiato Corto" 
+          className="h-12 w-auto object-contain"
+        />
+      </Link>
+
       <nav className="space-y-2">
         {menuItems.map((item) => {
           const Icon = item.icon;

@@ -106,9 +106,9 @@ export default function AdminUsers() {
   };
 
   return (
-    <div className="flex">
+    <div>
       <AdminSidebar />
-      <div className="flex-1 p-8">
+      <div className="ml-[300px] p-8">
         <div className="flex justify-between items-center mb-8">
           <h1 className="font-title text-4xl font-bold">Gestione Utenti</h1>
           <button onClick={() => setShowCreateModal(true)} className="btn-primary">

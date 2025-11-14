@@ -168,9 +168,9 @@ export default function AdminEditTour() {
 
   if (loading) {
     return (
-      <div className="flex">
+      <div>
         <AdminSidebar />
-        <div className="flex-1 p-8 text-center">
+        <div className="ml-[300px] p-8 text-center">
           <p className="text-muted">Caricamento...</p>
         </div>
       </div>
@@ -179,9 +179,9 @@ export default function AdminEditTour() {
 
   if (!tour) {
     return (
-      <div className="flex">
+      <div>
         <AdminSidebar />
-        <div className="flex-1 p-8 text-center">
+        <div className="ml-[300px] p-8 text-center">
           <p className="text-muted">Tour non trovato</p>
           <Link to="/admin/tours" className="text-accent hover:text-accent/80 mt-4 inline-block">
             Torna alla lista tour
@@ -252,9 +252,9 @@ export default function AdminEditTour() {
   };
 
   return (
-    <div className="flex">
+    <div>
       <AdminSidebar />
-      <div className="flex-1 p-8">
+      <div className="ml-[300px] p-8">
         <div className="mb-8">
           <div>
             <Link 
