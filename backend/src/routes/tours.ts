@@ -152,7 +152,31 @@ router.get(
         console.log('No tours found with the specified filters');
       }
       
-      res.json({ tours });
+      // Calculate available seats for each tour
+      const toursWithAvailability = await Promise.all(
+        tours.map(async (tour) => {
+          const bookings = await prisma.booking.findMany({
+            where: {
+              tourId: tour.id,
+              paymentStatus: { not: 'CANCELLED' },
+            },
+          });
+
+          const bookedSeats = bookings.reduce(
+            (sum, b) => sum + b.adults + b.children,
+            0
+          );
+
+          const availableSeats = tour.maxSeats - bookedSeats;
+
+          return {
+            ...tour,
+            availableSeats: Math.max(0, availableSeats), // Ensure non-negative
+          };
+        })
+      );
+      
+      res.json({ tours: toursWithAvailability });
     } catch (error: any) {
       console.error('Get tours error:', error);
       console.error('Error details:', {
