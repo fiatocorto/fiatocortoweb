@@ -170,7 +170,7 @@ export default function AdminCreateTour() {
           </div>
           <div className="flex items-start justify-between">
             <div>
-              <h1 className="font-title text-4xl font-bold text-primary">Crea Nuovo Tour</h1>
+              <h1 className="font-title text-4xl font-bold text-primary">Crea nuovo tour</h1>
               <p className="text-muted mt-2">Inserisci le informazioni per creare un nuovo tour</p>
             </div>
             <button 
