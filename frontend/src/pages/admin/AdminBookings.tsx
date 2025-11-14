@@ -23,14 +23,6 @@ export default function AdminBookings() {
     }
   };
 
-  const updateBookingStatus = async (id: string, status: string) => {
-    try {
-      await api.put(`/api/bookings/${id}`, { paymentStatus: status });
-      fetchBookings();
-    } catch (error) {
-      alert('Errore nell\'aggiornamento');
-    }
-  };
 
   return (
     <div>
@@ -77,9 +69,9 @@ export default function AdminBookings() {
                         <p className="text-sm text-muted">{booking.user.email}</p>
                       </div>
                     </td>
-                    <td className="px-6 py-4">{booking.tour.tour.title}</td>
+                    <td className="px-6 py-4">{booking.tour?.title || 'Tour non trovato'}</td>
                     <td className="px-6 py-4">
-                      {format(new Date(booking.tour.dateStart), 'dd MMM yyyy HH:mm', {
+                      {booking.tour?.dateStart && format(new Date(booking.tour.dateStart), 'dd MMM yyyy', {
                         locale: it,
                       })}
                     </td>
@@ -87,18 +79,27 @@ export default function AdminBookings() {
                       {booking.adults} adulti
                       {booking.children > 0 && `, ${booking.children} bambini`}
                     </td>
-                    <td className="px-6 py-4 font-bold">€{booking.totalPrice.toFixed(2)}</td>
+                    <td className="px-6 py-4 font-bold">
+                      {booking.totalPrice === 0 ? 'Free' : `€${booking.totalPrice.toFixed(2)}`}
+                    </td>
                     <td className="px-6 py-4">
-                      <select
-                        value={booking.paymentStatus}
-                        onChange={(e) => updateBookingStatus(booking.id, e.target.value)}
-                        className="px-3 py-1 border border-muted rounded-lg text-sm"
-                      >
-                        <option value="PENDING">In attesa</option>
-                        <option value="PAID">Pagato</option>
-                        <option value="CANCELLED">Cancellato</option>
-                        <option value="REFUNDED">Rimborsato</option>
-                      </select>
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        booking.paymentStatus === 'PAID' 
+                          ? 'bg-green-100 text-green-800' 
+                          : booking.paymentStatus === 'CANCELLED'
+                          ? 'bg-red-100 text-red-800'
+                          : booking.paymentStatus === 'REFUNDED'
+                          ? 'bg-blue-100 text-blue-800'
+                          : 'bg-yellow-100 text-yellow-800'
+                      }`}>
+                        {booking.paymentStatus === 'PAID' 
+                          ? 'Pagato' 
+                          : booking.paymentStatus === 'CANCELLED'
+                          ? 'Annullato'
+                          : booking.paymentStatus === 'REFUNDED'
+                          ? 'Rimborsato'
+                          : 'In attesa di pagamento'}
+                      </span>
                     </td>
                     <td className="px-6 py-4">
                       <button className="text-accent hover:underline text-sm">

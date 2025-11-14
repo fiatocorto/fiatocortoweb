@@ -69,6 +69,9 @@ export default function AdminTours() {
                     Difficoltà
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase">
+                    Posti disponibili
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase">
                     Azioni
                   </th>
                 </tr>
@@ -98,6 +101,17 @@ export default function AdminTours() {
                     <td className="px-6 py-4">{tour.language}</td>
                     <td className="px-6 py-4">
                       {tour.difficulty || '-'}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`font-medium ${
+                        tour.availableSeats === 0 
+                          ? 'text-red-600' 
+                          : tour.availableSeats <= 10 
+                          ? 'text-yellow-600' 
+                          : 'text-green-600'
+                      }`}>
+                        {tour.availableSeats ?? tour.maxSeats ?? 0} / {tour.maxSeats ?? 0}
+                      </span>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex space-x-2">
