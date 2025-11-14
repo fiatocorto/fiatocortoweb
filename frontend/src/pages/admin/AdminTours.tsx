@@ -45,7 +45,7 @@ export default function AdminTours() {
           <h1 className="font-title text-4xl font-bold">Gestione Tour</h1>
           <button onClick={() => navigate('/admin/tours/new')} className="btn-primary">
             <Plus className="w-5 h-5 inline mr-2" />
-            Crea Nuovo Tour
+            Crea nuovo tour
           </button>
         </div>
 

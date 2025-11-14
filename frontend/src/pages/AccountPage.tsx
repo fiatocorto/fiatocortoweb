@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../utils/api';
-import { LogOut, LayoutDashboard, User, Calendar, Settings, Edit2, Save, X } from 'lucide-react';
+import { LogOut, User, Calendar, Settings, Edit2, Save, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { it } from 'date-fns/locale';
 import Modal from '../components/Modal';
@@ -100,7 +100,6 @@ export default function AccountPage() {
 
   const menuItems = [
     { id: 'details' as MenuItem, label: 'Dettagli account', icon: User },
-    ...(user?.role === 'ADMIN' ? [{ id: 'dashboard' as MenuItem, label: 'Dashboard', icon: LayoutDashboard }] : []),
     ...(user?.role === 'CUSTOMER' ? [{ id: 'bookings' as MenuItem, label: 'Le mie prenotazioni', icon: Calendar }] : []),
     { id: 'settings' as MenuItem, label: 'Impostazioni', icon: Settings },
     { id: 'logout' as MenuItem, label: 'Disconnetti', icon: LogOut },
@@ -110,7 +109,7 @@ export default function AccountPage() {
     switch (activeMenu) {
       case 'details':
         return (
-          <div className="bg-white rounded-lg shadow-lg p-6">
+          <div className="bg-white rounded-2xl shadow-lg p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="font-title text-2xl font-bold">Dettagli Account</h2>
               {!isEditing && (
@@ -192,21 +191,9 @@ export default function AccountPage() {
           </div>
         );
 
-      case 'dashboard':
-        return (
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <h2 className="font-title text-2xl font-bold mb-6">Dashboard Admin</h2>
-            <p className="text-muted mb-6">Accedi alla dashboard amministrativa per gestire tour, prenotazioni e utenti.</p>
-            <Link to="/admin" className="btn-primary inline-flex items-center space-x-2">
-              <LayoutDashboard className="w-5 h-5" />
-              <span>Vai alla Dashboard</span>
-            </Link>
-          </div>
-        );
-
       case 'bookings':
         return (
-          <div className="bg-white rounded-lg shadow-lg p-6">
+          <div className="bg-white rounded-2xl shadow-lg p-6">
             <h2 className="font-title text-2xl font-bold mb-6">Le Mie Prenotazioni</h2>
             {loadingBookings ? (
               <p className="text-muted">Caricamento...</p>
@@ -276,7 +263,7 @@ export default function AccountPage() {
 
       case 'settings':
         return (
-          <div className="bg-white rounded-lg shadow-lg p-6">
+          <div className="bg-white rounded-2xl shadow-lg p-6">
             <h2 className="font-title text-2xl font-bold mb-6">Impostazioni</h2>
             <p className="text-muted">Le impostazioni saranno disponibili a breve.</p>
           </div>
@@ -284,7 +271,7 @@ export default function AccountPage() {
 
       case 'logout':
         return (
-          <div className="bg-white rounded-lg shadow-lg p-6">
+          <div className="bg-white rounded-2xl shadow-lg p-6">
             <h2 className="font-title text-2xl font-bold mb-6">Disconnetti</h2>
             <p className="text-muted mb-6">Sei sicuro di voler disconnetterti dal tuo account?</p>
             <button
@@ -309,7 +296,7 @@ export default function AccountPage() {
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Sidebar Menu */}
         <div className="lg:w-64 flex-shrink-0">
-          <div className="bg-white rounded-lg shadow-lg p-4">
+          <div className="bg-white rounded-2xl shadow-lg p-4">
             <nav className="space-y-2">
               {menuItems.map((item) => {
                 const Icon = item.icon;
