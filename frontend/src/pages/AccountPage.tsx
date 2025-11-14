@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../utils/api';
-import { LogOut, LayoutDashboard, User, Calendar, Settings } from 'lucide-react';
+import { LogOut, LayoutDashboard, User, Calendar, Settings, Edit2, Save, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { it } from 'date-fns/locale';
 import Modal from '../components/Modal';
@@ -10,13 +10,20 @@ import Modal from '../components/Modal';
 type MenuItem = 'details' | 'dashboard' | 'bookings' | 'settings' | 'logout';
 
 export default function AccountPage() {
-  const { user, logout } = useAuth();
+  const { user, logout, updateUser } = useAuth();
   const navigate = useNavigate();
   const [activeMenu, setActiveMenu] = useState<MenuItem>('details');
   const [formData, setFormData] = useState({
-    name: '',
+    firstName: '',
+    lastName: '',
     email: '',
   });
+  const [originalData, setOriginalData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+  });
+  const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
   const [bookings, setBookings] = useState<any[]>([]);
@@ -25,8 +32,16 @@ export default function AccountPage() {
 
   useEffect(() => {
     if (user) {
+      const firstName = user.firstName || '';
+      const lastName = user.lastName || '';
       setFormData({
-        name: user.name,
+        firstName,
+        lastName,
+        email: user.email,
+      });
+      setOriginalData({
+        firstName,
+        lastName,
         email: user.email,
       });
     }
@@ -50,17 +65,29 @@ export default function AccountPage() {
     }
   };
 
+  const handleEdit = () => {
+    setIsEditing(true);
+  };
+
+  const handleCancel = () => {
+    setFormData(originalData);
+    setIsEditing(false);
+    setMessage('');
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
     setMessage('');
 
     try {
-      // Note: Backend doesn't have update user endpoint yet, this is a placeholder
-      setMessage('Funzionalità in sviluppo');
-      // await api.put('/api/users/me', formData);
-    } catch (error) {
-      setMessage('Errore nell\'aggiornamento');
+      await updateUser(formData.firstName, formData.lastName, formData.email);
+      setOriginalData({ ...formData });
+      setIsEditing(false);
+      setMessage('Profilo aggiornato con successo');
+      setTimeout(() => setMessage(''), 3000);
+    } catch (error: any) {
+      setMessage(error.message || 'Errore nell\'aggiornamento');
     } finally {
       setSaving(false);
     }
@@ -84,15 +111,40 @@ export default function AccountPage() {
       case 'details':
         return (
           <div className="bg-white rounded-lg shadow-lg p-6">
-            <h2 className="font-title text-2xl font-bold mb-6">Dettagli Account</h2>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="font-title text-2xl font-bold">Dettagli Account</h2>
+              {!isEditing && (
+                <button
+                  onClick={handleEdit}
+                  className="flex items-center space-x-2 px-6 py-3 text-accent hover:bg-accent/10 rounded-full transition-colors font-medium"
+                  title="Modifica"
+                >
+                  <Edit2 className="w-5 h-5" />
+                  <span>Modifica</span>
+                </button>
+              )}
+            </div>
             <form onSubmit={handleSubmit}>
               <div className="mb-6">
                 <label className="block text-sm font-medium mb-2">Nome</label>
                 <input
                   type="text"
-                  className="w-full px-4 py-2 border border-muted rounded-full focus:outline-none focus:ring-2 focus:ring-accent"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="w-full px-4 py-2 border border-muted rounded-lg focus:outline-none focus:ring-2 focus:ring-accent disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed"
+                  value={formData.firstName}
+                  onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                  disabled={!isEditing}
+                  required
+                />
+              </div>
+
+              <div className="mb-6">
+                <label className="block text-sm font-medium mb-2">Cognome</label>
+                <input
+                  type="text"
+                  className="w-full px-4 py-2 border border-muted rounded-lg focus:outline-none focus:ring-2 focus:ring-accent disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed"
+                  value={formData.lastName}
+                  onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                  disabled={!isEditing}
                   required
                 />
               </div>
@@ -101,9 +153,10 @@ export default function AccountPage() {
                 <label className="block text-sm font-medium mb-2">Email</label>
                 <input
                   type="email"
-                  className="w-full px-4 py-2 border border-muted rounded-full focus:outline-none focus:ring-2 focus:ring-accent"
+                  className="w-full px-4 py-2 border border-muted rounded-lg focus:outline-none focus:ring-2 focus:ring-accent disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  disabled={!isEditing}
                   required
                 />
               </div>
@@ -114,9 +167,27 @@ export default function AccountPage() {
                 </div>
               )}
 
-              <button type="submit" disabled={saving} className="btn-primary">
-                {saving ? 'Salvataggio...' : 'Salva Modifiche'}
-              </button>
+              {isEditing && (
+                <div className="flex items-center space-x-3">
+                  <button
+                    type="button"
+                    onClick={handleCancel}
+                    disabled={saving}
+                    className="flex items-center space-x-2 px-6 py-3 border border-gray-300 rounded-full text-primary hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                  >
+                    <X className="w-4 h-4" />
+                    <span>Annulla</span>
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={saving}
+                    className="flex items-center space-x-2 btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <Save className="w-4 h-4" />
+                    <span>{saving ? 'Salvataggio...' : 'Salva'}</span>
+                  </button>
+                </div>
+              )}
             </form>
           </div>
         );

@@ -357,5 +357,70 @@ router.get('/me', authenticate, async (req: AuthRequest, res) => {
   }
 });
 
+// Update current user
+router.put(
+  '/me',
+  authenticate,
+  [
+    body('firstName').optional().trim().notEmpty().withMessage('Nome non può essere vuoto'),
+    body('lastName').optional().trim().notEmpty().withMessage('Cognome non può essere vuoto'),
+    body('email').optional().isEmail().withMessage('Email non valida'),
+  ],
+  async (req: AuthRequest, res: Response) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    try {
+      const { firstName, lastName, email } = req.body;
+
+      // Check if email is being changed and if it's already taken
+      if (email) {
+        const existingUser = await prisma.user.findUnique({
+          where: { email },
+        });
+        if (existingUser && existingUser.id !== req.userId) {
+          return res.status(400).json({ error: 'Email già registrata' });
+        }
+      }
+
+      const updateData: any = {};
+      if (firstName !== undefined) updateData.firstName = firstName;
+      if (lastName !== undefined) updateData.lastName = lastName;
+      if (email !== undefined) updateData.email = email;
+
+      // Update name if firstName or lastName changed
+      if (firstName !== undefined || lastName !== undefined) {
+        const finalFirstName = firstName !== undefined ? firstName : (await prisma.user.findUnique({ where: { id: req.userId } }))?.firstName;
+        const finalLastName = lastName !== undefined ? lastName : (await prisma.user.findUnique({ where: { id: req.userId } }))?.lastName;
+        updateData.name = `${finalFirstName || ''} ${finalLastName || ''}`.trim() || email?.split('@')[0] || '';
+      }
+
+      const user = await prisma.user.update({
+        where: { id: req.userId },
+        data: updateData,
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          name: true,
+          email: true,
+          role: true,
+          createdAt: true,
+        },
+      });
+
+      res.json({ user });
+    } catch (error: any) {
+      console.error('Update user error:', error);
+      if (error.code === 'P2002') {
+        return res.status(400).json({ error: 'Email già registrata' });
+      }
+      res.status(500).json({ error: 'Errore nell\'aggiornamento utente' });
+    }
+  }
+);
+
 export default router;
 

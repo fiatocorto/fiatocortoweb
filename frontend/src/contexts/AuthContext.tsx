@@ -13,6 +13,8 @@ import { auth, googleProvider } from '../config/firebase';
 
 interface User {
   id: string;
+  firstName?: string | null;
+  lastName?: string | null;
   name: string;
   email: string;
   role: 'ADMIN' | 'CUSTOMER';
@@ -24,6 +26,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   register: (firstName: string, lastName: string, email: string, password: string) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
+  updateUser: (firstName?: string, lastName?: string, email?: string) => Promise<void>;
   logout: () => void;
   isLoading: boolean;
 }
@@ -183,6 +186,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const updateUser = async (firstName?: string, lastName?: string, email?: string) => {
+    try {
+      const response = await axios.put(`${API_URL}/api/auth/me`, {
+        firstName,
+        lastName,
+        email,
+      }, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      const updatedUser = response.data.user;
+      setUser(updatedUser);
+    } catch (error: any) {
+      console.error('Update user error:', error);
+      if (error.response) {
+        throw new Error(error.response.data?.error || 'Errore nell\'aggiornamento profilo');
+      } else if (error.request) {
+        throw new Error('Impossibile connettersi al server. Verifica che il backend sia in esecuzione.');
+      } else {
+        throw new Error('Errore nella configurazione della richiesta');
+      }
+    }
+  };
+
   const logout = async () => {
     try {
       await firebaseSignOut(auth);
@@ -196,7 +224,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, token, login, register, loginWithGoogle, logout, isLoading }}
+      value={{ user, token, login, register, loginWithGoogle, updateUser, logout, isLoading }}
     >
       {children}
     </AuthContext.Provider>

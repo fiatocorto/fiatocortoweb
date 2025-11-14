@@ -8,6 +8,7 @@
     "build": "prisma generate && tsc",
     "start": "node dist/index.js",
     "seed": "tsx src/scripts/seed.ts",
+    "create-admin": "tsx src/scripts/create-admin.ts",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
