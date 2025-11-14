@@ -44,3 +44,7 @@ Thumbs.db
 backend/uploads/
 frontend/public/uploads/
 
+# Firebase Service Account (contains private keys)
+**/firebase-adminsdk-*.json
+**/*-firebase-adminsdk-*.json
+

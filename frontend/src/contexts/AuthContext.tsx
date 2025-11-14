@@ -1,5 +1,15 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import axios from 'axios';
+import { 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword,
+  signInWithPopup,
+  signOut as firebaseSignOut,
+  onAuthStateChanged,
+  User as FirebaseUser,
+  getIdToken
+} from 'firebase/auth';
+import { auth, googleProvider } from '../config/firebase';
 
 interface User {
   id: string;
@@ -12,7 +22,8 @@ interface AuthContextType {
   user: User | null;
   token: string | null;
   login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string) => Promise<void>;
+  register: (firstName: string, lastName: string, email: string, password: string) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
   logout: () => void;
   isLoading: boolean;
 }
@@ -27,85 +38,142 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const storedToken = localStorage.getItem('token');
-    if (storedToken) {
-      setToken(storedToken);
-      fetchUser(storedToken);
-    } else {
-      setIsLoading(false);
-    }
+    // Listen to Firebase auth state changes
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => {
+      if (firebaseUser) {
+        try {
+          const firebaseToken = await getIdToken(firebaseUser);
+          setToken(firebaseToken);
+          await syncUserWithBackend(firebaseToken, firebaseUser);
+        } catch (error) {
+          console.error('Error getting Firebase token:', error);
+          setIsLoading(false);
+        }
+      } else {
+        setUser(null);
+        setToken(null);
+        localStorage.removeItem('token');
+        setIsLoading(false);
+      }
+    });
+
+    return () => unsubscribe();
   }, []);
 
-  const fetchUser = async (authToken: string) => {
+  const syncUserWithBackend = async (firebaseToken: string, firebaseUser: FirebaseUser) => {
     try {
-      const response = await axios.get(`${API_URL}/api/auth/me`, {
-        headers: { Authorization: `Bearer ${authToken}` },
-        timeout: 5000, // 5 secondi timeout
+      const response = await axios.post(`${API_URL}/api/auth/firebase`, {
+        token: firebaseToken,
+        email: firebaseUser.email,
+        displayName: firebaseUser.displayName,
+        photoURL: firebaseUser.photoURL,
       });
-      setUser(response.data.user);
+      const { user: backendUser, token: backendToken } = response.data;
+      setUser(backendUser);
+      setToken(backendToken);
+      localStorage.setItem('token', backendToken);
     } catch (error: any) {
-      console.error('Failed to fetch user:', error);
-      // Rimuovi token solo se è un errore 401 (non autorizzato)
-      if (error.response?.status === 401) {
-        localStorage.removeItem('token');
-        setToken(null);
-      }
-      // Se è un errore di rete, mantieni il token ma non bloccare l'app
+      console.error('Error syncing with backend:', error);
+      // If backend sync fails, we still have Firebase auth
+      setUser({
+        id: firebaseUser.uid,
+        name: firebaseUser.displayName || firebaseUser.email || '',
+        email: firebaseUser.email || '',
+        role: 'CUSTOMER',
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
+
   const login = async (email: string, password: string) => {
     try {
-      const response = await axios.post(`${API_URL}/api/auth/login`, {
-        email,
-        password,
-      });
-      const { user, token } = response.data;
-      setUser(user);
-      setToken(token);
-      localStorage.setItem('token', token);
+      // Use Firebase Authentication
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const firebaseToken = await getIdToken(userCredential.user);
+      
+      // Sync with backend
+      await syncUserWithBackend(firebaseToken, userCredential.user);
     } catch (error: any) {
       console.error('Login error:', error);
-      // Propaga l'errore con un messaggio più chiaro
-      if (error.response) {
-        // Errore dal server
-        throw new Error(error.response.data?.error || 'Errore nel login');
-      } else if (error.request) {
-        // Richiesta fatta ma nessuna risposta
-        throw new Error('Impossibile connettersi al server. Verifica che il backend sia in esecuzione.');
-      } else {
-        // Errore nella configurazione della richiesta
-        throw new Error('Errore nella configurazione della richiesta');
+      let errorMessage = 'Errore nel login';
+      
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+        errorMessage = 'Credenziali non valide';
+      } else if (error.code === 'auth/invalid-email') {
+        errorMessage = 'Email non valida';
+      } else if (error.code === 'auth/too-many-requests') {
+        errorMessage = 'Troppi tentativi. Riprova più tardi.';
+      } else if (error.message) {
+        errorMessage = error.message;
       }
+      
+      throw new Error(errorMessage);
     }
   };
 
-  const register = async (name: string, email: string, password: string) => {
+  const register = async (firstName: string, lastName: string, email: string, password: string) => {
     try {
-      const response = await axios.post(`${API_URL}/api/auth/register`, {
-        name,
-        email,
-        password,
+      // Create user in Firebase
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      
+      // Update display name
+      await userCredential.user.updateProfile({
+        displayName: `${firstName} ${lastName}`.trim(),
       });
-      const { user, token } = response.data;
-      setUser(user);
-      setToken(token);
-      localStorage.setItem('token', token);
+
+      const firebaseToken = await getIdToken(userCredential.user);
+      
+      // Sync with backend
+      await syncUserWithBackend(firebaseToken, userCredential.user);
     } catch (error: any) {
       console.error('Register error:', error);
-      if (error.response) {
-        throw new Error(error.response.data?.error || 'Errore nella registrazione');
-      } else if (error.request) {
-        throw new Error('Impossibile connettersi al server. Verifica che il backend sia in esecuzione.');
-      } else {
-        throw new Error('Errore nella configurazione della richiesta');
+      let errorMessage = 'Errore nella registrazione';
+      
+      if (error.code === 'auth/email-already-in-use') {
+        errorMessage = 'Email già registrata';
+      } else if (error.code === 'auth/invalid-email') {
+        errorMessage = 'Email non valida';
+      } else if (error.code === 'auth/weak-password') {
+        errorMessage = 'Password troppo debole';
+      } else if (error.message) {
+        errorMessage = error.message;
       }
+      
+      throw new Error(errorMessage);
     }
   };
 
-  const logout = () => {
+  const loginWithGoogle = async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const firebaseToken = await getIdToken(result.user);
+      
+      // Sync with backend
+      await syncUserWithBackend(firebaseToken, result.user);
+    } catch (error: any) {
+      console.error('Google login error:', error);
+      let errorMessage = 'Errore durante l\'autenticazione Google';
+      
+      if (error.code === 'auth/popup-closed-by-user') {
+        errorMessage = 'Popup chiuso. Riprova.';
+      } else if (error.code === 'auth/cancelled-popup-request') {
+        errorMessage = 'Richiesta annullata. Riprova.';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      throw new Error(errorMessage);
+    }
+  };
+
+  const logout = async () => {
+    try {
+      await firebaseSignOut(auth);
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
     setUser(null);
     setToken(null);
     localStorage.removeItem('token');
@@ -113,7 +181,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, token, login, register, logout, isLoading }}
+      value={{ user, token, login, register, loginWithGoogle, logout, isLoading }}
     >
       {children}
     </AuthContext.Provider>
