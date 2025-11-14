@@ -8,6 +8,7 @@ import ToursPage from './pages/ToursPage';
 import TourDetailPage from './pages/TourDetailPage';
 import CalendarPage from './pages/CalendarPage';
 import BookingPage from './pages/BookingPage';
+import BookingDetailPage from './pages/BookingDetailPage';
 import AccountPage from './pages/AccountPage';
 import MyBookingsPage from './pages/MyBookingsPage';
 import LoginPage from './pages/LoginPage';
@@ -66,6 +67,14 @@ function AppContent() {
             element={
               <ProtectedRoute>
                 <MyBookingsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/bookings/:id"
+            element={
+              <ProtectedRoute>
+                <BookingDetailPage />
               </ProtectedRoute>
             }
           />

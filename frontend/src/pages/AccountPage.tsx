@@ -221,35 +221,46 @@ export default function AccountPage() {
               <div className="space-y-4">
                 {bookings.map((booking) => (
                   <div key={booking.id} className="border border-gray-200 rounded-lg p-4">
-                    <h3 className="font-title text-xl font-bold mb-2">
-                      {booking.tour?.tour?.title || 'Tour'}
-                    </h3>
-                    <div className="space-y-1 text-sm text-muted mb-3">
-                      <div className="flex items-center">
-                        <Calendar className="w-4 h-4 mr-2" />
-                        {booking.tour?.dateStart && format(new Date(booking.tour.dateStart), 'dd MMMM yyyy HH:mm', {
-                          locale: it,
-                        })}
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h3 className="font-title text-xl font-bold mb-2">
+                          {booking.tour?.title || 'Tour'}
+                        </h3>
+                        <div className="space-y-1 text-sm text-muted mb-3">
+                          <div className="flex items-center">
+                            <Calendar className="w-4 h-4 mr-2" />
+                            {booking.tour?.dateStart && format(new Date(booking.tour.dateStart), 'dd MMMM yyyy', {
+                              locale: it,
+                            })}
+                          </div>
+                          <div className="flex items-center">
+                            <span className="font-medium">Prezzo totale: {booking.totalPrice === 0 ? 'Free' : `€${booking.totalPrice?.toFixed(2)}`}</span>
+                          </div>
+                          {booking.createdAt && (
+                            <div className="flex items-center">
+                              <span>Data acquisto: {format(new Date(booking.createdAt), 'dd MMMM yyyy', {
+                                locale: it,
+                              })}</span>
+                            </div>
+                          )}
+                          <div>
+                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                              booking.paymentStatus === 'PAID' 
+                                ? 'bg-green-100 text-green-800' 
+                                : 'bg-yellow-100 text-yellow-800'
+                            }`}>
+                              {booking.paymentStatus === 'PAID' ? 'Pagato' : 'In attesa di pagamento'}
+                            </span>
+                          </div>
+                        </div>
                       </div>
-                      <div className="flex items-center">
-                        <span className="font-medium">Prezzo totale: €{booking.totalPrice?.toFixed(2)}</span>
-                      </div>
-                      <div>
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          booking.paymentStatus === 'PAID' 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-yellow-100 text-yellow-800'
-                        }`}>
-                          {booking.paymentStatus === 'PAID' ? 'Pagato' : 'In attesa di pagamento'}
-                        </span>
-                      </div>
+                      <Link 
+                        to={`/bookings/${booking.id}`}
+                        className="ml-4 px-4 py-2 border-2 border-gray-200 rounded-full hover:border-accent hover:bg-accent/5 transition-colors font-semibold text-primary whitespace-nowrap"
+                      >
+                        Dettagli
+                      </Link>
                     </div>
-                    <Link 
-                      to={`/tours/${booking.tour?.tour?.slug}`}
-                      className="text-accent hover:underline text-sm"
-                    >
-                      Vedi dettagli tour →
-                    </Link>
                   </div>
                 ))}
               </div>
