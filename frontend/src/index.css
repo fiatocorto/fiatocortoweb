@@ -72,6 +72,27 @@
   .badge-success {
     @apply bg-green-100 text-green-800;
   }
+
+  /* Navbar underline animation */
+  .nav-link-underline {
+    position: relative;
+  }
+
+  .nav-link-underline::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background-color: #fbb017;
+    transition: width 0.3s ease-in-out;
+  }
+
+  .nav-link-underline:hover::after,
+  .nav-link-underline.active::after {
+    width: 100%;
+  }
 }
 
 /* React DatePicker Custom Styles */

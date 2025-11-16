@@ -71,12 +71,12 @@ export default function MyBookingsPage() {
               <div className="flex flex-col md:flex-row md:items-center md:justify-between">
                 <div className="flex-1">
                   <h3 className="font-title text-xl font-bold mb-2">
-                    {booking.tour.tour.title}
+                    {booking.tour?.title || booking.tour?.tour?.title || 'Tour'}
                   </h3>
                   <div className="space-y-1 text-sm text-muted">
                     <div className="flex items-center">
                       <Calendar className="w-4 h-4 mr-2" />
-                      {format(new Date(booking.tour.dateStart), 'dd MMMM yyyy HH:mm', {
+                      {booking.tour?.dateStart && format(new Date(booking.tour.dateStart), 'dd MMMM yyyy', {
                         locale: it,
                       })}
                     </div>
@@ -107,19 +107,16 @@ export default function MyBookingsPage() {
                 <div className="mt-4 md:mt-0 md:ml-6 flex flex-col space-y-2">
                   <div className="text-right mb-2">
                     <p className="text-2xl font-bold text-accent">
-                      €{booking.totalPrice.toFixed(2)}
+                      €{(booking.totalPrice || 0).toFixed(2)}
                     </p>
                   </div>
                   <div className="flex space-x-2">
-                    <button
-                      onClick={() => {
-                        setSelectedBooking(booking);
-                        setShowQR(true);
-                      }}
+                    <Link
+                      to={`/bookings/${booking.id}`}
                       className="btn-outline text-sm"
                     >
-                      QR Code
-                    </button>
+                      Dettagli
+                    </Link>
                     {booking.paymentStatus !== 'CANCELLED' && (
                       <button
                         onClick={() => handleCancel(booking.id, true)}

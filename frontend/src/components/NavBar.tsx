@@ -53,7 +53,7 @@ export default function NavBar() {
           <div className="relative flex items-center pl-4 sm:pl-6 lg:pl-8 pr-16 overflow-hidden w-[400px] bg-[#0f172a]">
             <Link to="/" className="flex items-center relative z-10">
               <img 
-                src="/resources/Bianco.png" 
+                src="/resources/Completo Bianco.png" 
                 alt="Fiato Corto" 
                 className="h-16 w-auto object-contain"
               />
@@ -86,6 +86,12 @@ export default function NavBar() {
               <div className="flex items-center space-x-2">
                 {user ? (
                   <>
+                    <Link
+                      to="/bookings"
+                      className={`px-4 py-2 rounded-full transition-colors text-sm ${isAdminRoute ? (isActive('/bookings') ? 'text-primary font-semibold' : 'text-primary hover:text-primary/80') : (isActive('/bookings') ? 'text-accent' : 'hover:text-accent')}`}
+                    >
+                      Le mie prenotazioni
+                    </Link>
                     {user.role === 'ADMIN' && (
                       <Link
                         to="/admin"
@@ -119,31 +125,31 @@ export default function NavBar() {
               <div className="flex-1 flex justify-start items-center space-x-6">
                 <Link 
                   to="/" 
-                  className={`transition-colors font-medium text-base ${isActive('/') ? 'text-accent' : 'text-primary hover:text-accent'}`}
+                  className={`nav-link-underline transition-colors font-medium text-base pb-1 ${isActive('/') ? 'text-accent active' : 'text-primary hover:text-accent'}`}
                 >
                   Home
                 </Link>
                 <Link 
                   to="/tours" 
-                  className={`transition-colors font-medium text-base ${isActive('/tours') ? 'text-accent' : 'text-primary hover:text-accent'}`}
+                  className={`nav-link-underline transition-colors font-medium text-base pb-1 ${isActive('/tours') ? 'text-accent active' : 'text-primary hover:text-accent'}`}
                 >
                   Tour
                 </Link>
                 <Link 
                   to="/calendar" 
-                  className={`transition-colors font-medium text-base ${isActive('/calendar') ? 'text-accent' : 'text-primary hover:text-accent'}`}
+                  className={`nav-link-underline transition-colors font-medium text-base pb-1 ${isActive('/calendar') ? 'text-accent active' : 'text-primary hover:text-accent'}`}
                 >
                   Calendario
                 </Link>
                 <Link 
                   to="/about" 
-                  className={`transition-colors font-medium text-base ${isActive('/about') ? 'text-accent' : 'text-primary hover:text-accent'}`}
+                  className={`nav-link-underline transition-colors font-medium text-base pb-1 ${isActive('/about') ? 'text-accent active' : 'text-primary hover:text-accent'}`}
                 >
                   Chi siamo
                 </Link>
                 <Link 
                   to="/contacts" 
-                  className={`transition-colors font-medium text-base ${isActive('/contacts') ? 'text-accent' : 'text-primary hover:text-accent'}`}
+                  className={`nav-link-underline transition-colors font-medium text-base pb-1 ${isActive('/contacts') ? 'text-accent active' : 'text-primary hover:text-accent'}`}
                 >
                   Contatti
                 </Link>
@@ -222,35 +228,35 @@ export default function NavBar() {
             <div className="space-y-2">
             <Link
               to="/"
-              className={`block transition-colors ${isActive('/') ? 'text-accent' : 'hover:text-accent'}`}
+              className={`nav-link-underline block transition-colors py-2 ${isActive('/') ? 'text-accent active' : 'hover:text-accent'}`}
               onClick={() => setMobileMenuOpen(false)}
             >
               Home
             </Link>
             <Link
               to="/tours"
-              className={`block transition-colors ${isActive('/tours') ? 'text-accent' : 'hover:text-accent'}`}
+              className={`nav-link-underline block transition-colors py-2 ${isActive('/tours') ? 'text-accent active' : 'hover:text-accent'}`}
               onClick={() => setMobileMenuOpen(false)}
             >
               Tour
             </Link>
             <Link
               to="/calendar"
-              className={`block transition-colors ${isActive('/calendar') ? 'text-accent' : 'hover:text-accent'}`}
+              className={`nav-link-underline block transition-colors py-2 ${isActive('/calendar') ? 'text-accent active' : 'hover:text-accent'}`}
               onClick={() => setMobileMenuOpen(false)}
             >
               Calendario
             </Link>
             <Link
               to="/about"
-              className={`block transition-colors ${isActive('/about') ? 'text-accent' : 'hover:text-accent'}`}
+              className={`nav-link-underline block transition-colors py-2 ${isActive('/about') ? 'text-accent active' : 'hover:text-accent'}`}
               onClick={() => setMobileMenuOpen(false)}
             >
               Chi siamo
             </Link>
             <Link
               to="/contacts"
-              className={`block transition-colors ${isActive('/contacts') ? 'text-accent' : 'hover:text-accent'}`}
+              className={`nav-link-underline block transition-colors py-2 ${isActive('/contacts') ? 'text-accent active' : 'hover:text-accent'}`}
               onClick={() => setMobileMenuOpen(false)}
             >
               Contatti
@@ -259,7 +265,7 @@ export default function NavBar() {
               <>
                 <Link
                   to="/bookings"
-                  className={`block transition-colors ${isActive('/bookings') ? 'text-accent' : 'hover:text-accent'}`}
+                  className={`nav-link-underline block transition-colors py-2 ${isActive('/bookings') ? 'text-accent active' : 'hover:text-accent'}`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Le mie prenotazioni
@@ -267,7 +273,7 @@ export default function NavBar() {
                 {user.role === 'ADMIN' && (
                   <Link
                     to="/admin"
-                    className={`block transition-colors ${isActive('/admin') ? 'text-accent' : 'hover:text-accent'}`}
+                    className={`nav-link-underline block transition-colors py-2 ${isActive('/admin') ? 'text-accent active' : 'hover:text-accent'}`}
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Admin

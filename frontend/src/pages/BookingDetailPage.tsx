@@ -129,7 +129,7 @@ export default function BookingDetailPage() {
         {/* Header con link indietro */}
         <div className="mb-6">
           <Link
-            to="/account"
+            to="/bookings"
             className="inline-flex items-center text-muted hover:text-primary transition-colors mb-4"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -161,8 +161,17 @@ export default function BookingDetailPage() {
             )}
 
             {/* Titolo del tour */}
-            <div>
-              <h2 className="font-title text-2xl font-bold mb-2">{booking.tour?.title || 'Tour'}</h2>
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="font-title text-2xl font-bold">{booking.tour?.title || 'Tour'}</h2>
+              {/* Link al tour */}
+              {booking.tour?.slug && (
+                <Link
+                  to={`/tours/${booking.tour.slug}`}
+                  className="px-4 py-2 bg-accent text-primary rounded-full hover:bg-accent/90 transition-colors font-semibold text-sm"
+                >
+                  Pagina del tour
+                </Link>
+              )}
             </div>
 
             {/* Data del tour */}
@@ -181,21 +190,21 @@ export default function BookingDetailPage() {
               <div className="flex items-center text-muted">
                 <Calendar className="w-5 h-5 mr-2" />
                 <span>
-                  Data acquisto: {format(new Date(booking.createdAt), 'dd MMMM yyyy', { locale: it })}
+                  Data acquisto: {format(new Date(booking.createdAt), 'dd MMMM yyyy HH:mm', { locale: it })}
                 </span>
               </div>
             )}
 
             {/* Numero adulti e bambini */}
-            <div className="grid grid-cols-2 gap-4">
+            <div>
               <div className="flex items-center">
                 <Users className="w-5 h-5 mr-2 text-muted" />
                 <span className="text-muted">Adulti: <strong className="text-primary">{booking.adults}</strong></span>
               </div>
-              <div className="flex items-center">
+              {/* <div className="flex items-center">
                 <Users className="w-5 h-5 mr-2 text-muted" />
                 <span className="text-muted">Bambini: <strong className="text-primary">{booking.children}</strong></span>
-              </div>
+              </div> */}
             </div>
 
             {/* Prezzo totale */}
@@ -228,18 +237,6 @@ export default function BookingDetailPage() {
                 <div className="flex justify-center">
                   <QRBadge qrCode={booking.qrCode} />
                 </div>
-              </div>
-            )}
-
-            {/* Link al tour */}
-            {booking.tour?.slug && (
-              <div className="pt-4 border-t">
-                <Link
-                  to={`/tours/${booking.tour.slug}`}
-                  className="inline-flex items-center text-accent hover:underline"
-                >
-                  Pagina del tour →
-                </Link>
               </div>
             )}
 

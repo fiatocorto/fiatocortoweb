@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { X, Type, DollarSign, Globe, Image, MapPin, Clock, Calendar, Users, Mountain, Camera, CheckCircle, XCircle, FileText, ArrowLeft } from 'lucide-react';
+import { X, Type, DollarSign, Globe, Image, MapPin, Clock, Calendar, Users, Mountain, Camera, CheckCircle, XCircle, FileText, ArrowLeft, Upload, Eye } from 'lucide-react';
 import DatePicker, { registerLocale } from 'react-datepicker';
 import { it } from 'date-fns/locale';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -79,11 +79,19 @@ export default function AdminEditTour() {
     dateStart: null as Date | null,
     dateEnd: null as Date | null,
     gallery: '',
+    whatsappLink: '',
+    gpxTrack: '',
+    latitude: '',
+    longitude: '',
   });
   const [submitting, setSubmitting] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
   const [uploadingGallery, setUploadingGallery] = useState(false);
+  const [uploadingGpx, setUploadingGpx] = useState(false);
   const [showUnsavedWarning, setShowUnsavedWarning] = useState(false);
+  const [showSavedMessage, setShowSavedMessage] = useState(false);
+  const gpxInputRef = useRef<HTMLInputElement>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileUpload = async (file: File): Promise<string> => {
     const formData = new FormData();
@@ -125,12 +133,50 @@ export default function AdminEditTour() {
     try {
       const uploadPromises = Array.from(files).map(file => handleFileUpload(file));
       const urls = await Promise.all(uploadPromises);
-      const galleryString = urls.join(', ');
-      setFormData({ ...formData, gallery: galleryString });
+      const existingGallery = formData.gallery ? formData.gallery.split(',').filter(Boolean) : [];
+      setFormData({ ...formData, gallery: [...existingGallery, ...urls].join(',') });
     } catch (error) {
       alert('Errore nel caricamento delle immagini della galleria');
     } finally {
       setUploadingGallery(false);
+    }
+  };
+
+  const removeGalleryImage = (indexToRemove: number) => {
+    const galleryArray = formData.gallery ? formData.gallery.split(',').map(url => url.trim()).filter(Boolean) : [];
+    const updatedGallery = galleryArray.filter((_, index) => index !== indexToRemove);
+    setFormData({ ...formData, gallery: updatedGallery.join(',') });
+  };
+
+  const handleGpxUpload = async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append('gpx', file);
+
+    try {
+      const response = await api.post('/api/upload/gpx', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response.data.url;
+    } catch (error) {
+      console.error('Upload error:', error);
+      throw new Error('Errore nel caricamento del file GPX');
+    }
+  };
+
+  const handleGpxChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingGpx(true);
+    try {
+      const url = await handleGpxUpload(file);
+      setFormData({ ...formData, gpxTrack: url });
+    } catch (error) {
+      alert('Errore nel caricamento del file GPX');
+    } finally {
+      setUploadingGpx(false);
     }
   };
 
@@ -167,6 +213,10 @@ export default function AdminEditTour() {
         dateStart: defaultStartDate,
         dateEnd: defaultEndDate,
         gallery: fetchedTour?.gallery || '',
+        whatsappLink: fetchedTour?.whatsappLink || '',
+        gpxTrack: fetchedTour?.gpxTrack || '',
+        latitude: fetchedTour?.latitude?.toString() || '',
+        longitude: fetchedTour?.longitude?.toString() || '',
       };
       
       setFormData(initialFormData);
@@ -257,6 +307,11 @@ export default function AdminEditTour() {
       // Aggiorna i dati originali con quelli salvati
       setOriginalData(JSON.parse(JSON.stringify(formData)));
       setShowUnsavedWarning(false);
+      setShowSavedMessage(true);
+      // Nascondi il messaggio dopo 3 secondi
+      setTimeout(() => {
+        setShowSavedMessage(false);
+      }, 3000);
     } catch (error) {
       alert('Errore nel salvataggio');
     } finally {
@@ -294,14 +349,32 @@ export default function AdminEditTour() {
               <h1 className="font-title text-4xl font-bold text-primary">Modifica Tour</h1>
               <p className="text-muted mt-2">Modifica le informazioni del tour</p>
             </div>
-            <button 
-              type="submit" 
-              form="edit-tour-form"
-              disabled={submitting || !hasChanges()} 
-              className="px-6 py-3 bg-accent text-white rounded-full hover:bg-accent/90 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {submitting ? 'Salvataggio...' : 'Salva Modifiche'}
-            </button>
+            <div className="flex items-center gap-4">
+              {showSavedMessage && (
+                <span className="text-green-600 font-medium">
+                  Modifiche salvate
+                </span>
+              )}
+              <button 
+                type="submit" 
+                form="edit-tour-form"
+                disabled={submitting || !hasChanges()} 
+                className="px-6 py-3 bg-accent text-white rounded-full hover:bg-accent/90 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {submitting ? 'Salvataggio...' : 'Salva Modifiche'}
+              </button>
+              {tour && (
+                <Link
+                  to={`/tours/${tour.slug || tour.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-3 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors"
+                  title="Visualizza tour nel frontend"
+                >
+                  <Eye className="w-5 h-5 text-primary" />
+                </Link>
+              )}
+            </div>
           </div>
         </div>
 
@@ -445,6 +518,21 @@ export default function AdminEditTour() {
                       </div>
                     ) : formData.coverImage ? (
                       <div className="w-full h-full relative">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setFormData({ ...formData, coverImage: '' });
+                            if (coverInputRef.current) {
+                              coverInputRef.current.value = '';
+                            }
+                          }}
+                          className="absolute top-2 right-2 p-1 bg-red-50 text-red-600 hover:bg-red-100 rounded-full transition-colors z-10"
+                          title="Rimuovi immagine di copertina"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
                         <img 
                           src={formData.coverImage} 
                           alt="Preview" 
@@ -503,9 +591,29 @@ export default function AdminEditTour() {
                     )}
                   </label>
                 </div>
-                {formData.gallery && (
-                  <div className="mt-3 text-sm text-muted">
-                    {formData.gallery.split(',').length} immagine/i caricate
+                {formData.gallery && formData.gallery.split(',').map(url => url.trim()).filter(Boolean).length > 0 && (
+                  <div className="mt-4">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                      {formData.gallery.split(',').map(url => url.trim()).filter(Boolean).map((imageUrl, index) => (
+                        <div key={index} className="relative group">
+                          <div className="w-full h-32 rounded-lg overflow-hidden border-2 border-gray-200">
+                            <img 
+                              src={imageUrl} 
+                              alt={`Gallery ${index + 1}`}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removeGalleryImage(index)}
+                            className="absolute -top-2 -right-2 p-1 bg-red-50 text-red-600 hover:bg-red-100 rounded-full transition-colors z-10 opacity-0 group-hover:opacity-100"
+                            title="Rimuovi immagine"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
@@ -521,14 +629,107 @@ export default function AdminEditTour() {
               <h2 className="text-xl font-semibold text-primary">Itinerario</h2>
             </div>
             
-            <div>
-              <textarea
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-accent focus:border-transparent transition-all outline-none resize-none"
-                rows={6}
-                value={formData.itinerary}
-                onChange={(e) => setFormData({ ...formData, itinerary: e.target.value })}
-                placeholder="Descrivi l'itinerario del tour..."
-              />
+            <div className="space-y-6">
+              <div>
+                <textarea
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-accent focus:border-transparent transition-all outline-none resize-none"
+                  rows={6}
+                  value={formData.itinerary}
+                  onChange={(e) => setFormData({ ...formData, itinerary: e.target.value })}
+                  placeholder="Descrivi l'itinerario del tour..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-primary mb-2">
+                  Traccia GPX
+                </label>
+                <div className="relative">
+                  <input
+                    ref={gpxInputRef}
+                    type="file"
+                    accept=".gpx"
+                    onChange={handleGpxChange}
+                    className="hidden"
+                    id="gpx-input"
+                    disabled={uploadingGpx}
+                  />
+                  <label
+                    htmlFor="gpx-input"
+                    className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-xl cursor-pointer transition-colors ${
+                      uploadingGpx
+                        ? 'border-gray-300 bg-gray-50'
+                        : 'border-gray-300 hover:border-accent hover:bg-accent/5'
+                    }`}
+                  >
+                    {uploadingGpx ? (
+                      <div className="flex flex-col items-center">
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-accent mb-2"></div>
+                        <span className="text-sm text-muted">Caricamento...</span>
+                      </div>
+                    ) : formData.gpxTrack ? (
+                      <div className="flex flex-col items-center relative w-full">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setFormData({ ...formData, gpxTrack: '' });
+                            if (gpxInputRef.current) {
+                              gpxInputRef.current.value = '';
+                            }
+                          }}
+                          className="absolute top-2 right-2 p-1 bg-red-50 text-red-600 hover:bg-red-100 rounded-full transition-colors z-10"
+                          title="Rimuovi file GPX"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                        <FileText className="w-8 h-8 text-green-600 mb-2" />
+                        <span className="text-sm text-primary font-medium">File GPX caricato</span>
+                        <span className="text-xs text-muted mt-1">{formData.gpxTrack.split('/').pop()}</span>
+                        <span className="text-xs text-muted mt-1">Clicca per cambiare</span>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center">
+                        <Upload className="w-8 h-8 text-muted mb-2" />
+                        <span className="text-sm text-muted">Clicca per caricare un file GPX</span>
+                        <span className="text-xs text-muted mt-1">Formato .gpx (max 10MB)</span>
+                      </div>
+                    )}
+                  </label>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-semibold text-primary mb-2">
+                    Latitudine
+                  </label>
+                  <input
+                    type="number"
+                    step="any"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-accent focus:border-transparent transition-all outline-none"
+                    value={formData.latitude}
+                    onChange={(e) => setFormData({ ...formData, latitude: e.target.value })}
+                    placeholder="Es: 37.7749"
+                  />
+                  <p className="text-xs text-muted mt-1">Coordinate geografiche del punto di partenza</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-primary mb-2">
+                    Longitudine
+                  </label>
+                  <input
+                    type="number"
+                    step="any"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-accent focus:border-transparent transition-all outline-none"
+                    value={formData.longitude}
+                    onChange={(e) => setFormData({ ...formData, longitude: e.target.value })}
+                    placeholder="Es: -122.4194"
+                  />
+                  <p className="text-xs text-muted mt-1">Coordinate geografiche del punto di partenza</p>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -798,6 +999,31 @@ export default function AdminEditTour() {
                 placeholder="Inserisci i termini e condizioni del tour..."
               />
             </div>
+          </div>
+
+          {/* WhatsApp */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <div className="flex items-center mb-6">
+              <div className="p-2 bg-accent/10 rounded-lg mr-3">
+                <Globe className="w-5 h-5 text-accent" />
+              </div>
+              <h2 className="text-xl font-semibold text-primary">Link WhatsApp</h2>
+            </div>
+            
+              <div>
+                <label className="block text-sm font-semibold text-primary mb-2">
+                  Link Gruppo WhatsApp <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="url"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-accent focus:border-transparent transition-all outline-none"
+                  value={formData.whatsappLink}
+                  onChange={(e) => setFormData({ ...formData, whatsappLink: e.target.value })}
+                  placeholder="https://chat.whatsapp.com/..."
+                  required
+                />
+                <p className="text-xs text-muted mt-1">Inserisci il link del gruppo WhatsApp specifico per questo tour</p>
+              </div>
           </div>
         </form>
       </div>

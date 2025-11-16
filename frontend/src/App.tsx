@@ -15,6 +15,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import AboutPage from './pages/AboutPage';
 import ContactsPage from './pages/ContactsPage';
+import TermsPage from './pages/TermsPage';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminTours from './pages/admin/AdminTours';
 import AdminEditTour from './pages/admin/AdminEditTour';
@@ -43,6 +44,7 @@ function AppContent() {
           <Route path="/calendar" element={<CalendarPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contacts" element={<ContactsPage />} />
+          <Route path="/terms" element={<TermsPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           

@@ -48,6 +48,10 @@ model Tour {
   maxSeats      Int       @map("max_seats")
   difficulty    String?
   isMultiDay    Boolean?  @default(false) @map("is_multi_day")
+  whatsappLink  String?   @map("whatsapp_link")
+  gpxTrack      String?   @map("gpx_track")
+  latitude      Float?    @map("latitude")
+  longitude     Float?    @map("longitude")
   createdBy     String?   @map("created_by")
   createdAt     DateTime? @default(now()) @map("created_at")
 

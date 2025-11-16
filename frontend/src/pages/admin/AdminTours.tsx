@@ -1,13 +1,19 @@
-import { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, Eye } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Plus, Edit, Trash2, Eye, MoreVertical, Copy } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../../utils/api';
 import AdminSidebar from '../../components/admin/AdminSidebar';
+import Modal from '../../components/Modal';
 
 export default function AdminTours() {
   const navigate = useNavigate();
   const [tours, setTours] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [tourToDelete, setTourToDelete] = useState<{ id: string; title: string } | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const menuRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
   useEffect(() => {
     fetchTours();
@@ -24,18 +30,60 @@ export default function AdminTours() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Sei sicuro di voler eliminare questo tour?')) {
-      return;
-    }
+  const handleDeleteClick = (tour: any) => {
+    setTourToDelete({ id: tour.id, title: tour.title });
+    setShowDeleteModal(true);
+    setOpenMenuId(null);
+  };
 
+  const handleDeleteConfirm = async () => {
+    if (!tourToDelete) return;
+
+    setDeleting(true);
     try {
-      await api.delete(`/api/tours/${id}`);
+      await api.delete(`/api/tours/${tourToDelete.id}`);
       fetchTours();
+      setShowDeleteModal(false);
+      setTourToDelete(null);
     } catch (error) {
       alert('Errore nell\'eliminazione');
+    } finally {
+      setDeleting(false);
     }
   };
+
+  const handleDuplicate = async (id: string) => {
+    try {
+      const response = await api.post(`/api/tours/${id}/duplicate`);
+      fetchTours();
+      setOpenMenuId(null);
+      // Opzionale: navigare al tour duplicato
+      // navigate(`/admin/tours/${response.data.tour.id}/edit`);
+    } catch (error) {
+      alert('Errore nella duplicazione del tour');
+    }
+  };
+
+  const toggleMenu = (tourId: string) => {
+    setOpenMenuId(openMenuId === tourId ? null : tourId);
+  };
+
+  // Chiudi il menu quando si clicca fuori
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (openMenuId) {
+        const menuElement = menuRefs.current[openMenuId];
+        if (menuElement && !menuElement.contains(event.target as Node)) {
+          setOpenMenuId(null);
+        }
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [openMenuId]);
 
   return (
     <div>
@@ -114,30 +162,52 @@ export default function AdminTours() {
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex space-x-2">
-                        <Link
-                          to={`/tours/${tour.slug}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 hover:text-blue-800"
-                          title="Visualizza nel frontend"
-                        >
-                          <Eye className="w-5 h-5" />
-                        </Link>
-                        <Link
-                          to={`/admin/tours/${tour.id}/edit`}
-                          className="text-accent hover:text-accent/80"
-                          title="Modifica"
-                        >
-                          <Edit className="w-5 h-5" />
-                        </Link>
+                      <div className="relative" ref={(el) => (menuRefs.current[tour.id] = el)}>
                         <button
-                          onClick={() => handleDelete(tour.id)}
-                          className="text-red-600 hover:text-red-800"
-                          title="Elimina"
+                          onClick={() => toggleMenu(tour.id)}
+                          className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                          title="Menu azioni"
                         >
-                          <Trash2 className="w-5 h-5" />
+                          <MoreVertical className="w-5 h-5 text-gray-600" />
                         </button>
+                        {openMenuId === tour.id && (
+                          <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
+                            <div className="py-1">
+                              <Link
+                                to={`/tours/${tour.slug}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={() => setOpenMenuId(null)}
+                                className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                              >
+                                <Eye className="w-4 h-4 mr-3" />
+                                Visualizza
+                              </Link>
+                              <Link
+                                to={`/admin/tours/${tour.id}/edit`}
+                                onClick={() => setOpenMenuId(null)}
+                                className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                              >
+                                <Edit className="w-4 h-4 mr-3" />
+                                Modifica
+                              </Link>
+                              <button
+                                onClick={() => handleDuplicate(tour.id)}
+                                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                              >
+                                <Copy className="w-4 h-4 mr-3" />
+                                Duplica
+                              </button>
+                              <button
+                                onClick={() => handleDeleteClick(tour)}
+                                className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                              >
+                                <Trash2 className="w-4 h-4 mr-3" />
+                                Elimina
+                              </button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -146,6 +216,45 @@ export default function AdminTours() {
             </table>
           </div>
         )}
+
+        <Modal
+          isOpen={showDeleteModal}
+          onClose={() => {
+            if (!deleting) {
+              setShowDeleteModal(false);
+              setTourToDelete(null);
+            }
+          }}
+          title="Conferma Eliminazione"
+          size="sm"
+        >
+          <div className="space-y-4">
+            <p className="text-muted">
+              Sei sicuro di voler eliminare il tour <strong>"{tourToDelete?.title}"</strong>?
+              <br />
+              Questa azione non può essere annullata.
+            </p>
+            <div className="flex space-x-3 justify-end">
+              <button
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setTourToDelete(null);
+                }}
+                className="px-4 py-2 rounded-full border border-gray-300 text-primary hover:bg-gray-50 transition-colors"
+                disabled={deleting}
+              >
+                Annulla
+              </button>
+              <button
+                onClick={handleDeleteConfirm}
+                disabled={deleting}
+                className="px-4 py-2 rounded-full bg-red-600 text-white hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {deleting ? 'Eliminazione...' : 'Elimina'}
+              </button>
+            </div>
+          </div>
+        </Modal>
       </div>
     </div>
   );

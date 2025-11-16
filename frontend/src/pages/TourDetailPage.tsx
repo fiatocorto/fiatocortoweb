@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Clock, Users, Calendar, Check, X, Globe, Activity, Headphones, Mail, HelpCircle, Share2, Copy, Edit } from 'lucide-react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { Clock, Users, Calendar, Check, X, Globe, Activity, Headphones, Mail, HelpCircle, Share2, Copy, Edit, Download, MapPin, CheckCircle, MessageCircle } from 'lucide-react';
 import { format, isSameDay } from 'date-fns';
 import { it } from 'date-fns/locale';
 import api from '../utils/api';
@@ -8,6 +8,17 @@ import { useAuth } from '../contexts/AuthContext';
 import ImageGallery from '../components/ImageGallery';
 import Footer from '../components/Footer';
 import Modal from '../components/Modal';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+
+// Fix per le icone di Leaflet
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
 import QRBadge from '../components/QRBadge';
 
 export default function TourDetailPage() {
@@ -25,6 +36,7 @@ export default function TourDetailPage() {
     paymentMethod: 'ONSITE' as 'ONSITE' | 'CARD_STUB' | 'FREE',
     notes: '',
   });
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [bookingResult, setBookingResult] = useState<any>(null);
 
@@ -53,7 +65,7 @@ export default function TourDetailPage() {
       setBooking({
         adults: 1,
         children: 0,
-        paymentMethod: tour.priceAdult === 0 && tour.priceChild === 0 ? 'FREE' : 'ONSITE',
+        paymentMethod: tour?.priceAdult === 0 && tour?.priceChild === 0 ? 'FREE' : 'ONSITE',
         notes: '',
       });
       setBookingResult(null);
@@ -168,13 +180,13 @@ export default function TourDetailPage() {
         {/* Prima riga: Titolo, Data, Condividi */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div className="flex-1">
-            <h1 className="font-title text-4xl font-bold mb-2">{tour.title}</h1>
+            <h1 className="font-title text-4xl font-bold mb-2">{tour?.title || ''}</h1>
             <div className="flex items-center space-x-4" style={{ color: 'rgb(73, 77, 89)' }}>
             <span className="flex items-center">
               <Calendar className="w-4 h-4 mr-1" />
-              {format(new Date(tour.dateStart), 'dd MMMM yyyy', { locale: it })}
+              {tour?.dateStart && format(new Date(tour.dateStart), 'dd MMMM yyyy', { locale: it })}
             </span>
-              {tour.dateEnd && !isSameDay(new Date(tour.dateStart), new Date(tour.dateEnd)) && (
+              {tour?.dateEnd && tour?.dateStart && !isSameDay(new Date(tour.dateStart), new Date(tour.dateEnd)) && (
                 <>
                   <span>-</span>
                   <span className="flex items-center">
@@ -193,13 +205,48 @@ export default function TourDetailPage() {
               <span className="font-semibold text-primary">Condividi</span>
             </button>
             {user?.role === 'ADMIN' && tour && (
-              <button
-                onClick={() => navigate(`/admin/tours/${tour.id}/edit`)}
-                className="flex items-center justify-center space-x-2 px-4 py-3 border-2 border-gray-200 rounded-full hover:border-accent hover:bg-accent/5 transition-colors whitespace-nowrap"
-              >
-                <Edit className="w-5 h-5 text-primary" />
-                <span className="font-semibold text-primary">Modifica</span>
-              </button>
+              <>
+                {tour.gpxTrack && (
+                  <button
+                    onClick={async () => {
+                      try {
+                        // Se l'URL è relativo, aggiungi il dominio base
+                        let gpxUrl = tour.gpxTrack;
+                        if (gpxUrl.startsWith('/')) {
+                          gpxUrl = window.location.origin + gpxUrl;
+                        }
+                        
+                        // Scarica il file
+                        const response = await fetch(gpxUrl);
+                        const blob = await response.blob();
+                        const url = window.URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.download = `${tour.slug || tour.title}-track.gpx`;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        window.URL.revokeObjectURL(url);
+                      } catch (error) {
+                        console.error('Errore nel download del file GPX:', error);
+                        alert('Errore nel download del file GPX');
+                      }
+                    }}
+                    className="flex items-center justify-center space-x-2 px-4 py-3 border-2 border-gray-200 rounded-full hover:border-accent hover:bg-accent/5 transition-colors whitespace-nowrap"
+                    title="Scarica traccia GPX"
+                  >
+                    <Download className="w-5 h-5 text-primary" />
+                    <span className="font-semibold text-primary">GPX</span>
+                  </button>
+                )}
+                <button
+                  onClick={() => navigate(`/admin/tours/${tour.id}/edit`)}
+                  className="flex items-center justify-center space-x-2 px-4 py-3 border-2 border-gray-200 rounded-full hover:border-accent hover:bg-accent/5 transition-colors whitespace-nowrap"
+                >
+                  <Edit className="w-5 h-5 text-primary" />
+                  <span className="font-semibold text-primary">Modifica</span>
+                </button>
+              </>
             )}
           </div>
           </div>
@@ -307,9 +354,9 @@ export default function TourDetailPage() {
               <div className="rounded-2xl p-6" style={{ backgroundColor: '#fffcf7' }}>
               <div className="mb-4">
                 <div className="text-4xl font-bold mb-2" style={{ color: '#1e293b' }}>
-                  {tour.priceAdult === 0 ? 'Free' : (
+                  {tour?.priceAdult === 0 ? 'Free' : (
                     <>
-                      €{tour.priceAdult} <span className="text-sm font-normal" style={{ color: 'rgb(73, 77, 89)' }}>a persona</span>
+                      €{tour?.priceAdult || 0} <span className="text-sm font-normal" style={{ color: 'rgb(73, 77, 89)' }}>a persona</span>
                     </>
                   )}
                 </div>
@@ -318,8 +365,8 @@ export default function TourDetailPage() {
               <div className="mb-4">
                 <h4 className="font-bold mb-2" style={{ fontSize: '20px' }}>Date</h4>
                 <p style={{ fontSize: '16px', color: 'rgb(73, 77, 89)' }}>
-                  {format(new Date(tour.dateStart), 'dd MMMM yyyy', { locale: it })}
-                  {tour.dateEnd && !isSameDay(new Date(tour.dateStart), new Date(tour.dateEnd)) && (
+                  {tour?.dateStart && format(new Date(tour.dateStart), 'dd MMMM yyyy', { locale: it })}
+                  {tour?.dateEnd && tour?.dateStart && !isSameDay(new Date(tour.dateStart), new Date(tour.dateEnd)) && (
                     <> - {format(new Date(tour.dateEnd), 'dd MMMM yyyy', { locale: it })}</>
                   )}
                 </p>
@@ -328,19 +375,19 @@ export default function TourDetailPage() {
               <div className="mb-6">
                 <h4 className="font-bold mb-2" style={{ fontSize: '20px' }}>Posti rimanenti</h4>
                 <p style={{ fontSize: '16px', color: 'rgb(73, 77, 89)' }}>
-                  {tour.availableSeats === 0
+                  {tour?.availableSeats === 0
                     ? 'Esaurito'
-                    : `${tour.availableSeats} posti disponibili`}
+                    : `${tour?.availableSeats || 0} posti disponibili`}
                 </p>
               </div>
 
-              {tour.availableSeats > 0 && (
+              {tour?.availableSeats !== undefined && tour.availableSeats > 0 && (
                 <button onClick={handleBook} className="btn-primary w-full">
                   Prenota Ora
                 </button>
               )}
 
-              {tour.availableSeats === 0 && (
+              {tour?.availableSeats === 0 && (
                 <button disabled className="btn-primary w-full opacity-50 cursor-not-allowed">
                   Esaurito
                 </button>
@@ -367,7 +414,7 @@ export default function TourDetailPage() {
             </div>
 
             {/* Hai domande? */}
-              <div className="rounded-2xl p-6" style={{ backgroundColor: '#fffcf7' }}>
+              <div className="rounded-2xl p-6 mb-6" style={{ backgroundColor: '#fffcf7' }}>
               <div className="flex justify-center mb-4">
                 <div className="rounded-full flex items-center justify-center" style={{ width: '64px', height: '64px', backgroundColor: '#feefd3' }}>
                   <HelpCircle className="w-8 h-8 text-accent" />
@@ -384,6 +431,38 @@ export default function TourDetailPage() {
                 Contattaci
               </button>
             </div>
+
+            {/* Mappa */}
+            {tour?.latitude != null && tour?.longitude != null && !isNaN(Number(tour.latitude)) && !isNaN(Number(tour.longitude)) && (
+              <div className="rounded-2xl p-6" style={{ backgroundColor: '#fffcf7' }}>
+                <div className="flex items-center mb-4">
+                  <div className="p-2 bg-accent/10 rounded-lg mr-3">
+                    <MapPin className="w-5 h-5 text-accent" />
+                  </div>
+                  <h3 className="font-bold" style={{ fontSize: '20px' }}>Posizione</h3>
+                </div>
+                <div className="rounded-xl overflow-hidden" style={{ height: '300px' }}>
+                  <MapContainer
+                    center={[Number(tour.latitude), Number(tour.longitude)]}
+                    zoom={13}
+                    style={{ height: '100%', width: '100%' }}
+                    scrollWheelZoom={false}
+                  >
+                    <TileLayer
+                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    />
+                    <Marker position={[Number(tour.latitude), Number(tour.longitude)]}>
+                      <Popup>
+                        <strong>{tour.title}</strong>
+                        <br />
+                        Punto di partenza
+                      </Popup>
+                    </Marker>
+                  </MapContainer>
+                </div>
+              </div>
+            )}
           </div>
         </div>
         </div>
@@ -441,13 +520,18 @@ export default function TourDetailPage() {
         onClose={() => {
           setShowBookingModal(false);
           setBookingResult(null);
+          setAcceptedTerms(false);
         }}
         size="lg"
         title={bookingResult ? undefined : "Conferma Prenotazione"}
       >
         {bookingResult ? (
           <div className="text-center">
-            <div className="text-6xl mb-4">✅</div>
+            <div className="flex justify-center mb-4">
+              <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center">
+                <CheckCircle className="w-12 h-12 text-green-600" />
+              </div>
+            </div>
             <h2 className="font-title text-3xl font-bold mb-4">
               Prenotazione Confermata!
             </h2>
@@ -465,6 +549,27 @@ export default function TourDetailPage() {
                 <strong>Totale:</strong> {calculateTotal() === 0 ? 'Free' : `€${bookingResult.booking.totalPrice.toFixed(2)}`}
               </p>
             </div>
+            {tour?.whatsappLink && (
+              <div className="mb-6">
+                <a
+                  href={tour.whatsappLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center space-x-2 px-6 py-3 bg-green-600 text-white rounded-full hover:bg-green-700 transition-colors"
+                >
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+                  </svg>
+                  <span>Unisciti al gruppo dell'escursione</span>
+                </a>
+              </div>
+            )}
             <div className="flex space-x-4 justify-center">
               <button 
                 onClick={() => {
@@ -506,7 +611,7 @@ export default function TourDetailPage() {
             <div className="mb-6">
               <h3 className="font-semibold text-lg mb-4">Dettagli prenotazione</h3>
               
-              <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="mb-6">
                 <div>
                   <label className="block text-sm font-medium mb-2">
                     Numero adulti
@@ -523,7 +628,7 @@ export default function TourDetailPage() {
                     required
                   />
                 </div>
-                <div>
+                {/* <div>
                   <label className="block text-sm font-medium mb-2">
                     Numero bambini
                   </label>
@@ -537,7 +642,7 @@ export default function TourDetailPage() {
                       setBooking({ ...booking, children: parseInt(e.target.value) || 0 })
                     }
                   />
-                </div>
+                </div> */}
               </div>
 
               {/* Metodo di pagamento */}
@@ -640,10 +745,36 @@ export default function TourDetailPage() {
               </div>
             </div>
 
+            {/* Checkbox termini e condizioni */}
+            <div className="mb-6">
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={acceptedTerms}
+                  onChange={(e) => setAcceptedTerms(e.target.checked)}
+                  className="mt-1 w-5 h-5 text-accent border-gray-300 rounded focus:ring-accent focus:ring-2"
+                  required
+                />
+                <span className="text-sm text-muted">
+                  Accetto i{' '}
+                  <Link 
+                    to="/terms" 
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-accent hover:underline font-medium"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    termini e condizioni
+                  </Link>
+                  {' '}di Fiato Corto
+                </span>
+              </label>
+            </div>
+
             {/* Pulsante conferma */}
             <button
               type="submit"
-              disabled={submitting || (booking.adults + booking.children > (tour?.availableSeats || 0))}
+              disabled={submitting || !acceptedTerms || (booking.adults + booking.children > (tour?.availableSeats || 0))}
               className="w-full px-6 py-3 bg-accent rounded-full hover:bg-accent/90 transition-colors font-semibold text-primary disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {submitting ? 'Conferma in corso...' : 'Conferma prenotazione'}

@@ -3,7 +3,7 @@ export default function AppLoader() {
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="text-center">
         <img 
-          src="/resources/Bianco.png" 
+          src="/resources/Nero.png" 
           alt="Fiato Corto" 
           className="h-20 w-auto mx-auto mb-6 animate-pulse"
         />

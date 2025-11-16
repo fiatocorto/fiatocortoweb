@@ -9,9 +9,9 @@ const router = express.Router();
 // Configurazione multer per salvare i file
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    // Salva nella cartella public/resources del frontend
+    // Salva nella cartella public/resources/TourImages del frontend
     // Usa path.resolve per gestire meglio i percorsi relativi
-    const uploadPath = path.resolve(__dirname, '../../../frontend/public/resources');
+    const uploadPath = path.resolve(__dirname, '../../../frontend/public/resources/TourImages');
     
     // Crea la cartella se non esiste
     if (!fs.existsSync(uploadPath)) {
@@ -47,6 +47,44 @@ const upload = multer({
   }
 });
 
+// Configurazione storage per file GPX
+const gpxStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    // Salva nella cartella frontend/public/tracceGPX
+    const uploadPath = path.resolve(__dirname, '../../../frontend/public/tracceGPX');
+    
+    // Crea la cartella se non esiste
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath, { recursive: true });
+    }
+    
+    cb(null, uploadPath);
+  },
+  filename: (req, file, cb) => {
+    // Genera un nome file unico
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const ext = path.extname(file.originalname);
+    cb(null, `upload-${uniqueSuffix}${ext}`);
+  }
+});
+
+// Configurazione multer per file GPX
+const gpxUpload = multer({
+  storage: gpxStorage,
+  limits: {
+    fileSize: 10 * 1024 * 1024 // 10MB
+  },
+  fileFilter: (req, file, cb) => {
+    // Accetta solo file GPX
+    const extname = path.extname(file.originalname).toLowerCase();
+    if (extname === '.gpx') {
+      return cb(null, true);
+    } else {
+      cb(new Error('Solo file GPX sono permessi!'));
+    }
+  }
+});
+
 // Upload singola immagine
 router.post(
   '/single',
@@ -60,7 +98,7 @@ router.post(
       }
 
       // Restituisce l'URL relativo del file
-      const fileUrl = `/resources/${req.file.filename}`;
+      const fileUrl = `/resources/TourImages/${req.file.filename}`;
       res.json({ url: fileUrl });
     } catch (error: any) {
       console.error('Upload error:', error);
@@ -82,12 +120,34 @@ router.post(
       }
 
       const files = req.files as Express.Multer.File[];
-      const urls = files.map(file => `/resources/${file.filename}`);
+      const urls = files.map(file => `/resources/TourImages/${file.filename}`);
       
       res.json({ urls });
     } catch (error: any) {
       console.error('Upload error:', error);
       res.status(500).json({ error: 'Errore nel caricamento dei file' });
+    }
+  }
+);
+
+// Upload file GPX
+router.post(
+  '/gpx',
+  authenticate,
+  requireAdmin,
+  gpxUpload.single('gpx'),
+  (req: AuthRequest, res: Response) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: 'Nessun file caricato' });
+      }
+
+      // Restituisce l'URL relativo del file
+      const fileUrl = `/tracceGPX/${req.file.filename}`;
+      res.json({ url: fileUrl });
+    } catch (error: any) {
+      console.error('Upload error:', error);
+      res.status(500).json({ error: 'Errore nel caricamento del file GPX' });
     }
   }
 );

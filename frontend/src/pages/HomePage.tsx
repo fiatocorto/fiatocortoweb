@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
-import { Search, MapPin, Calendar, Users, Star, ArrowRight, ArrowLeft, Plus, Minus, User, Baby, ChevronLeft, ChevronRight, BadgeCheck, Compass } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { Search, MapPin, Calendar, Users, Star, ArrowRight, ArrowLeft, Plus, Minus, User, Baby, ChevronLeft, ChevronRight, BadgeCheck, Compass, ChevronDown } from 'lucide-react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import DatePicker, { registerLocale } from 'react-datepicker';
 import { it } from 'date-fns/locale';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -12,9 +12,15 @@ registerLocale('it', it);
 
 export default function HomePage() {
   const [tours, setTours] = useState<any[]>([]);
-  const [currentSlide, setCurrentSlide] = useState(0);
+  const [allTours, setAllTours] = useState<any[]>([]);
+  const [currentSlide, setCurrentSlide] = useState(1); // Inizia da 1 perché la prima è la slide duplicata
+  const [isTransitioning, setIsTransitioning] = useState(true);
   const [currentTourIndex, setCurrentTourIndex] = useState(0);
+  const [currentNextAdventuresIndex, setCurrentNextAdventuresIndex] = useState(0);
   const [currentReviewIndex, setCurrentReviewIndex] = useState(0);
+  const [isDestinationDropdownOpen, setIsDestinationDropdownOpen] = useState(false);
+  const destinationDropdownRef = useRef<HTMLDivElement>(null);
+  const carouselRef = useRef<HTMLDivElement>(null);
   
   const reviews = [
     {
@@ -85,32 +91,72 @@ export default function HomePage() {
       subtitle: 'Scopri escursioni uniche nella natura, dai sentieri più selvaggi alle vette panoramiche',
       buttonText: 'Esplora i tour',
       buttonLink: '/tours',
+      backgroundImage: '/resources/2147665051.jpg',
     },
     {
       title: 'Vivi ogni passo',
       subtitle: 'Ogni escursione è un viaggio emozionante tra natura, storia e cultura locale',
       buttonText: 'Le escursioni',
       buttonLink: '/tours',
+      backgroundImage: '/resources/11514.jpg',
     },
     {
       title: 'Viaggia con noi',
       subtitle: 'Un team di appassionati di trekking che ti guida in esperienze uniche tra natura e panorami mozzafiato',
       buttonText: 'Chi siamo',
       buttonLink: '/about',
+      backgroundImage: '/resources/28088.jpg',
     },
   ];
 
+  // Calcola l'indice reale della slide per ottenere l'immagine di sfondo corretta
+  const getRealSlideIndex = () => {
+    if (currentSlide === 0) return slides.length - 1;
+    if (currentSlide > slides.length) return 0;
+    return currentSlide - 1;
+  };
+
   useEffect(() => {
     fetchTours();
+    fetchAllTours();
   }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % slides.length);
+      setIsTransitioning(true);
+      setCurrentSlide((prev) => prev + 1);
     }, 5000); // Cambia slide ogni 5 secondi
 
     return () => clearInterval(interval);
   }, [slides.length]);
+
+  // Gestisce il reset quando arriva alla slide duplicata
+  useEffect(() => {
+    if (currentSlide > slides.length) {
+      // Quando arriva alla slide duplicata, aspetta che l'animazione finisca
+      const timer = setTimeout(() => {
+        setIsTransitioning(false);
+        setCurrentSlide(1); // Resetta alla prima slide reale
+        // Riabilita la transizione dopo un breve delay
+        setTimeout(() => setIsTransitioning(true), 50);
+      }, 1000); // Aspetta che l'animazione finisca (1 secondo)
+
+      return () => clearTimeout(timer);
+    }
+  }, [currentSlide, slides.length]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (destinationDropdownRef.current && !destinationDropdownRef.current.contains(event.target as Node)) {
+        setIsDestinationDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const fetchTours = async () => {
     try {
@@ -120,6 +166,29 @@ export default function HomePage() {
       console.error('Failed to fetch tours:', error);
       // Continua comunque anche se l'API fallisce
       setTours([]);
+    }
+  };
+
+  // Filtra i tour per il mese corrente
+  const currentMonthTours = useMemo(() => {
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+    
+    return tours.filter(tour => {
+      if (!tour.dateStart) return false;
+      const tourDate = new Date(tour.dateStart);
+      return tourDate.getFullYear() === currentYear && tourDate.getMonth() === currentMonth;
+    });
+  }, [tours]);
+
+  const fetchAllTours = async () => {
+    try {
+      const response = await api.get('/api/tours');
+      setAllTours(response.data.tours || []);
+    } catch (error) {
+      console.error('Failed to fetch all tours:', error);
+      setAllTours([]);
     }
   };
 
@@ -136,27 +205,69 @@ export default function HomePage() {
     <div className="bg-white">
       {/* Hero Section */}
       <section className="relative h-[calc(100vh-120px)] flex items-center justify-center text-white overflow-hidden">
-        <div
-          className="absolute inset-0 bg-cover bg-no-repeat"
-          style={{
-            backgroundImage: 'url(/resources/2147665051.jpg)',
-            backgroundPosition: 'center center',
-          }}
-        >
-          <div 
-            className="absolute inset-0" 
-            style={{ 
-              backgroundImage: 'linear-gradient(rgb(15 23 42 / 0%), rgb(0 21 67 / 65%))'
-            }} 
+        {/* Background images carousel */}
+        <div className="absolute inset-0">
+          {slides.map((slide, index) => {
+            const realIndex = index;
+            const isActive = getRealSlideIndex() === realIndex;
+            return (
+              <div
+                key={index}
+                className="absolute inset-0 bg-cover bg-no-repeat bg-center"
+                style={{
+                  backgroundImage: `url(${slide.backgroundImage})`,
+                  opacity: isActive ? 1 : 0,
+                  transition: isTransitioning ? 'opacity 1s ease-in-out' : 'none',
+                  zIndex: isActive ? 1 : 0,
+                }}
+              />
+            );
+          })}
+          {/* Duplica la prima immagine per il loop */}
+          <div
+            className="absolute inset-0 bg-cover bg-no-repeat bg-center"
+            style={{
+              backgroundImage: `url(${slides[0].backgroundImage})`,
+              opacity: getRealSlideIndex() === 0 && currentSlide > slides.length ? 1 : 0,
+              transition: isTransitioning ? 'opacity 1s ease-in-out' : 'none',
+              zIndex: getRealSlideIndex() === 0 && currentSlide > slides.length ? 1 : 0,
+            }}
           />
         </div>
+        <div 
+          className="absolute inset-0 z-10" 
+          style={{ 
+            backgroundImage: 'linear-gradient(rgb(15 23 42 / 0%), rgb(0 21 67 / 65%))'
+          }} 
+        />
         
         {/* Carousel */}
         <div className="relative z-10 w-full h-full overflow-hidden">
           <div 
-            className="flex h-full transition-transform duration-1000 ease-in-out"
-            style={{ transform: `translateX(-${currentSlide * 100}%)` }}
+            ref={carouselRef}
+            className="flex h-full"
+            style={{ 
+              transform: `translateX(-${currentSlide * 100}%)`,
+              transition: isTransitioning ? 'transform 1s ease-in-out' : 'none'
+            }}
           >
+            {/* Duplica l'ultima slide all'inizio per il loop infinito */}
+            {slides[slides.length - 1] && (
+              <div
+                className="min-w-full flex flex-col items-center justify-center text-center px-4"
+              >
+                <h1 className="text-[100px] font-bold mb-4">{slides[slides.length - 1].title}</h1>
+                <p className="text-xl md:text-2xl mb-8">{slides[slides.length - 1].subtitle}</p>
+                <Link
+                  to={slides[slides.length - 1].buttonLink}
+                  className="btn-primary text-lg px-8 py-4 flex items-center gap-2"
+                >
+                  {slides[slides.length - 1].buttonText}
+                  <ArrowRight className="w-5 h-5" />
+                </Link>
+              </div>
+            )}
+            {/* Slide originali */}
             {slides.map((slide, index) => (
               <div
                 key={index}
@@ -173,20 +284,43 @@ export default function HomePage() {
           </Link>
               </div>
             ))}
+            {/* Duplica la prima slide alla fine per il loop infinito */}
+            {slides[0] && (
+              <div
+                className="min-w-full flex flex-col items-center justify-center text-center px-4"
+              >
+                <h1 className="text-[100px] font-bold mb-4">{slides[0].title}</h1>
+                <p className="text-xl md:text-2xl mb-8">{slides[0].subtitle}</p>
+                <Link
+                  to={slides[0].buttonLink}
+                  className="btn-primary text-lg px-8 py-4 flex items-center gap-2"
+                >
+                  {slides[0].buttonText}
+                  <ArrowRight className="w-5 h-5" />
+                </Link>
+              </div>
+            )}
           </div>
 
           {/* Carousel Indicators */}
           <div className="absolute right-8 top-1/2 transform -translate-y-1/2 flex flex-col space-y-2">
-            {slides.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentSlide(index)}
-                className={`h-3 rounded-full transition-all ${
-                  index === currentSlide ? 'bg-accent w-8' : 'bg-white/50 w-3'
-                }`}
-                aria-label={`Go to slide ${index + 1}`}
-              />
-            ))}
+            {slides.map((_, index) => {
+              // Calcola l'indice reale considerando che currentSlide parte da 1
+              const realIndex = currentSlide === 0 ? slides.length - 1 : (currentSlide - 1) % slides.length;
+              return (
+                <button
+                  key={index}
+                  onClick={() => {
+                    setIsTransitioning(true);
+                    setCurrentSlide(index + 1); // +1 perché la prima slide è duplicata
+                  }}
+                  className={`h-3 rounded-full transition-all ${
+                    index === realIndex ? 'bg-accent w-8' : 'bg-white/50 w-3'
+                  }`}
+                  aria-label={`Go to slide ${index + 1}`}
+                />
+              );
+            })}
           </div>
         </div>
       </section>
@@ -199,17 +333,40 @@ export default function HomePage() {
               <label className="block text-xl font-medium text-gray-300 mb-4">
                 Destinazione
               </label>
-              <div className="relative">
-                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted" />
-                <input
-                  type="text"
-                  placeholder="Dove vuoi andare?"
-                  className="w-auto min-w-[300px] pl-10 pr-4 h-[60px] bg-[#1e293b] rounded-lg focus:outline-none text-white placeholder:text-gray-400"
-                  value={searchForm.destination}
-                  onChange={(e) =>
-                    setSearchForm({ ...searchForm, destination: e.target.value })
-                  }
-                />
+              <div className="relative" ref={destinationDropdownRef}>
+                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted z-10" />
+                <button
+                  type="button"
+                  onClick={() => setIsDestinationDropdownOpen(!isDestinationDropdownOpen)}
+                  className="w-auto min-w-[300px] pl-10 pr-10 h-[60px] bg-[#1e293b] rounded-lg focus:outline-none text-white placeholder:text-gray-400 flex items-center justify-between cursor-pointer hover:bg-[#253448] transition-colors"
+                >
+                  <span className={searchForm.destination ? 'text-white' : 'text-gray-400'}>
+                    {searchForm.destination || 'Dove vuoi andare?'}
+                  </span>
+                  <ChevronDown className={`w-5 h-5 text-muted transition-transform ${isDestinationDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+                {isDestinationDropdownOpen && (
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-[#1e293b] rounded-lg shadow-lg max-h-[300px] overflow-y-auto z-50">
+                    {allTours.length === 0 ? (
+                      <div className="px-4 py-3 text-gray-400 text-sm">Nessuna escursione disponibile</div>
+                    ) : (
+                      allTours.map((tour) => (
+                        <button
+                          key={tour.id}
+                          type="button"
+                          onClick={() => {
+                            setSearchForm({ ...searchForm, destination: tour.title });
+                            setIsDestinationDropdownOpen(false);
+                          }}
+                          className="w-full px-4 py-3 text-left text-white hover:bg-[#253448] transition-colors flex items-start gap-3"
+                        >
+                          <MapPin className="w-4 h-4 text-muted flex-shrink-0 mt-1" />
+                          <span className="flex-1">{tour.title}</span>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                )}
               </div>
             </div>
             <div className="h-16 border-l border-white/10 self-center"></div>
@@ -240,7 +397,7 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
-            <div className="h-16 border-l border-white/10 self-center"></div>
+            {/* <div className="h-16 border-l border-white/10 self-center"></div>
             <div className="flex-shrink-0">
               <label className="block text-xl font-medium text-gray-300 mb-4">
                 Bambini
@@ -268,6 +425,7 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
+            <div className="h-16 border-l border-white/10 self-center"></div> */}
             <div className="h-16 border-l border-white/10 self-center"></div>
             <div className="flex-shrink-0">
               <label className="block text-xl font-medium text-gray-300 mb-4">
@@ -500,6 +658,76 @@ export default function HomePage() {
           </form>
         </div>
       </section>
+
+      {/* Prossime avventure */}
+      {currentMonthTours.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 py-16">
+          <div className="text-center mb-12">
+            <div className="text-accent uppercase font-semibold mb-2">
+              ESCURSIONI
+            </div>
+            <div className="relative inline-block mb-6">
+              <div className="absolute bg-yellow-100 w-3/4 h-8 top-8 left-0"></div>
+              <h2 className="font-title text-[48px] font-bold relative">
+                Prossime avventure
+              </h2>
+            </div>
+          </div>
+          <div className="relative px-16">
+            <div className="overflow-hidden py-10 px-4">
+              <div 
+                className="flex gap-6 transition-transform duration-500 ease-in-out"
+                style={{ 
+                  transform: `translateX(calc(-${currentNextAdventuresIndex} * ((100% - 3rem) / 3 + 1.5rem)))`
+                }}
+              >
+                {currentMonthTours.slice(0, 5).map((tour) => (
+                  <div key={tour.id} className="flex-shrink-0" style={{ width: `calc((100% - 3rem) / 3)` }}>
+                    <CardTour tour={tour} />
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            {/* Navigation buttons - solo se ci sono più di 3 tour */}
+            {currentMonthTours.length > 3 && (
+              <>
+                <button
+                  onClick={() => {
+                    setCurrentNextAdventuresIndex((prev) => {
+                      const maxIndex = Math.max(0, currentMonthTours.slice(0, 5).length - 3);
+                      if (prev === 0) return maxIndex;
+                      return prev - 1;
+                    });
+                  }}
+                  className="absolute left-0 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center hover:bg-gray-100 transition-colors z-10"
+                  aria-label="Card precedente"
+                >
+                  <ChevronLeft className="w-6 h-6 text-primary" />
+                </button>
+                <button
+                  onClick={() => {
+                    setCurrentNextAdventuresIndex((prev) => {
+                      const maxIndex = Math.max(0, currentMonthTours.slice(0, 5).length - 3);
+                      if (prev >= maxIndex) return 0;
+                      return prev + 1;
+                    });
+                  }}
+                  className="absolute right-0 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center hover:bg-gray-100 transition-colors z-10"
+                  aria-label="Card successiva"
+                >
+                  <ChevronRight className="w-6 h-6 text-primary" />
+                </button>
+              </>
+            )}
+          </div>
+          <div className="text-center mt-8">
+            <Link to="/tours" className="btn-secondary">
+              Vedi tutte le escursioni
+            </Link>
+          </div>
+        </section>
+      )}
 
       {/* Chi siamo */}
       <section className="w-full py-32 relative overflow-hidden">

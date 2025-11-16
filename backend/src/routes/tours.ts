@@ -1,4 +1,4 @@
-import express, { Response } from 'express';
+import express, { Request, Response } from 'express';
 import { body, validationResult, query } from 'express-validator';
 import { PrismaClient } from '@prisma/client';
 import { authenticate, requireAdmin, AuthRequest } from '../middleware/auth';
@@ -43,11 +43,12 @@ router.get(
   [
     query('destination').optional().isString(),
     query('language').optional().isString(),
+    query('costType').optional().isIn(['free', 'paid']),
     query('minPrice').optional().isFloat(),
     query('maxPrice').optional().isFloat(),
     query('date').optional().isISO8601(),
   ],
-  async (req, res: Response) => {
+  async (req: Request, res: Response) => {
     // Check validation errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -55,7 +56,7 @@ router.get(
       return res.status(400).json({ errors: errors.array() });
     }
     try {
-      const { destination, language, minPrice, maxPrice, date } = req.query;
+      const { destination, language, costType, minPrice, maxPrice, date } = req.query;
 
       // First, handle search separately to get tour IDs
       let searchTourIds: string[] | null = null;
@@ -105,8 +106,23 @@ router.get(
         });
       }
 
-      // Price filters
-      if (minPrice || maxPrice) {
+      // Cost type filter (free or paid)
+      if (costType === 'free') {
+        // Show only free tours (priceAdult = 0)
+        conditions.push({
+          priceAdult: 0,
+        });
+      } else if (costType === 'paid') {
+        // Show only paid tours (priceAdult > 0)
+        conditions.push({
+          priceAdult: {
+            gt: 0,
+          },
+        });
+      }
+
+      // Price filters (only apply if costType is 'paid' or not set)
+      if (costType !== 'free' && (minPrice || maxPrice)) {
         const priceFilter: any = {};
         if (minPrice) priceFilter.gte = parseFloat(String(minPrice));
         if (maxPrice) priceFilter.lte = parseFloat(String(maxPrice));
@@ -115,15 +131,28 @@ router.get(
         });
       }
 
-      // Date filter
+      // Date filter - filter by dateStart matching the selected date
       if (date) {
-        const dateObj = new Date(String(date));
-        const endDate = new Date(dateObj);
-        endDate.setHours(23, 59, 59, 999);
+        const dateString = String(date);
+        // Parse the date string (format: YYYY-MM-DD)
+        const dateObj = new Date(dateString);
+        // Set to start of day in local timezone
+        const startOfDay = new Date(dateObj);
+        startOfDay.setHours(0, 0, 0, 0);
+        // Set to end of day in local timezone
+        const endOfDay = new Date(dateObj);
+        endOfDay.setHours(23, 59, 59, 999);
+        
+        console.log('Date filter:', {
+          input: dateString,
+          startOfDay: startOfDay.toISOString(),
+          endOfDay: endOfDay.toISOString()
+        });
+        
         conditions.push({
           dateStart: {
-            gte: dateObj,
-            lte: endDate,
+            gte: startOfDay,
+            lte: endOfDay,
           },
         });
       }
@@ -133,7 +162,7 @@ router.get(
         ? { AND: conditions }
         : {};
 
-      console.log('Search query:', { destination, language, minPrice, maxPrice, date });
+      console.log('Search query:', { destination, language, costType, minPrice, maxPrice, date });
       console.log('Where clause:', JSON.stringify(finalWhere, null, 2));
 
       // Execute query with safe ordering
@@ -251,8 +280,9 @@ router.post(
     body('durationUnit').notEmpty().withMessage('Unità durata richiesta'),
     body('coverImage').notEmpty().withMessage('Immagine copertina richiesta'),
     body('difficulty').notEmpty().withMessage('Difficoltà richiesta'),
+    body('whatsappLink').notEmpty().withMessage('Link WhatsApp richiesto'),
   ],
-  async (req: AuthRequest, res) => {
+  async (req: AuthRequest, res: Response) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
@@ -279,6 +309,10 @@ router.post(
         dateStart,
         dateEnd,
         gallery,
+        whatsappLink,
+        gpxTrack,
+        latitude,
+        longitude,
       } = req.body;
 
       // Generate slug from title
@@ -307,6 +341,10 @@ router.post(
           dateStart: dateStart ? new Date(dateStart) : new Date(),
           dateEnd: dateEnd ? new Date(dateEnd) : new Date(),
           gallery: gallery || null,
+          whatsappLink: whatsappLink || '',
+          gpxTrack: gpxTrack || null,
+          latitude: latitude ? parseFloat(latitude) : null,
+          longitude: longitude ? parseFloat(longitude) : null,
           createdBy: req.userId!,
         },
       });
@@ -352,6 +390,10 @@ router.put(
         'dateStart',
         'dateEnd',
         'gallery',
+        'whatsappLink',
+        'gpxTrack',
+        'latitude',
+        'longitude',
       ];
 
       allowedFields.forEach((field) => {
@@ -360,6 +402,8 @@ router.put(
             updateData[field] = JSON.stringify(req.body[field]);
           } else if (['dateStart', 'dateEnd'].includes(field) && req.body[field]) {
             updateData[field] = new Date(req.body[field]);
+          } else if (['latitude', 'longitude'].includes(field)) {
+            updateData[field] = req.body[field] ? parseFloat(req.body[field]) : null;
           } else {
             updateData[field] = req.body[field];
           }
@@ -374,6 +418,11 @@ router.put(
       // Ensure difficulty is not empty if provided
       if (updateData.difficulty !== undefined && (!updateData.difficulty || (typeof updateData.difficulty === 'string' && updateData.difficulty.trim() === ''))) {
         return res.status(400).json({ error: 'Difficoltà richiesta' });
+      }
+
+      // Ensure whatsappLink is not empty if provided
+      if (updateData.whatsappLink !== undefined && (!updateData.whatsappLink || (typeof updateData.whatsappLink === 'string' && updateData.whatsappLink.trim() === ''))) {
+        return res.status(400).json({ error: 'Link WhatsApp richiesto' });
       }
 
       const tour = await prisma.tour.update({
@@ -391,6 +440,63 @@ router.put(
     }
   }
 );
+
+// Duplicate tour (admin only)
+router.post('/:id/duplicate', authenticate, requireAdmin, async (req: AuthRequest, res) => {
+  try {
+    const { id } = req.params;
+
+    // Get the original tour
+    const originalTour = await prisma.tour.findUnique({
+      where: { id },
+    });
+
+    if (!originalTour) {
+      return res.status(404).json({ error: 'Tour non trovato' });
+    }
+
+    // Generate new title and slug
+    const newTitle = `${originalTour.title} (Copia)`;
+    const baseSlug = generateSlug(newTitle);
+    const slug = await ensureUniqueSlug(baseSlug);
+
+    // Create duplicate tour
+    const duplicatedTour = await prisma.tour.create({
+      data: {
+        title: newTitle,
+        slug,
+        description: originalTour.description,
+        priceAdult: originalTour.priceAdult,
+        priceChild: originalTour.priceChild,
+        language: originalTour.language,
+        itinerary: originalTour.itinerary,
+        durationValue: originalTour.durationValue,
+        durationUnit: originalTour.durationUnit,
+        coverImage: originalTour.coverImage,
+        images: originalTour.images,
+        includes: originalTour.includes,
+        excludes: originalTour.excludes,
+        terms: originalTour.terms,
+        maxSeats: originalTour.maxSeats,
+        difficulty: originalTour.difficulty,
+        isMultiDay: originalTour.isMultiDay,
+        dateStart: originalTour.dateStart,
+        dateEnd: originalTour.dateEnd,
+        gallery: originalTour.gallery,
+        whatsappLink: originalTour.whatsappLink,
+        gpxTrack: originalTour.gpxTrack,
+        latitude: originalTour.latitude,
+        longitude: originalTour.longitude,
+        createdBy: req.userId!,
+      },
+    });
+
+    res.status(201).json({ tour: duplicatedTour });
+  } catch (error: any) {
+    console.error('Duplicate tour error:', error);
+    res.status(500).json({ error: 'Errore nella duplicazione tour' });
+  }
+});
 
 // Delete tour (admin only)
 router.delete('/:id', authenticate, requireAdmin, async (req: AuthRequest, res) => {
