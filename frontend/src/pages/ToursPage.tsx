@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Grid, List, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Grid, List, Calendar, ChevronLeft, ChevronRight, Filter, X } from 'lucide-react';
 import DatePicker, { registerLocale } from 'react-datepicker';
 import { it } from 'date-fns/locale';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -21,6 +21,7 @@ export default function ToursPage() {
   const [hasSearched, setHasSearched] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState<SortOption>('recommended');
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const getTodayDate = () => {
     const today = new Date();
     const year = today.getFullYear();
@@ -173,15 +174,45 @@ export default function ToursPage() {
 
   return (
     <>
-      <div className="max-w-7xl mx-auto px-4 py-16">
-        <h1 className="font-title text-4xl font-bold mb-8">Tutte le Escursioni</h1>
+      {/* Mobile overlay */}
+      {mobileFiltersOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setMobileFiltersOpen(false)}
+        />
+      )}
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 md:py-16">
+        <div className="flex items-center justify-between mb-6 sm:mb-8">
+          <h1 className="font-title text-2xl sm:text-3xl md:text-4xl font-bold">Tutte le Escursioni</h1>
+          {/* Mobile filter button */}
+          <button
+            onClick={() => setMobileFiltersOpen(!mobileFiltersOpen)}
+            className="lg:hidden flex items-center gap-2 px-4 py-2 bg-white rounded-lg shadow-sm border border-muted hover:bg-gray-50 transition-colors"
+          >
+            <Filter className="w-5 h-5" />
+            <span className="text-sm font-medium">Filtri</span>
+          </button>
+        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
           {/* Colonna sinistra - Filtri */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-2xl shadow-md p-6 sticky top-4">
-              <div className="flex justify-between items-center mb-4">
+          <div className={`lg:col-span-1 ${mobileFiltersOpen ? 'fixed inset-y-0 left-0 w-80 bg-white z-50 shadow-2xl overflow-y-auto lg:static lg:w-auto lg:shadow-md lg:bg-transparent' : 'hidden lg:block'}`}>
+            <div className="bg-white rounded-2xl shadow-md p-4 sm:p-6 lg:sticky lg:top-4 max-h-[calc(100vh-120px)] overflow-y-auto">
+              {/* Mobile close button */}
+              <div className="flex justify-between items-center mb-4 lg:hidden border-b pb-4">
                 <h2 className="font-title text-xl font-bold">Filtri</h2>
+                <button
+                  onClick={() => setMobileFiltersOpen(false)}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  aria-label="Chiudi filtri"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              {/* Header filtri - desktop */}
+              <div className="hidden lg:flex justify-between items-center mb-4">
+                <h2 className="font-title text-lg sm:text-xl font-bold">Filtri</h2>
                 <button
                   onClick={() => {
                     setFilters({
@@ -196,9 +227,31 @@ export default function ToursPage() {
                     setDatePickerDate(null);
                     setCalendarViewDate(new Date());
                   }}
-                  className="text-xs text-muted hover:text-accent transition-colors "
+                  className="text-xs text-muted hover:text-accent transition-colors"
                 >
                   Reimposta
+                </button>
+              </div>
+              
+              {/* Reimposta button mobile */}
+              <div className="lg:hidden mb-4">
+                <button
+                  onClick={() => {
+                    setFilters({
+                      destination: '',
+                      language: '',
+                      costType: '',
+                      minPrice: '',
+                      maxPrice: '',
+                      difficulty: '',
+                      date: '',
+                    });
+                    setDatePickerDate(null);
+                    setCalendarViewDate(new Date());
+                  }}
+                  className="w-full text-sm text-muted hover:text-accent transition-colors py-2 border-b border-gray-200"
+                >
+                  Reimposta filtri
                 </button>
               </div>
               <div className="space-y-4">
@@ -493,8 +546,9 @@ export default function ToursPage() {
           {/* Colonna destra - Escursioni */}
           <div className="lg:col-span-3">
             {/* Controlli: conteggio, visualizzazione e ordinamento */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-              <div className="flex items-center gap-4">
+            <div className="flex flex-col gap-4 mb-4 sm:mb-6">
+              {/* Prima riga: visualizzazione e ordinamento */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
                 {/* Pulsanti visualizzazione */}
                 <div className="flex space-x-2 bg-white rounded-lg p-1 shadow-sm">
                   <button
@@ -506,7 +560,7 @@ export default function ToursPage() {
                     }`}
                     aria-label="Vista griglia"
                   >
-                    <Grid className="w-5 h-5" />
+                    <Grid className="w-4 h-4 sm:w-5 sm:h-5" />
                   </button>
                   <button
                     onClick={() => setViewMode('list')}
@@ -517,19 +571,19 @@ export default function ToursPage() {
                     }`}
                     aria-label="Vista lista"
                   >
-                    <List className="w-5 h-5" />
+                    <List className="w-4 h-4 sm:w-5 sm:h-5" />
                   </button>
                 </div>
                 
                 {/* Ordinamento */}
-                <div className="flex items-center gap-2">
-                  <label className="text-sm text-muted whitespace-nowrap">
+                <div className="flex items-center gap-2 flex-1 sm:flex-initial">
+                  <label className="text-xs sm:text-sm text-muted whitespace-nowrap">
                     Ordina per:
                   </label>
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value as SortOption)}
-                    className="px-4 py-2 border border-muted rounded-lg focus:outline-none focus:ring-2 focus:ring-accent bg-white text-sm"
+                    className="px-3 sm:px-4 py-2 border border-muted rounded-lg focus:outline-none focus:ring-2 focus:ring-accent bg-white text-xs sm:text-sm flex-1 sm:flex-initial"
                   >
                     <option value="recommended">Consigliate</option>
                     <option value="alphabetical">Ordine alfabetico</option>
@@ -540,7 +594,8 @@ export default function ToursPage() {
                 </div>
               </div>
               
-              <p className="text-muted font-medium">
+              {/* Seconda riga: conteggio */}
+              <p className="text-sm sm:text-base text-muted font-medium">
                 {filteredTours.length} escursioni trovate
               </p>
             </div>

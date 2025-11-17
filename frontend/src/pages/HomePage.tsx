@@ -204,7 +204,7 @@ export default function HomePage() {
   return (
     <div className="bg-white">
       {/* Hero Section */}
-      <section className="relative h-[calc(100vh-120px)] flex items-center justify-center text-white overflow-hidden">
+      <section className="relative h-[60vh] sm:h-[70vh] md:h-[calc(100vh-120px)] flex items-center justify-center text-white overflow-hidden">
         {/* Background images carousel */}
         <div className="absolute inset-0">
           {slides.map((slide, index) => {
@@ -254,16 +254,16 @@ export default function HomePage() {
             {/* Duplica l'ultima slide all'inizio per il loop infinito */}
             {slides[slides.length - 1] && (
               <div
-                className="min-w-full flex flex-col items-center justify-center text-center px-4"
+                className="min-w-full flex flex-col items-center justify-center text-center px-4 sm:px-6 md:px-8"
               >
-                <h1 className="text-[100px] font-bold mb-4">{slides[slides.length - 1].title}</h1>
-                <p className="text-xl md:text-2xl mb-8">{slides[slides.length - 1].subtitle}</p>
+                <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-[100px] font-bold mb-2 sm:mb-3 md:mb-4">{slides[slides.length - 1].title}</h1>
+                <p className="text-base sm:text-lg md:text-xl lg:text-2xl mb-4 sm:mb-6 md:mb-8 px-4">{slides[slides.length - 1].subtitle}</p>
                 <Link
                   to={slides[slides.length - 1].buttonLink}
-                  className="btn-primary text-lg px-8 py-4 flex items-center gap-2"
+                  className="btn-primary text-sm sm:text-base md:text-lg px-4 sm:px-6 md:px-8 py-2 sm:py-3 md:py-4 flex items-center gap-2"
                 >
                   {slides[slides.length - 1].buttonText}
-                  <ArrowRight className="w-5 h-5" />
+                  <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
                 </Link>
               </div>
             )}
@@ -271,39 +271,39 @@ export default function HomePage() {
             {slides.map((slide, index) => (
               <div
                 key={index}
-                className="min-w-full flex flex-col items-center justify-center text-center px-4"
+                className="min-w-full flex flex-col items-center justify-center text-center px-4 sm:px-6 md:px-8"
               >
-                <h1 className="text-[100px] font-bold mb-4">{slide.title}</h1>
-                <p className="text-xl md:text-2xl mb-8">{slide.subtitle}</p>
+                <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-[100px] font-bold mb-2 sm:mb-3 md:mb-4">{slide.title}</h1>
+                <p className="text-base sm:text-lg md:text-xl lg:text-2xl mb-4 sm:mb-6 md:mb-8 px-4">{slide.subtitle}</p>
                 <Link
                   to={slide.buttonLink}
-                  className="btn-primary text-lg px-8 py-4 flex items-center gap-2"
+                  className="btn-primary text-sm sm:text-base md:text-lg px-4 sm:px-6 md:px-8 py-2 sm:py-3 md:py-4 flex items-center gap-2"
                 >
                   {slide.buttonText}
-                  <ArrowRight className="w-5 h-5" />
+                  <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
           </Link>
               </div>
             ))}
             {/* Duplica la prima slide alla fine per il loop infinito */}
             {slides[0] && (
               <div
-                className="min-w-full flex flex-col items-center justify-center text-center px-4"
+                className="min-w-full flex flex-col items-center justify-center text-center px-4 sm:px-6 md:px-8"
               >
-                <h1 className="text-[100px] font-bold mb-4">{slides[0].title}</h1>
-                <p className="text-xl md:text-2xl mb-8">{slides[0].subtitle}</p>
+                <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-[100px] font-bold mb-2 sm:mb-3 md:mb-4">{slides[0].title}</h1>
+                <p className="text-base sm:text-lg md:text-xl lg:text-2xl mb-4 sm:mb-6 md:mb-8 px-4">{slides[0].subtitle}</p>
                 <Link
                   to={slides[0].buttonLink}
-                  className="btn-primary text-lg px-8 py-4 flex items-center gap-2"
+                  className="btn-primary text-sm sm:text-base md:text-lg px-4 sm:px-6 md:px-8 py-2 sm:py-3 md:py-4 flex items-center gap-2"
                 >
                   {slides[0].buttonText}
-                  <ArrowRight className="w-5 h-5" />
+                  <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
                 </Link>
               </div>
             )}
           </div>
 
           {/* Carousel Indicators */}
-          <div className="absolute right-8 top-1/2 transform -translate-y-1/2 flex flex-col space-y-2">
+          <div className="absolute bottom-4 sm:bottom-6 md:bottom-8 left-1/2 transform -translate-x-1/2 flex flex-row space-x-2">
             {slides.map((_, index) => {
               // Calcola l'indice reale considerando che currentSlide parte da 1
               const realIndex = currentSlide === 0 ? slides.length - 1 : (currentSlide - 1) % slides.length;
@@ -314,8 +314,8 @@ export default function HomePage() {
                     setIsTransitioning(true);
                     setCurrentSlide(index + 1); // +1 perché la prima slide è duplicata
                   }}
-                  className={`h-3 rounded-full transition-all ${
-                    index === realIndex ? 'bg-accent w-8' : 'bg-white/50 w-3'
+                  className={`h-2 sm:h-3 rounded-full transition-all ${
+                    index === realIndex ? 'bg-accent w-6 sm:w-8' : 'bg-white/50 w-2 sm:w-3'
                   }`}
                   aria-label={`Go to slide ${index + 1}`}
                 />
@@ -327,23 +327,23 @@ export default function HomePage() {
 
       {/* Quick Search */}
       <section className="w-full">
-        <div className="bg-[#0f172a] p-10">
-          <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-16 w-full px-4 sm:px-6 lg:px-8 justify-center items-center">
-            <div className="flex-shrink-0">
-              <label className="block text-xl font-medium text-gray-300 mb-4">
+        <div className="bg-[#0f172a] p-4 sm:p-6 md:p-10">
+          <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-6 sm:gap-8 md:gap-12 lg:gap-16 w-full px-4 sm:px-6 lg:px-8 justify-center items-center">
+            <div className="flex-shrink-0 w-full md:w-auto">
+              <label className="block text-base sm:text-lg md:text-xl font-medium text-gray-300 mb-2 sm:mb-3 md:mb-4">
                 Destinazione
               </label>
               <div className="relative" ref={destinationDropdownRef}>
-                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted z-10" />
+                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-muted z-10" />
                 <button
                   type="button"
                   onClick={() => setIsDestinationDropdownOpen(!isDestinationDropdownOpen)}
-                  className="w-auto min-w-[300px] pl-10 pr-10 h-[60px] bg-[#1e293b] rounded-lg focus:outline-none text-white placeholder:text-gray-400 flex items-center justify-between cursor-pointer hover:bg-[#253448] transition-colors"
+                  className="w-full md:w-auto md:min-w-[250px] lg:min-w-[300px] pl-8 sm:pl-10 pr-8 sm:pr-10 h-[50px] sm:h-[60px] bg-[#1e293b] rounded-lg focus:outline-none text-white placeholder:text-gray-400 flex items-center justify-between cursor-pointer hover:bg-[#253448] transition-colors text-sm sm:text-base"
                 >
-                  <span className={searchForm.destination ? 'text-white' : 'text-gray-400'}>
+                  <span className={searchForm.destination ? 'text-white' : 'text-gray-400 truncate pr-2'}>
                     {searchForm.destination || 'Dove vuoi andare?'}
                   </span>
-                  <ChevronDown className={`w-5 h-5 text-muted transition-transform ${isDestinationDropdownOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`w-4 h-4 sm:w-5 sm:h-5 text-muted transition-transform flex-shrink-0 ${isDestinationDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
                 {isDestinationDropdownOpen && (
                   <div className="absolute top-full left-0 right-0 mt-2 bg-[#1e293b] rounded-lg shadow-lg max-h-[300px] overflow-y-auto z-50">
@@ -358,7 +358,7 @@ export default function HomePage() {
                             setSearchForm({ ...searchForm, destination: tour.title });
                             setIsDestinationDropdownOpen(false);
                           }}
-                          className="w-full px-4 py-3 text-left text-white hover:bg-[#253448] transition-colors flex items-start gap-3"
+                          className="w-full px-4 py-3 text-left text-white hover:bg-[#253448] transition-colors flex items-start gap-3 text-sm sm:text-base"
                         >
                           <MapPin className="w-4 h-4 text-muted flex-shrink-0 mt-1" />
                           <span className="flex-1">{tour.title}</span>
@@ -369,28 +369,28 @@ export default function HomePage() {
                 )}
               </div>
             </div>
-            <div className="h-16 border-l border-white/10 self-center"></div>
-            <div className="flex-shrink-0">
-              <label className="block text-xl font-medium text-gray-300 mb-4">
+            <div className="hidden md:block h-16 border-l border-white/10 self-center"></div>
+            <div className="flex-shrink-0 w-full md:w-auto">
+              <label className="block text-base sm:text-lg md:text-xl font-medium text-gray-300 mb-2 sm:mb-3 md:mb-4">
                 Adulti
               </label>
-              <div className="flex items-center justify-center gap-4">
-                <User className="w-8 h-8 text-accent flex-shrink-0" />
-                <span className="text-[60px] font-medium text-white text-center" style={{ fontSize: '60px', lineHeight: '1' }}>
+              <div className="flex items-center justify-center gap-3 sm:gap-4">
+                <User className="w-6 h-6 sm:w-8 sm:h-8 text-accent flex-shrink-0" />
+                <span className="text-4xl sm:text-5xl md:text-[60px] font-medium text-white text-center leading-none">
                   {searchForm.adults}
                 </span>
                 <div className="flex flex-col gap-1">
                   <button
                     type="button"
                     onClick={() => setSearchForm({ ...searchForm, adults: searchForm.adults + 1 })}
-                    className="w-6 h-6 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-lg text-gray-300 transition-colors"
+                    className="w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-lg text-gray-300 transition-colors"
                   >
                     <Plus className="w-3 h-3" />
                   </button>
                   <button
                     type="button"
                     onClick={() => setSearchForm({ ...searchForm, adults: Math.max(1, searchForm.adults - 1) })}
-                    className="w-6 h-6 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-lg text-gray-300 transition-colors"
+                    className="w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-lg text-gray-300 transition-colors"
                   >
                     <Minus className="w-3 h-3" />
                   </button>
@@ -426,13 +426,13 @@ export default function HomePage() {
               </div>
             </div>
             <div className="h-16 border-l border-white/10 self-center"></div> */}
-            <div className="h-16 border-l border-white/10 self-center"></div>
-            <div className="flex-shrink-0">
-              <label className="block text-xl font-medium text-gray-300 mb-4">
+            <div className="hidden md:block h-16 border-l border-white/10 self-center"></div>
+            <div className="flex-shrink-0 w-full md:w-auto">
+              <label className="block text-base sm:text-lg md:text-xl font-medium text-gray-300 mb-2 sm:mb-3 md:mb-4">
                 Data
               </label>
-              <div className="flex items-center justify-center gap-4">
-                <Calendar className="w-8 h-8 text-accent flex-shrink-0" />
+              <div className="flex items-center justify-center gap-3 sm:gap-4">
+                <Calendar className="w-6 h-6 sm:w-8 sm:h-8 text-accent flex-shrink-0" />
                 <div className="flex-shrink-0">
                   <DatePicker
                     key={`${calendarViewDate.getFullYear()}-${calendarViewDate.getMonth()}`}
@@ -625,23 +625,23 @@ export default function HomePage() {
                     );
                   }}
                   customInput={
-                    <div className="flex items-center justify-center gap-4 cursor-pointer py-0">
+                    <div className="flex items-center justify-center gap-2 sm:gap-4 cursor-pointer py-0">
                       {searchForm.date ? (
                         <>
-                          <span className="text-[60px] font-medium text-white leading-none" style={{ fontSize: '60px', lineHeight: '1' }}>
+                          <span className="text-4xl sm:text-5xl md:text-[60px] font-medium text-white leading-none">
                             {new Date(searchForm.date).getDate()}
                           </span>
                           <div className="flex flex-col items-start gap-1">
-                            <span className="text-base text-gray-300">
+                            <span className="text-sm sm:text-base text-gray-300">
                               {formatMonth(new Date(searchForm.date))}
                             </span>
-                            <span className="text-base text-gray-300">
+                            <span className="text-sm sm:text-base text-gray-300">
                               {new Date(searchForm.date).getFullYear()}
                             </span>
                           </div>
                         </>
                       ) : (
-                        <span className="text-gray-400">Seleziona data</span>
+                        <span className="text-gray-400 text-sm sm:text-base">Seleziona data</span>
                       )}
                     </div>
                 }
@@ -649,9 +649,9 @@ export default function HomePage() {
                 </div>
             </div>
             </div>
-            <div className="flex items-center justify-center">
-              <button type="submit" className="btn-primary w-full md:w-auto px-16 py-5">
-                <Search className="w-5 h-5 inline mr-2" />
+            <div className="flex items-center justify-center w-full md:w-auto">
+              <button type="submit" className="btn-primary w-full md:w-auto px-8 sm:px-12 md:px-16 py-3 sm:py-4 md:py-5 text-sm sm:text-base">
+                <Search className="w-4 h-4 sm:w-5 sm:h-5 inline mr-2" />
                 Cerca
               </button>
             </div>
@@ -661,28 +661,28 @@ export default function HomePage() {
 
       {/* Prossime avventure */}
       {currentMonthTours.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 py-16">
-          <div className="text-center mb-12">
-            <div className="text-accent uppercase font-semibold mb-2">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 md:py-16">
+          <div className="text-center mb-8 sm:mb-10 md:mb-12">
+            <div className="text-accent uppercase font-semibold mb-2 text-sm sm:text-base">
               ESCURSIONI
             </div>
-            <div className="relative inline-block mb-6">
-              <div className="absolute bg-yellow-100 w-3/4 h-8 top-8 left-0"></div>
-              <h2 className="font-title text-[48px] font-bold relative">
+            <div className="relative inline-block mb-4 sm:mb-5 md:mb-6">
+              <div className="absolute bg-yellow-100 w-3/4 h-4 sm:h-6 md:h-8 top-4 sm:top-6 md:top-8 left-0"></div>
+              <h2 className="font-title text-3xl sm:text-4xl md:text-5xl lg:text-[48px] font-bold relative">
                 Prossime avventure
               </h2>
             </div>
           </div>
-          <div className="relative px-16">
-            <div className="overflow-hidden py-10 px-4">
+          <div className="relative px-4 sm:px-8 md:px-12 lg:px-16">
+            <div className="overflow-hidden py-4 sm:py-6 md:py-10 px-2 sm:px-4">
               <div 
-                className="flex gap-6 transition-transform duration-500 ease-in-out"
+                className="flex gap-4 sm:gap-6 transition-transform duration-500 ease-in-out"
                 style={{ 
-                  transform: `translateX(calc(-${currentNextAdventuresIndex} * ((100% - 3rem) / 3 + 1.5rem)))`
+                  transform: `translateX(calc(-${currentNextAdventuresIndex} * (100% / 1 + 1rem)))`
                 }}
               >
                 {currentMonthTours.slice(0, 5).map((tour) => (
-                  <div key={tour.id} className="flex-shrink-0" style={{ width: `calc((100% - 3rem) / 3)` }}>
+                  <div key={tour.id} className="flex-shrink-0 w-full sm:w-1/2 lg:w-1/3">
                     <CardTour tour={tour} />
                   </div>
                 ))}
@@ -695,34 +695,34 @@ export default function HomePage() {
                 <button
                   onClick={() => {
                     setCurrentNextAdventuresIndex((prev) => {
-                      const maxIndex = Math.max(0, currentMonthTours.slice(0, 5).length - 3);
+                      const maxIndex = Math.max(0, currentMonthTours.slice(0, 5).length - 1);
                       if (prev === 0) return maxIndex;
                       return prev - 1;
                     });
                   }}
-                  className="absolute left-0 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center hover:bg-gray-100 transition-colors z-10"
+                  className="absolute left-0 sm:left-2 md:left-0 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full bg-white shadow-lg flex items-center justify-center hover:bg-gray-100 transition-colors z-10"
                   aria-label="Card precedente"
                 >
-                  <ChevronLeft className="w-6 h-6 text-primary" />
+                  <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-primary" />
                 </button>
                 <button
                   onClick={() => {
                     setCurrentNextAdventuresIndex((prev) => {
-                      const maxIndex = Math.max(0, currentMonthTours.slice(0, 5).length - 3);
+                      const maxIndex = Math.max(0, currentMonthTours.slice(0, 5).length - 1);
                       if (prev >= maxIndex) return 0;
                       return prev + 1;
                     });
                   }}
-                  className="absolute right-0 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center hover:bg-gray-100 transition-colors z-10"
+                  className="absolute right-0 sm:right-2 md:right-0 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full bg-white shadow-lg flex items-center justify-center hover:bg-gray-100 transition-colors z-10"
                   aria-label="Card successiva"
                 >
-                  <ChevronRight className="w-6 h-6 text-primary" />
+                  <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-primary" />
                 </button>
               </>
             )}
           </div>
-          <div className="text-center mt-8">
-            <Link to="/tours" className="btn-secondary">
+          <div className="text-center mt-6 sm:mt-8">
+            <Link to="/tours" className="btn-secondary text-sm sm:text-base">
               Vedi tutte le escursioni
             </Link>
           </div>
@@ -730,59 +730,59 @@ export default function HomePage() {
       )}
 
       {/* Chi siamo */}
-      <section className="w-full py-32 relative overflow-hidden">
+      <section className="w-full py-16 sm:py-24 md:py-32 relative overflow-hidden">
         <img
           src="/resources/plane shape.png"
           alt=""
-          className="absolute -bottom-16 md:-bottom-24 -right-32 md:-right-48 w-96 h-96 md:w-[500px] md:h-[500px] object-contain z-10 pointer-events-none"
+          className="absolute -bottom-8 sm:-bottom-12 md:-bottom-16 lg:-bottom-24 -right-16 sm:-right-24 md:-right-32 lg:-right-48 w-48 h-48 sm:w-64 sm:h-64 md:w-96 md:h-96 lg:w-[500px] lg:h-[500px] object-contain z-10 pointer-events-none opacity-50 sm:opacity-75 md:opacity-100"
         />
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-10 md:gap-12 items-center">
           {/* Immagine a sinistra */}
-          <div className="order-2 md:order-1 relative">
+          <div className="order-2 md:order-1 relative flex justify-center md:justify-start">
             {/* Prima immagine - rettangolare in altezza */}
             <img
               src="/resources/11514.jpg"
               alt="Chi siamo"
-              className="w-[440px] h-[588px] object-cover rounded-t-lg rounded-b-full"
+              className="w-full max-w-[280px] sm:max-w-[340px] md:max-w-[440px] h-auto aspect-[440/588] object-cover rounded-t-lg rounded-b-full"
             />
             {/* Seconda immagine - rotonda e sovrapposta */}
             <img
               src="/resources/28088.jpg"
               alt=""
-              className="absolute -bottom-8 -right-8 w-[350px] h-[350px] rounded-full object-cover border-4 border-white"
+              className="absolute -bottom-4 sm:-bottom-6 md:-bottom-8 -right-4 sm:-right-6 md:-right-8 w-[140px] h-[140px] sm:w-[200px] sm:h-[200px] md:w-[280px] md:h-[280px] lg:w-[350px] lg:h-[350px] rounded-full object-cover border-2 sm:border-3 md:border-4 border-white"
             />
           </div>
           
           {/* Contenuto a destra */}
           <div className="order-1 md:order-2">
-            <div className="text-accent uppercase font-semibold mb-2">
+            <div className="text-accent uppercase font-semibold mb-2 text-sm sm:text-base">
               CHI SIAMO
             </div>
-            <div className="relative inline-block mb-6">
-              <div className="absolute bg-yellow-100 w-3/4 h-8 top-8 left-0"></div>
-              <h2 className="font-title text-[48px] font-bold relative">
+            <div className="relative inline-block mb-4 sm:mb-5 md:mb-6">
+              <div className="absolute bg-yellow-100 w-3/4 h-4 sm:h-6 md:h-8 top-4 sm:top-6 md:top-8 left-0"></div>
+              <h2 className="font-title text-3xl sm:text-4xl md:text-5xl lg:text-[48px] font-bold relative">
                 Vivi esperienze uniche con noi
               </h2>
             </div>
-            <p className="text-muted mb-6 text-lg">
+            <p className="text-muted mb-4 sm:mb-5 md:mb-6 text-base sm:text-lg">
               Siamo un team di appassionati di trekking e natura, dedicati a offrirti esperienze uniche e indimenticabili. La nostra missione è guidarti alla scoperta dei luoghi più belli e suggestivi, condividendo la nostra passione per l'avventura e il rispetto per l'ambiente.
             </p>
-            <ul className="space-y-4 mb-8">
+            <ul className="space-y-3 sm:space-y-4 mb-6 sm:mb-8">
               {[
                 'Esperienze autentiche',
                 'Professionalità',
                 'Emozioni condivise'
               ].map((item, index) => (
-                <li key={index} className="flex items-start gap-3">
-                  <BadgeCheck className="w-6 h-6 text-accent flex-shrink-0 mt-0.5" />
-                  <span className="text-muted">{item}</span>
+                <li key={index} className="flex items-start gap-2 sm:gap-3">
+                  <BadgeCheck className="w-5 h-5 sm:w-6 sm:h-6 text-accent flex-shrink-0 mt-0.5" />
+                  <span className="text-muted text-sm sm:text-base">{item}</span>
                 </li>
               ))}
             </ul>
-            <Link to="/about" className="btn-primary inline-flex items-center gap-2">
+            <Link to="/about" className="btn-primary inline-flex items-center gap-2 text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-3">
               Chi Siamo
-              <ArrowRight className="w-5 h-5" />
+              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
             </Link>
           </div>
           </div>
@@ -790,26 +790,26 @@ export default function HomePage() {
       </section>
 
       {/* Destinazioni top */}
-      <section className="w-full py-32 relative">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+      <section className="w-full py-16 sm:py-24 md:py-32 relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-10 md:gap-12 items-center">
             {/* Contenuto a sinistra */}
             <div>
-              <div className="text-accent uppercase font-semibold mb-2">
+              <div className="text-accent uppercase font-semibold mb-2 text-sm sm:text-base">
                 I nostri spot
               </div>
-              <div className="relative inline-block mb-6">
-                <div className="absolute bg-yellow-100 w-3/4 h-8 top-8 left-0"></div>
-                <h2 className="font-title text-[48px] font-bold relative">
+              <div className="relative inline-block mb-4 sm:mb-5 md:mb-6">
+                <div className="absolute bg-yellow-100 w-3/4 h-4 sm:h-6 md:h-8 top-4 sm:top-6 md:top-8 left-0"></div>
+                <h2 className="font-title text-3xl sm:text-4xl md:text-5xl lg:text-[48px] font-bold relative">
                   Destinazioni top
                 </h2>
               </div>
-              <p className="text-muted mb-6 text-lg max-w-lg">
+              <p className="text-muted mb-4 sm:mb-5 md:mb-6 text-base sm:text-lg max-w-lg">
                 Esplora le destinazioni più suggestive della Sicilia attraverso escursioni e trekking unici. Dalle vette delle Madonie ai sentieri di Ficuzza, scopri paesaggi mozzafiato e natura incontaminata che ti lasceranno senza fiato.
               </p>
               <Link 
                 to="/tours" 
-                className="inline-flex items-center gap-2 px-8 py-3 text-gray-800 font-medium rounded-full transition-colors"
+                className="inline-flex items-center gap-2 px-6 sm:px-8 py-2 sm:py-3 text-gray-800 font-medium rounded-full transition-colors text-sm sm:text-base"
                 style={{ 
                   backgroundColor: '#f2f2f2'
                 }}
@@ -821,43 +821,43 @@ export default function HomePage() {
                 }}
               >
                 Vedi tutte le escursioni
-                <ArrowRight className="w-5 h-5" />
+                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
               </Link>
             </div>
             
             {/* Foto a destra */}
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-2 gap-4 sm:gap-6">
               {/* Prima foto */}
-              <div className="relative rounded-3xl overflow-hidden">
+              <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden">
                 <img
                   src="/resources/madonie.jpg"
                   alt="Destinazione top"
-                  className="w-full h-64 object-cover rounded-3xl"
+                  className="w-full h-48 sm:h-56 md:h-64 object-cover rounded-2xl sm:rounded-3xl"
                 />
                 <div 
-                  className="absolute inset-0 flex items-end justify-center pb-4"
+                  className="absolute inset-0 flex items-end justify-center pb-3 sm:pb-4"
                   style={{
                     background: 'linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.4) 50%, transparent 100%)'
                   }}
                 >
-                  <h3 className="text-white text-2xl font-bold">Madonie</h3>
+                  <h3 className="text-white text-lg sm:text-xl md:text-2xl font-bold">Madonie</h3>
                 </div>
               </div>
               
               {/* Seconda foto */}
-              <div className="relative rounded-3xl overflow-hidden">
+              <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden">
                 <img
                   src="/resources/ficuzza.jpg"
                   alt="Destinazione top"
-                  className="w-full h-64 object-cover rounded-3xl"
+                  className="w-full h-48 sm:h-56 md:h-64 object-cover rounded-2xl sm:rounded-3xl"
                 />
                 <div 
-                  className="absolute inset-0 flex items-end justify-center pb-4"
+                  className="absolute inset-0 flex items-end justify-center pb-3 sm:pb-4"
                   style={{
                     background: 'linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.4) 50%, transparent 100%)'
                   }}
                 >
-                  <h3 className="text-white text-2xl font-bold">Ficuzza</h3>
+                  <h3 className="text-white text-lg sm:text-xl md:text-2xl font-bold">Ficuzza</h3>
                 </div>
               </div>
             </div>
@@ -865,56 +865,56 @@ export default function HomePage() {
         </div>
         
         {/* Tre foto aggiuntive */}
-        <div className="max-w-7xl mx-auto px-4 mt-12">
-          <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr_1fr] gap-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 sm:mt-10 md:mt-12">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
             {/* Foto a sinistra */}
-            <div className="relative rounded-3xl overflow-hidden">
+            <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden">
               <img
                 src="/resources/inici.jpg"
                 alt="Destinazione"
-                className="w-full h-64 object-cover rounded-3xl"
+                className="w-full h-48 sm:h-56 md:h-64 object-cover rounded-2xl sm:rounded-3xl"
               />
               <div 
-                className="absolute inset-0 flex items-end justify-center pb-4"
+                className="absolute inset-0 flex items-end justify-center pb-3 sm:pb-4"
                 style={{
                   background: 'linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.4) 50%, transparent 100%)'
                 }}
               >
-                <h3 className="text-white text-2xl font-bold">Inici</h3>
+                <h3 className="text-white text-lg sm:text-xl md:text-2xl font-bold">Inici</h3>
               </div>
             </div>
             
             {/* Foto centrale (più larga) */}
-            <div className="relative rounded-3xl overflow-hidden">
+            <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden sm:col-span-2 md:col-span-1">
               <img
                 src="/resources/57165.jpg"
                 alt="Destinazione"
-                className="w-full h-64 object-cover rounded-3xl"
+                className="w-full h-48 sm:h-56 md:h-64 object-cover rounded-2xl sm:rounded-3xl"
               />
               <div 
-                className="absolute inset-0 flex items-end justify-center pb-4"
+                className="absolute inset-0 flex items-end justify-center pb-3 sm:pb-4"
                 style={{
                   background: 'linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.4) 50%, transparent 100%)'
                 }}
               >
-                <h3 className="text-white text-2xl font-bold">Sicilia</h3>
+                <h3 className="text-white text-lg sm:text-xl md:text-2xl font-bold">Sicilia</h3>
               </div>
             </div>
             
             {/* Foto a destra */}
-            <div className="relative rounded-3xl overflow-hidden">
+            <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden sm:col-span-1">
               <img
                 src="/resources/28088.jpg"
                 alt="Destinazione"
-                className="w-full h-64 object-cover rounded-3xl"
+                className="w-full h-48 sm:h-56 md:h-64 object-cover rounded-2xl sm:rounded-3xl"
               />
               <div 
-                className="absolute inset-0 flex items-end justify-center pb-4"
+                className="absolute inset-0 flex items-end justify-center pb-3 sm:pb-4"
                 style={{
                   background: 'linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.4) 50%, transparent 100%)'
                 }}
               >
-                <h3 className="text-white text-2xl font-bold">Natura</h3>
+                <h3 className="text-white text-lg sm:text-xl md:text-2xl font-bold">Natura</h3>
               </div>
             </div>
           </div>
@@ -922,28 +922,28 @@ export default function HomePage() {
       </section>
 
       {/* best choices */}
-      <section className="max-w-7xl mx-auto px-4 py-16">
-        <div className="text-center mb-12">
-          <div className="text-accent uppercase font-semibold mb-2">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 md:py-16">
+        <div className="text-center mb-8 sm:mb-10 md:mb-12">
+          <div className="text-accent uppercase font-semibold mb-2 text-sm sm:text-base">
             ESCURSIONI
           </div>
-          <div className="relative inline-block mb-6">
-            <div className="absolute bg-yellow-100 w-3/4 h-8 top-8 left-0"></div>
-            <h2 className="font-title text-[48px] font-bold relative">
+          <div className="relative inline-block mb-4 sm:mb-5 md:mb-6">
+            <div className="absolute bg-yellow-100 w-3/4 h-4 sm:h-6 md:h-8 top-4 sm:top-6 md:top-8 left-0"></div>
+            <h2 className="font-title text-3xl sm:text-4xl md:text-5xl lg:text-[48px] font-bold relative">
               Le più scelte
             </h2>
           </div>
         </div>
-        <div className="relative px-16">
-          <div className="overflow-hidden py-10 px-4">
+        <div className="relative px-4 sm:px-8 md:px-12 lg:px-16">
+          <div className="overflow-hidden py-4 sm:py-6 md:py-10 px-2 sm:px-4">
             <div 
-              className="flex gap-6 transition-transform duration-500 ease-in-out"
+              className="flex gap-4 sm:gap-6 transition-transform duration-500 ease-in-out"
               style={{ 
-                transform: `translateX(calc(-${currentTourIndex} * ((100% - 3rem) / 3 + 1.5rem)))`
+                transform: `translateX(calc(-${currentTourIndex} * (100% / 1 + 1rem)))`
               }}
             >
               {tours.slice(0, 5).map((tour) => (
-                <div key={tour.id} className="flex-shrink-0" style={{ width: `calc((100% - 3rem) / 3)` }}>
+                <div key={tour.id} className="flex-shrink-0 w-full sm:w-1/2 lg:w-1/3">
                   <CardTour tour={tour} />
                 </div>
               ))}
@@ -954,38 +954,39 @@ export default function HomePage() {
           <button
             onClick={() => {
               setCurrentTourIndex((prev) => {
-                if (prev === 0) return tours.slice(0, 5).length - 3;
+                const maxIndex = Math.max(0, tours.slice(0, 5).length - 1);
+                if (prev === 0) return maxIndex;
                 return prev - 1;
               });
             }}
-            className="absolute left-0 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center hover:bg-gray-100 transition-colors z-10"
+            className="absolute left-0 sm:left-2 md:left-0 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full bg-white shadow-lg flex items-center justify-center hover:bg-gray-100 transition-colors z-10"
             aria-label="Card precedente"
           >
-            <ChevronLeft className="w-6 h-6 text-primary" />
+            <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-primary" />
           </button>
           <button
             onClick={() => {
               setCurrentTourIndex((prev) => {
-                const maxIndex = tours.slice(0, 5).length - 3;
+                const maxIndex = Math.max(0, tours.slice(0, 5).length - 1);
                 if (prev >= maxIndex) return 0;
                 return prev + 1;
               });
             }}
-            className="absolute right-0 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center hover:bg-gray-100 transition-colors z-10"
+            className="absolute right-0 sm:right-2 md:right-0 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full bg-white shadow-lg flex items-center justify-center hover:bg-gray-100 transition-colors z-10"
             aria-label="Card successiva"
           >
-            <ChevronRight className="w-6 h-6 text-primary" />
+            <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-primary" />
           </button>
         </div>
-        <div className="text-center mt-8">
-          <Link to="/tours" className="btn-secondary">
+        <div className="text-center mt-6 sm:mt-8">
+          <Link to="/tours" className="btn-secondary text-sm sm:text-base">
             Vedi tutte le escursioni
           </Link>
         </div>
       </section>
 
       {/* How it works */}
-      <section className="w-full py-32 relative">
+      <section className="w-full py-16 sm:py-24 md:py-32 relative">
         <div className="absolute inset-0" ></div>
         <div 
           className="absolute inset-0"
@@ -997,48 +998,48 @@ export default function HomePage() {
             opacity: 0.6
           }}
         ></div>
-        <div className="max-w-7xl mx-auto px-4 relative z-10">
-          <div className="text-center mb-12">
-            <div className="text-accent uppercase font-semibold mb-2">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="text-center mb-8 sm:mb-10 md:mb-12">
+            <div className="text-accent uppercase font-semibold mb-2 text-sm sm:text-base">
               PERCHÉ
             </div>
-            <div className="relative inline-block mb-6">
-              <div className="absolute bg-yellow-100 w-3/4 h-8 top-8 left-0"></div>
-              <h2 className="font-title text-[48px] font-bold relative">
+            <div className="relative inline-block mb-4 sm:mb-5 md:mb-6">
+              <div className="absolute bg-yellow-100 w-3/4 h-4 sm:h-6 md:h-8 top-4 sm:top-6 md:top-8 left-0"></div>
+              <h2 className="font-title text-3xl sm:text-4xl md:text-5xl lg:text-[48px] font-bold relative">
                 Perché sceglierci?
               </h2>
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
           {[
             {
-              icon: <Search className="w-8 h-8 text-accent" />,
+              icon: <Search className="w-6 h-6 sm:w-8 sm:h-8 text-accent" />,
               title: 'Scegli la tua avventura',
               description:
                 'Esplora la nostra selezione di escursioni e trova quella perfetta per te.',
             },
             {
-              icon: <Calendar className="w-8 h-8 text-accent" />,
+              icon: <Calendar className="w-6 h-6 sm:w-8 sm:h-8 text-accent" />,
               title: 'Prenota la data',
               description:
                 'Seleziona la data che preferisci e completa la prenotazione in pochi click.',
             },
             {
-              icon: <Users className="w-8 h-8 text-accent" />,
+              icon: <Users className="w-6 h-6 sm:w-8 sm:h-8 text-accent" />,
               title: 'Vivi l\'esperienza',
               description:
                 'Parti per la tua avventura e crea ricordi indimenticabili.',
             },
           ].map((step, index) => (
             <div key={index} className="text-center">
-              <div className="flex justify-center mb-4">
-                <div className="bg-white rounded-full p-4 w-20 h-20 flex items-center justify-center relative group">
+              <div className="flex justify-center mb-3 sm:mb-4">
+                <div className="bg-white rounded-full p-3 sm:p-4 w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center relative group">
                   {step.icon}
-                  <div className="absolute inset-0 rounded-full border-2 border-dashed border-accent opacity-0 group-hover:opacity-100 transition-opacity duration-300 -m-4"></div>
+                  <div className="absolute inset-0 rounded-full border-2 border-dashed border-accent opacity-0 group-hover:opacity-100 transition-opacity duration-300 -m-3 sm:-m-4"></div>
                 </div>
               </div>
-              <h3 className="font-title text-xl font-bold mb-2">{step.title}</h3>
-              <p className="text-muted max-w-xs mx-auto">{step.description}</p>
+              <h3 className="font-title text-lg sm:text-xl font-bold mb-2">{step.title}</h3>
+              <p className="text-muted text-sm sm:text-base max-w-xs mx-auto">{step.description}</p>
             </div>
           ))}
           </div>
@@ -1046,48 +1047,48 @@ export default function HomePage() {
       </section>
 
       {/* Viaggiare con standard più elevati */}
-      <section className="w-full py-32 relative">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+      <section className="w-full py-16 sm:py-24 md:py-32 relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-10 md:gap-12 items-center">
             {/* Contenuto a sinistra */}
             <div>
-              <div className="text-accent uppercase font-semibold mb-2">
+              <div className="text-accent uppercase font-semibold mb-2 text-sm sm:text-base">
                 Appassionati di avventure in montagna
               </div>
-              <div className="relative inline-block mb-6">
-                <div className="absolute bg-yellow-100 w-3/4 h-8 top-8 left-0"></div>
-                <h2 className="font-title text-[48px] font-bold relative">
+              <div className="relative inline-block mb-4 sm:mb-5 md:mb-6">
+                <div className="absolute bg-yellow-100 w-3/4 h-4 sm:h-6 md:h-8 top-4 sm:top-6 md:top-8 left-0"></div>
+                <h2 className="font-title text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-[48px] font-bold relative">
                   Viaggiare con standard più elevati di comfort e scoperta
                 </h2>
               </div>
-              <p className="text-muted mb-8 text-lg">
+              <p className="text-muted mb-6 sm:mb-8 text-base sm:text-lg">
                 Ogni escursione è pensata per offrirti il massimo del comfort senza rinunciare all'autenticità dell'esperienza. Le nostre guide esperte ti accompagnano alla scoperta di luoghi unici, garantendo sicurezza, professionalità e momenti indimenticabili immersi nella natura siciliana.
               </p>
               
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 {/* Prima: icona + titolo */}
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3 sm:gap-4">
                   <div className="flex-shrink-0">
-                    <div className="bg-accent/10 rounded-full p-4">
-                      <Calendar className="w-8 h-8 text-accent" />
+                    <div className="bg-accent/10 rounded-full p-3 sm:p-4">
+                      <Calendar className="w-6 h-6 sm:w-8 sm:h-8 text-accent" />
                     </div>
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-title text-xl font-bold">
+                    <h3 className="font-title text-lg sm:text-xl font-bold">
                       Prenotazioni<br />facili
                     </h3>
                   </div>
                 </div>
                 
                 {/* Seconda: icona + titolo */}
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3 sm:gap-4">
                   <div className="flex-shrink-0">
-                    <div className="bg-accent/10 rounded-full p-4">
-                      <Compass className="w-8 h-8 text-accent" />
+                    <div className="bg-accent/10 rounded-full p-3 sm:p-4">
+                      <Compass className="w-6 h-6 sm:w-8 sm:h-8 text-accent" />
                     </div>
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-title text-xl font-bold">
+                    <h3 className="font-title text-lg sm:text-xl font-bold">
                       Guide con<br />Esperienza
                     </h3>
                   </div>
@@ -1096,11 +1097,11 @@ export default function HomePage() {
             </div>
             
             {/* Foto a destra */}
-            <div className="relative rounded-3xl overflow-hidden">
+            <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden">
               <img
                 src="/resources/IMG_5010.JPEG"
                 alt="Escursione in montagna"
-                className="w-full h-80 object-cover rounded-3xl"
+                className="w-full h-64 sm:h-72 md:h-80 object-cover rounded-2xl sm:rounded-3xl"
               />
             </div>
           </div>
@@ -1108,7 +1109,7 @@ export default function HomePage() {
       </section>
 
       {/* Reviews */}
-      <section className="w-full relative" style={{ paddingTop: '128px', paddingBottom: '128px' }}>
+      <section className="w-full relative py-16 sm:py-24 md:py-32">
         <div 
           className="absolute inset-0"
           style={{
@@ -1118,50 +1119,50 @@ export default function HomePage() {
             backgroundRepeat: 'no-repeat'
           }}
         ></div>
-        <div className="max-w-7xl mx-auto px-4 relative z-10">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-10 md:gap-12 items-center">
             {/* Contenuto a sinistra */}
             <div>
-              <div className="text-accent uppercase font-semibold mb-2">
+              <div className="text-accent uppercase font-semibold mb-2 text-sm sm:text-base">
                 TESTIMONIANZE
               </div>
-              <div className="relative inline-block mb-6">
-                <div className="absolute bg-yellow-100 w-3/4 h-8 top-8 left-0"></div>
-                <h2 className="font-title text-[48px] font-bold relative">
-                  Cosa ne pensano i<br />nostri clienti?
+              <div className="relative inline-block mb-4 sm:mb-5 md:mb-6">
+                <div className="absolute bg-yellow-100 w-3/4 h-4 sm:h-6 md:h-8 top-4 sm:top-6 md:top-8 left-0"></div>
+                <h2 className="font-title text-3xl sm:text-4xl md:text-5xl lg:text-[48px] font-bold relative">
+                  Cosa ne pensano i<br className="hidden sm:block" /> nostri clienti?
                 </h2>
               </div>
-              <p className="text-muted mb-8 text-lg max-w-lg">
+              <p className="text-muted mb-6 sm:mb-8 text-base sm:text-lg max-w-lg">
                 I nostri partecipanti ai trekking condividono le loro esperienze: appassionati di montagna, amanti della natura e avventurieri che hanno scelto di esplorare la Sicilia con noi. Le loro voci raccontano emozioni, panorami mozzafiato e momenti indimenticabili vissuti insieme.
               </p>
               
               {/* Navigation */}
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3 sm:gap-4">
                 <button
                   onClick={() => {
                     setCurrentReviewIndex((prev) => {
-                      const maxIndex = reviews.length - 2;
+                      const maxIndex = reviews.length - 1;
                       if (prev === 0) return maxIndex;
                       return prev - 1;
                     });
                   }}
-                  className="w-16 h-16 rounded-full bg-white flex items-center justify-center hover:bg-gray-100 transition-colors"
+                  className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full bg-white flex items-center justify-center hover:bg-gray-100 transition-colors"
                   aria-label="Recensione precedente"
                 >
-                  <ArrowLeft className="w-5 h-5 text-gray-500" />
+                  <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
                 </button>
                 <button
                   onClick={() => {
                     setCurrentReviewIndex((prev) => {
-                      const maxIndex = reviews.length - 2;
+                      const maxIndex = reviews.length - 1;
                       if (prev >= maxIndex) return 0;
                       return prev + 1;
                     });
                   }}
-                  className="w-16 h-16 rounded-full bg-white flex items-center justify-center hover:bg-gray-100 transition-colors"
+                  className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full bg-white flex items-center justify-center hover:bg-gray-100 transition-colors"
                   aria-label="Recensione successiva"
                 >
-                  <ArrowRight className="w-5 h-5 text-gray-500" />
+                  <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
                 </button>
               </div>
             </div>
@@ -1170,28 +1171,28 @@ export default function HomePage() {
             <div className="relative">
               <div className="overflow-hidden py-4">
                 <div 
-                  className="flex gap-6 transition-transform duration-500 ease-in-out"
+                  className="flex gap-4 sm:gap-6 transition-transform duration-500 ease-in-out"
                   style={{ 
-                    transform: `translateX(calc(-${currentReviewIndex} * ((100% - 1.5rem) / 2 + 1.5rem)))`
+                    transform: `translateX(calc(-${currentReviewIndex} * (100% + 1rem)))`
                   }}
                 >
                   {reviews.map((review, index) => (
-                    <div key={index} className="flex-shrink-0" style={{ width: `calc((100% - 1.5rem) / 2)` }}>
-                      <div className="card p-10 shadow-none h-full flex flex-col" style={{ filter: 'none' }}>
-                        <div className="flex items-center mb-6">
+                    <div key={index} className="flex-shrink-0 w-full md:w-auto md:min-w-[calc(50%-0.75rem)]">
+                      <div className="card p-6 sm:p-8 md:p-10 shadow-none h-full flex flex-col" style={{ filter: 'none' }}>
+                        <div className="flex items-center mb-4 sm:mb-6">
                           {[...Array(review.rating)].map((_, i) => (
-                            <Star key={i} className="w-6 h-6 fill-accent text-accent" />
+                            <Star key={i} className="w-5 h-5 sm:w-6 sm:h-6 fill-accent text-accent" />
                           ))}
                         </div>
-                        <p className="text-muted mb-6 text-lg flex-grow">"{review.text}"</p>
-                        <div className="border-t border-gray-200 mb-6"></div>
+                        <p className="text-muted mb-4 sm:mb-6 text-base sm:text-lg flex-grow">"{review.text}"</p>
+                        <div className="border-t border-gray-200 mb-4 sm:mb-6"></div>
                         <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
-                            <User className="w-6 h-6 text-accent" />
+                          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
+                            <User className="w-5 h-5 sm:w-6 sm:h-6 text-accent" />
                           </div>
                           <div>
-                            <p className="font-bold text-primary">{review.name}</p>
-                            <p className="text-muted text-sm">{review.location}</p>
+                            <p className="font-bold text-primary text-sm sm:text-base">{review.name}</p>
+                            <p className="text-muted text-xs sm:text-sm">{review.location}</p>
                           </div>
                         </div>
                       </div>

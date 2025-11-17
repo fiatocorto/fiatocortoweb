@@ -58,57 +58,51 @@ export default function CardTour({ tour, variant = 'default', viewMode = 'grid' 
   const nextDate = tour.dateStart;
 
   if (isCompact) {
-    // List view layout: image on left, content on right
+    // List view layout: no image, just content
     if (isListView) {
       return (
-        <div className="bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 h-56">
+        <div className="bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
           <Link 
             to={`/tours/${tour.slug}`} 
-            className="block h-full"
+            className="block"
           >
-            <div className="flex items-stretch h-full">
-              <div className="relative w-64 flex-shrink-0 h-full">
-                <img
-                  src={tour.coverImage}
-                  alt={tour.title}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute top-2 right-2">
-                  <span className={`badge ${getSeatsBadgeClass()}`}>
-                    {availableSeats === 0
-                      ? 'Esaurito'
-                      : `${availableSeats} posti`}
-                  </span>
-                </div>
-              </div>
-              <div className="flex-1 px-5 pt-5 pb-5 flex flex-col justify-between h-full">
-                <div>
-                  <h3 className="font-title text-lg font-bold mb-2 line-clamp-1 text-primary">{tour.title}</h3>
-                  <p className="text-sm text-muted mb-4 line-clamp-2">{tour.description}</p>
-                  <div className="flex items-center gap-4 text-xs text-muted mb-4">
+            <div className="p-3 sm:p-4">
+              <div className="flex items-start justify-between gap-3 sm:gap-4">
+                {/* Contenuto principale */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <h3 className="font-title text-sm sm:text-base font-bold line-clamp-1 text-primary flex-1">{tour.title}</h3>
+                    <span className={`badge text-[10px] sm:text-xs flex-shrink-0 ${getSeatsBadgeClass()}`}>
+                      {availableSeats === 0
+                        ? 'Esaurito'
+                        : `${availableSeats} posti`}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted mb-2 line-clamp-2">{tour.description}</p>
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-[10px] sm:text-xs text-muted mb-2">
                     <span className="flex items-center">
-                      <Calendar className="w-3.5 h-3.5 mr-1" />
+                      <Calendar className="w-3 h-3 mr-1" />
                       {formatDate(nextDate)}
                     </span>
                     <span className="flex items-center">
-                      <Activity className="w-3.5 h-3.5 mr-1" />
+                      <Activity className="w-3 h-3 mr-1" />
                       {tour.difficulty || 'N/A'}
                     </span>
                   </div>
                 </div>
-                <div className="flex items-center justify-between pt-4 border-t border-gray-100 -mx-5 px-5">
-                  <div>
-                    <span className="text-xl font-bold text-accent">
-                      {formatPrice(tour.priceAdult)}
-                    </span>
-                    {tour.priceAdult !== 0 && tour.priceAdult !== null && tour.priceAdult !== undefined && (
-                      <span className="text-xs text-muted ml-1">a persona</span>
-                    )}
-                  </div>
-                  <span className="text-sm font-semibold text-accent hover:text-accent/80 transition-colors">
-                    Dettagli →
+              </div>
+              <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                <div>
+                  <span className="text-base sm:text-lg font-bold text-accent">
+                    {formatPrice(tour.priceAdult)}
                   </span>
+                  {tour.priceAdult !== 0 && tour.priceAdult !== null && tour.priceAdult !== undefined && (
+                    <span className="text-[10px] sm:text-xs text-muted ml-1">a persona</span>
+                  )}
                 </div>
+                <span className="text-xs sm:text-sm font-semibold text-accent hover:text-accent/80 transition-colors">
+                  Dettagli →
+                </span>
               </div>
             </div>
           </Link>
