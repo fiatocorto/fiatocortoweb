@@ -23,7 +23,7 @@ export default function AdminSidebar() {
   ];
 
   return (
-    <div className="fixed left-0 top-0 h-screen w-[300px] bg-primary text-white pl-4 sm:pl-6 lg:pl-8 pr-8 py-4 z-50">
+    <div className="fixed left-0 top-0 h-screen w-[300px] bg-primary text-white pl-4 sm:pl-6 lg:pl-8 pr-8 py-4 z-50 pt-20">
       {/* Logo */}
       <Link to="/" className="flex items-center mb-12">
         <img 

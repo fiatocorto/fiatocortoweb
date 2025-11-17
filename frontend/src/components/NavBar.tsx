@@ -10,6 +10,7 @@ export default function NavBar() {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [cartMenuOpen, setCartMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const cartMenuRef = useRef<HTMLDivElement>(null);
 
   // Helper function to check if a path is active
@@ -36,6 +37,17 @@ export default function NavBar() {
     };
   }, [cartMenuOpen]);
 
+  // Handle scroll to change navbar style
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY;
+      setIsScrolled(scrollPosition > 50);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   const handleLogout = () => {
     logout();
     navigate('/');
@@ -45,17 +57,17 @@ export default function NavBar() {
   const isAdminRoute = location.pathname.startsWith('/admin');
 
   return (
-    <nav className={`${isAdminRoute ? 'bg-accent' : 'bg-primary'} text-white shadow-lg z-[100]`}>
+    <nav className={`${isAdminRoute ? 'bg-accent' : 'bg-primary'} text-white shadow-lg z-[100] transition-all duration-300 ${isScrolled && !isAdminRoute ? 'fixed top-0 left-0 right-0 shadow-xl' : 'relative'} ${isAdminRoute ? 'relative' : ''}`}>
       <div className="w-full">
         <div className="flex items-stretch">
           {/* Logo Section - Hidden on admin routes */}
           {!isAdminRoute && (
-          <div className="relative flex items-center pl-4 sm:pl-6 lg:pl-8 pr-16 overflow-hidden w-[400px] bg-[#0f172a]">
+          <div className={`relative flex items-center pl-4 sm:pl-6 lg:pl-8 pr-16 overflow-hidden bg-[#0f172a] transition-all duration-300 ${isScrolled ? 'w-[300px]' : 'w-[400px]'}`}>
             <Link to="/" className="flex items-center relative z-10">
               <img 
                 src="/resources/Completo Bianco.png" 
                 alt="Fiato Corto" 
-                className="h-16 w-auto object-contain"
+                className={`w-auto object-contain transition-all duration-300 ${isScrolled ? 'h-12' : 'h-16'}`}
               />
           </Link>
 
@@ -64,8 +76,8 @@ export default function NavBar() {
 
           {/* Right side: Two vertical rows */}
           <div className={`flex-1 flex flex-col ${isAdminRoute ? 'bg-accent ml-[300px]' : ''}`}>
-            {/* Top Bar */}
-            <div className={`hidden lg:flex justify-between items-center py-0.5 pr-4 sm:pr-6 lg:pr-8 border-b ${isAdminRoute ? 'bg-accent border-accent/80 text-primary pl-4 sm:pl-6 lg:pl-8' : 'bg-[#1e293b] border-[#334155] text-white pl-4 sm:pl-6 lg:pl-8'}`}>
+            {/* Top Bar - Hidden when scrolled */}
+            <div className={`hidden lg:flex justify-between items-center py-0.5 pr-4 sm:pr-6 lg:pr-8 border-b transition-all duration-300 ${isScrolled && !isAdminRoute ? 'h-0 overflow-hidden opacity-0' : 'h-auto opacity-100'} ${isAdminRoute ? 'bg-accent border-accent/80 text-primary pl-4 sm:pl-6 lg:pl-8' : 'bg-[#1e293b] border-[#334155] text-white pl-4 sm:pl-6 lg:pl-8'}`}>
               {/* Contact boxes */}
               <div className="flex items-center space-x-2">
                 <div className="flex items-center space-x-1 pr-3 py-1.5 rounded-full text-sm">
@@ -86,12 +98,6 @@ export default function NavBar() {
               <div className="flex items-center space-x-2">
                 {user ? (
                   <>
-                    <Link
-                      to="/bookings"
-                      className={`px-4 py-2 rounded-full transition-colors text-sm ${isAdminRoute ? (isActive('/bookings') ? 'text-primary font-semibold' : 'text-primary hover:text-primary/80') : (isActive('/bookings') ? 'text-accent' : 'hover:text-accent')}`}
-                    >
-                      Le mie prenotazioni
-                    </Link>
                     {user.role === 'ADMIN' && (
                       <Link
                         to="/admin"
@@ -120,7 +126,7 @@ export default function NavBar() {
 
             {/* Menu Bar - Hidden on admin routes */}
             {!isAdminRoute && (
-            <div className="hidden lg:flex justify-between items-center py-5 pl-4 sm:pl-6 lg:pl-8 pr-4 sm:pr-6 lg:pr-8 bg-white text-primary">
+            <div className={`hidden lg:flex justify-between items-center transition-all duration-300 pl-4 sm:pl-6 lg:pl-8 pr-4 sm:pr-6 lg:pr-8 bg-white text-primary ${isScrolled ? 'py-3 shadow-md' : 'py-5'}`}>
               {/* Navigation menu */}
               <div className="flex-1 flex justify-start items-center space-x-6">
                 <Link 
@@ -261,25 +267,14 @@ export default function NavBar() {
             >
               Contatti
             </Link>
-            {user && (
-              <>
-                <Link
-                  to="/bookings"
-                  className={`nav-link-underline block transition-colors py-2 ${isActive('/bookings') ? 'text-accent active' : 'hover:text-accent'}`}
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Le mie prenotazioni
-                </Link>
-                {user.role === 'ADMIN' && (
-                  <Link
-                    to="/admin"
-                    className={`nav-link-underline block transition-colors py-2 ${isActive('/admin') ? 'text-accent active' : 'hover:text-accent'}`}
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Admin
-                  </Link>
-                )}
-              </>
+            {user?.role === 'ADMIN' && (
+              <Link
+                to="/admin"
+                className={`nav-link-underline block transition-colors py-2 ${isActive('/admin') ? 'text-accent active' : 'hover:text-accent'}`}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Admin
+              </Link>
             )}
             </div>
 

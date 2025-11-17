@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Type, DollarSign, Globe, Image, MapPin, Clock, Calendar, Users, Mountain, Camera, CheckCircle, XCircle, FileText, ArrowLeft, X, Upload } from 'lucide-react';
 import DatePicker, { registerLocale } from 'react-datepicker';
@@ -6,6 +6,7 @@ import { it } from 'date-fns/locale';
 import 'react-datepicker/dist/react-datepicker.css';
 import api from '../../utils/api';
 import AdminSidebar from '../../components/admin/AdminSidebar';
+import Modal from '../../components/Modal';
 
 registerLocale('it', it);
 
@@ -63,6 +64,7 @@ export default function AdminCreateTour() {
   const [uploadingCover, setUploadingCover] = useState(false);
   const [uploadingGallery, setUploadingGallery] = useState(false);
   const [uploadingGpx, setUploadingGpx] = useState(false);
+  const [showBrowserBackWarning, setShowBrowserBackWarning] = useState(false);
   const gpxInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
 
@@ -177,6 +179,30 @@ export default function AdminCreateTour() {
     });
   };
 
+  const hasChanges = () => {
+    // Check if any field has been filled
+    return !!(
+      formData.title ||
+      formData.description ||
+      formData.priceAdult > 0 ||
+      formData.priceChild > 0 ||
+      formData.itinerary ||
+      formData.coverImage ||
+      formData.gallery ||
+      formData.gpxTrack ||
+      formData.latitude ||
+      formData.longitude ||
+      formData.terms ||
+      formData.whatsappLink ||
+      formData.difficulty ||
+      formData.images.length > 0 ||
+      formData.includes.length > 0 ||
+      formData.excludes.length > 0 ||
+      formData.dateStart ||
+      formData.dateEnd
+    );
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
@@ -199,10 +225,112 @@ export default function AdminCreateTour() {
     }
   };
 
+  // Intercept browser back button
+  useEffect(() => {
+    const hasUnsaved = !!(
+      formData.title ||
+      formData.description ||
+      formData.priceAdult > 0 ||
+      formData.priceChild > 0 ||
+      formData.itinerary ||
+      formData.coverImage ||
+      formData.gallery ||
+      formData.gpxTrack ||
+      formData.latitude ||
+      formData.longitude ||
+      formData.terms ||
+      formData.whatsappLink ||
+      formData.difficulty ||
+      formData.images.length > 0 ||
+      formData.includes.length > 0 ||
+      formData.excludes.length > 0 ||
+      formData.dateStart ||
+      formData.dateEnd
+    );
+
+    const handlePopState = (event: PopStateEvent) => {
+      if (hasUnsaved) {
+        // Push state back to prevent navigation
+        window.history.pushState(null, '', window.location.href);
+        setShowBrowserBackWarning(true);
+      }
+    };
+
+    // Add a state to history when there are unsaved changes
+    if (hasUnsaved && !showBrowserBackWarning) {
+      window.history.pushState({ hasUnsavedChanges: true }, '', window.location.href);
+    }
+
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [formData, showBrowserBackWarning]);
+
+  const handleExitWithoutSaving = () => {
+    setShowBrowserBackWarning(false);
+    navigate('/admin/tours');
+  };
+
+  const handleSaveAndExit = async () => {
+    if (!hasChanges()) {
+      handleExitWithoutSaving();
+      return;
+    }
+    
+    setSubmitting(true);
+    try {
+      const submitData = {
+        ...formData,
+        dateStart: formData.dateStart?.toISOString(),
+        dateEnd: formData.dateEnd?.toISOString(),
+        images: JSON.stringify(formData.images),
+        includes: JSON.stringify(formData.includes),
+        excludes: JSON.stringify(formData.excludes),
+      };
+      await api.post('/api/tours', submitData);
+      setShowBrowserBackWarning(false);
+      navigate('/admin/tours');
+    } catch (error) {
+      alert('Errore nel salvataggio');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <div>
       <AdminSidebar />
       <div className="ml-[300px] p-8">
+        {/* Browser back warning modal */}
+        <Modal
+          isOpen={showBrowserBackWarning}
+          onClose={() => setShowBrowserBackWarning(false)}
+          title="Attenzione"
+          size="md"
+        >
+          <div className="space-y-4">
+            <p className="text-muted">
+              Vuoi davvero abbandonare la pagina? Così facendo perderai le modifiche.
+            </p>
+            <div className="flex gap-4 justify-end">
+              <button
+                onClick={handleExitWithoutSaving}
+                className="px-6 py-2 border border-gray-300 rounded-full hover:bg-gray-50 transition-colors"
+              >
+                Esci senza salvare
+              </button>
+              <button
+                onClick={handleSaveAndExit}
+                disabled={submitting}
+                className="px-6 py-2 bg-accent text-white rounded-full hover:bg-accent/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {submitting ? 'Salvataggio...' : 'Salva ed esci'}
+              </button>
+            </div>
+          </div>
+        </Modal>
         <div className="mb-8">
           <div>
             <Link 

@@ -574,7 +574,7 @@ export default function TourDetailPage() {
               <button 
                 onClick={() => {
                   setShowBookingModal(false);
-                  navigate('/bookings');
+                  navigate('/account/bookings');
                 }} 
                 className="btn-primary"
               >

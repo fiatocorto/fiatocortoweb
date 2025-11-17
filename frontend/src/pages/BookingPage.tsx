@@ -102,7 +102,7 @@ export default function BookingPage() {
             </p>
           </div>
           <div className="flex space-x-4 justify-center">
-            <button onClick={() => navigate('/bookings')} className="btn-primary">
+            <button onClick={() => navigate('/account/bookings')} className="btn-primary">
               Le mie prenotazioni
             </button>
             <button onClick={() => navigate('/tours')} className="btn-secondary">

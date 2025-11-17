@@ -18,6 +18,8 @@ export default function BookingDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelling, setCancelling] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -86,6 +88,8 @@ export default function BookingDetailPage() {
     if (!booking || !id) return;
 
     setCancelling(true);
+    setSuccessMessage(null);
+    setErrorMessage(null);
     try {
       await api.put(`/api/bookings/${id}`, {
         paymentStatus: 'CANCELLED',
@@ -93,9 +97,13 @@ export default function BookingDetailPage() {
       // Ricarica i dati della prenotazione
       await fetchBooking();
       setShowCancelModal(false);
-      alert('Prenotazione annullata con successo. I posti sono stati resi disponibili.');
+      setSuccessMessage('Prenotazione annullata con successo. I posti sono stati resi disponibili.');
+      // Rimuovi il messaggio dopo 5 secondi
+      setTimeout(() => setSuccessMessage(null), 5000);
     } catch (error: any) {
-      alert(error.response?.data?.error || 'Errore nell\'annullamento della prenotazione');
+      setErrorMessage(error.response?.data?.error || 'Errore nell\'annullamento della prenotazione');
+      // Rimuovi il messaggio dopo 5 secondi
+      setTimeout(() => setErrorMessage(null), 5000);
     } finally {
       setCancelling(false);
     }
@@ -126,10 +134,42 @@ export default function BookingDetailPage() {
   return (
     <div style={{ backgroundColor: '#ffffff' }}>
       <div className="max-w-4xl mx-auto px-4 py-8">
+        {/* Success Message */}
+        {successMessage && (
+          <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <CheckCircle className="w-5 h-5 text-green-600" />
+              <p className="text-green-800 font-medium">{successMessage}</p>
+            </div>
+            <button
+              onClick={() => setSuccessMessage(null)}
+              className="text-green-600 hover:text-green-800 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        )}
+
+        {/* Error Message */}
+        {errorMessage && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <XCircle className="w-5 h-5 text-red-600" />
+              <p className="text-red-800 font-medium">{errorMessage}</p>
+            </div>
+            <button
+              onClick={() => setErrorMessage(null)}
+              className="text-red-600 hover:text-red-800 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        )}
+
         {/* Header con link indietro */}
         <div className="mb-6">
           <Link
-            to="/bookings"
+            to="/account/bookings"
             className="inline-flex items-center text-muted hover:text-primary transition-colors mb-4"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />

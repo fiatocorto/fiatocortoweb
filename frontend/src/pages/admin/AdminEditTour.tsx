@@ -6,6 +6,7 @@ import { it } from 'date-fns/locale';
 import 'react-datepicker/dist/react-datepicker.css';
 import api from '../../utils/api';
 import AdminSidebar from '../../components/admin/AdminSidebar';
+import Modal from '../../components/Modal';
 
 registerLocale('it', it);
 
@@ -90,6 +91,7 @@ export default function AdminEditTour() {
   const [uploadingGpx, setUploadingGpx] = useState(false);
   const [showUnsavedWarning, setShowUnsavedWarning] = useState(false);
   const [showSavedMessage, setShowSavedMessage] = useState(false);
+  const [showBrowserBackWarning, setShowBrowserBackWarning] = useState(false);
   const gpxInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
 
@@ -236,6 +238,37 @@ export default function AdminEditTour() {
     }
   }, [id, fetchTour]);
 
+  const hasChanges = useCallback(() => {
+    if (!originalData) return false;
+    return JSON.stringify(formData) !== JSON.stringify(originalData);
+  }, [formData, originalData]);
+
+  // Intercept browser back button
+  useEffect(() => {
+    if (!originalData) return; // Don't intercept if data not loaded yet
+
+    const handlePopState = (event: PopStateEvent) => {
+      const hasUnsaved = JSON.stringify(formData) !== JSON.stringify(originalData);
+      if (hasUnsaved) {
+        // Push state back to prevent navigation
+        window.history.pushState(null, '', window.location.href);
+        setShowBrowserBackWarning(true);
+      }
+    };
+
+    // Add a state to history when there are unsaved changes
+    const hasUnsaved = JSON.stringify(formData) !== JSON.stringify(originalData);
+    if (hasUnsaved && !showBrowserBackWarning) {
+      window.history.pushState({ hasUnsavedChanges: true }, '', window.location.href);
+    }
+
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [formData, originalData, showBrowserBackWarning]);
+
   if (loading) {
     return (
       <div>
@@ -285,11 +318,6 @@ export default function AdminEditTour() {
     });
   };
 
-  const hasChanges = () => {
-    if (!originalData) return false;
-    return JSON.stringify(formData) !== JSON.stringify(originalData);
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!hasChanges()) return;
@@ -326,10 +354,69 @@ export default function AdminEditTour() {
     }
   };
 
+  const handleExitWithoutSaving = () => {
+    setShowBrowserBackWarning(false);
+    setShowUnsavedWarning(false);
+    navigate('/admin/tours');
+  };
+
+  const handleSaveAndExit = async () => {
+    if (!hasChanges()) {
+      handleExitWithoutSaving();
+      return;
+    }
+    
+    setSubmitting(true);
+    try {
+      const dataToSend = {
+        ...formData,
+        dateStart: formData.dateStart ? formData.dateStart.toISOString() : '',
+        dateEnd: formData.dateEnd ? formData.dateEnd.toISOString() : '',
+      };
+      await api.put(`/api/tours/${id}`, dataToSend);
+      setOriginalData(JSON.parse(JSON.stringify(formData)));
+      setShowBrowserBackWarning(false);
+      setShowUnsavedWarning(false);
+      navigate('/admin/tours');
+    } catch (error) {
+      alert('Errore nel salvataggio');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <div>
       <AdminSidebar />
       <div className="ml-[300px] p-8">
+        {/* Browser back warning modal */}
+        <Modal
+          isOpen={showBrowserBackWarning}
+          onClose={() => setShowBrowserBackWarning(false)}
+          title="Attenzione"
+          size="md"
+        >
+          <div className="space-y-4">
+            <p className="text-muted">
+              Vuoi davvero abbandonare la pagina? Così facendo perderai le modifiche.
+            </p>
+            <div className="flex gap-4 justify-end">
+              <button
+                onClick={handleExitWithoutSaving}
+                className="px-6 py-2 border border-gray-300 rounded-full hover:bg-gray-50 transition-colors"
+              >
+                Esci senza salvare
+              </button>
+              <button
+                onClick={handleSaveAndExit}
+                disabled={submitting}
+                className="px-6 py-2 bg-accent text-white rounded-full hover:bg-accent/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {submitting ? 'Salvataggio...' : 'Salva ed esci'}
+              </button>
+            </div>
+          </div>
+        </Modal>
         <div className="mb-8">
           <div>
             <Link 

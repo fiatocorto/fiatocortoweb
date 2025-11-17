@@ -3,7 +3,7 @@ import { body, validationResult } from 'express-validator';
 import bcrypt from 'bcrypt';
 import { PrismaClient } from '@prisma/client';
 import { authenticate, requireAdmin, AuthRequest } from '../middleware/auth';
-import * as admin from 'firebase-admin';
+import { getFirebaseAdmin } from '../utils/firebaseAdmin';
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -34,20 +34,17 @@ router.post(
         return res.status(400).json({ error: 'Email già registrata' });
       }
 
-      // Check if Firebase Admin is initialized
-      if (!admin.apps.length) {
-        console.error('Firebase Admin not initialized');
-        return res.status(500).json({ error: 'Firebase Admin non configurato. Impossibile creare utente in Firebase.' });
-      }
-
       const passwordHash = await bcrypt.hash(password, 10);
       const name = `${firstName.trim()} ${lastName.trim()}`.trim();
       const trimmedEmail = email.trim();
 
+      // Get Firebase Admin instance
+      const firebaseAdmin = getFirebaseAdmin();
+
       // Create user in Firebase Authentication
       let firebaseUser;
       try {
-        firebaseUser = await admin.auth().createUser({
+        firebaseUser = await firebaseAdmin.auth().createUser({
           email: trimmedEmail,
           password: password,
           displayName: name,
@@ -59,7 +56,7 @@ router.post(
         // If Firebase user already exists, try to get it
         if (firebaseError.code === 'auth/email-already-exists') {
           try {
-            firebaseUser = await admin.auth().getUserByEmail(trimmedEmail);
+            firebaseUser = await firebaseAdmin.auth().getUserByEmail(trimmedEmail);
             console.log('Firebase user already exists, retrieved:', firebaseUser.uid);
           } catch (getError: any) {
             return res.status(400).json({ error: 'Email già registrata in Firebase' });
@@ -146,6 +143,91 @@ router.get('/users', authenticate, requireAdmin, async (req: AuthRequest, res: R
     res.status(500).json({ error: 'Errore nel recupero utenti' });
   }
 });
+
+// Update user (admin only)
+router.put(
+  '/users/:id',
+  authenticate,
+  requireAdmin,
+  [
+    body('firstName').optional().trim().notEmpty().withMessage('Nome richiesto'),
+    body('lastName').optional().trim().notEmpty().withMessage('Cognome richiesto'),
+    body('email').optional().isEmail().withMessage('Email non valida'),
+  ],
+  async (req: AuthRequest, res: Response) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    try {
+      const { id } = req.params;
+      const { firstName, lastName, email } = req.body;
+
+      // Check if user exists
+      const user = await prisma.user.findUnique({
+        where: { id },
+      });
+
+      if (!user) {
+        return res.status(404).json({ error: 'Utente non trovato' });
+      }
+
+      // Prepare update data
+      const updateData: any = {};
+      if (firstName !== undefined) updateData.firstName = firstName.trim();
+      if (lastName !== undefined) updateData.lastName = lastName.trim();
+      if (email !== undefined) {
+        const trimmedEmail = email.trim();
+        // Check if email is already taken by another user
+        const existingUser = await prisma.user.findFirst({
+          where: {
+            email: trimmedEmail,
+            id: { not: id },
+          },
+        });
+        if (existingUser) {
+          return res.status(400).json({ error: 'Email già registrata' });
+        }
+        updateData.email = trimmedEmail;
+        // Update name if firstName or lastName changed
+        if (firstName !== undefined || lastName !== undefined) {
+          const finalFirstName = firstName !== undefined ? firstName.trim() : user.firstName;
+          const finalLastName = lastName !== undefined ? lastName.trim() : user.lastName;
+          updateData.name = `${finalFirstName} ${finalLastName}`.trim();
+        }
+      } else if (firstName !== undefined || lastName !== undefined) {
+        // Update name even if email is not provided
+        const finalFirstName = firstName !== undefined ? firstName.trim() : user.firstName;
+        const finalLastName = lastName !== undefined ? lastName.trim() : user.lastName;
+        updateData.name = `${finalFirstName} ${finalLastName}`.trim();
+      }
+
+      // Update user in database
+      const updatedUser = await prisma.user.update({
+        where: { id },
+        data: updateData,
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          name: true,
+          email: true,
+          role: true,
+          createdAt: true,
+        },
+      });
+
+      res.json({ user: updatedUser });
+    } catch (error: any) {
+      console.error('Update user error:', error);
+      res.status(500).json({
+        error: 'Errore nell\'aggiornamento utente',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined,
+      });
+    }
+  }
+);
 
 // Delete user (admin only)
 router.delete('/users/:id', authenticate, requireAdmin, async (req: AuthRequest, res: Response) => {

@@ -1,7 +1,48 @@
-import { Phone, Mail, MapPin } from 'lucide-react';
+import { useState } from 'react';
+import { Phone, Mail, MapPin, ChevronDown } from 'lucide-react';
 import Footer from '../components/Footer';
 
 export default function ContactsPage() {
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
+
+  const faqs = [
+    {
+      question: "Come posso prenotare un'escursione?",
+      answer: "Puoi prenotare un'escursione direttamente dal nostro sito web. Seleziona il tour che ti interessa, scegli la data disponibile e completa la prenotazione online. Riceverai una conferma via email con tutti i dettagli dell'escursione."
+    },
+    {
+      question: "Quali sono i requisiti di forma fisica per partecipare?",
+      answer: "Le nostre escursioni sono adatte a diversi livelli di preparazione fisica. Ogni tour ha una descrizione del livello di difficoltà. Ti consigliamo di scegliere un'escursione adatta alla tua condizione fisica. In caso di dubbi, contattaci per ricevere consigli personalizzati."
+    },
+    {
+      question: "Cosa è incluso nel prezzo del tour?",
+      answer: "Il prezzo include la guida esperta, l'assicurazione, e l'organizzazione dell'escursione. Alcuni tour possono includere anche pranzo o snack. I dettagli specifici sono indicati nella descrizione di ogni tour. L'attrezzatura personale (scarpe da trekking, zaino, ecc.) non è inclusa."
+    },
+    {
+      question: "Cosa devo portare con me?",
+      answer: "Ti consigliamo di portare: scarpe da trekking, abbigliamento comodo e a strati, zaino, acqua (almeno 1,5 litri), snack, crema solare, cappello e, se necessario, bastoncini da trekking. Una lista dettagliata verrà inviata via email dopo la prenotazione."
+    },
+    {
+      question: "Posso cancellare o modificare la prenotazione?",
+      answer: "Sì, puoi modificare o cancellare la tua prenotazione fino a 48 ore prima della data dell'escursione. Le cancellazioni effettuate entro questo termine sono rimborsabili. Per modifiche o cancellazioni, contattaci via email o telefono."
+    },
+    {
+      question: "Le escursioni si svolgono anche in caso di maltempo?",
+      answer: "La sicurezza è la nostra priorità. In caso di condizioni meteorologiche avverse, valuteremo insieme se posticipare o annullare l'escursione. Ti contatteremo tempestivamente per comunicarti eventuali cambiamenti. In caso di annullamento da parte nostra, ti offriremo un rimborso completo o la possibilità di riprogrammare."
+    },
+    {
+      question: "Sono adatte le escursioni per bambini?",
+      answer: "Alcune delle nostre escursioni sono adatte anche per famiglie con bambini. Ti invitiamo a contattarci per trovare l'escursione più adatta alla tua famiglia."
+    },
+    {
+      question: "Come posso raggiungere il punto di incontro?",
+      answer: "Il punto di incontro esatto e le indicazioni per raggiungerlo ti verranno inviati via email dopo la prenotazione. Solitamente forniamo anche coordinate GPS e indicazioni stradali dettagliate."
+    }
+  ];
+
+  const toggleFaq = (index: number) => {
+    setOpenFaq(openFaq === index ? null : index);
+  };
   return (
     <div className="pt-32 bg-white">
       <div className="max-w-4xl mx-auto px-4">
@@ -46,6 +87,52 @@ export default function ContactsPage() {
               <h3 className="font-semibold text-lg mb-2">Dove operiamo</h3>
               <p className="text-gray-600">Sicilia</p>
             </div>
+          </div>
+        </section>
+
+        {/* Sezione FAQ */}
+        <section className="mb-16">
+          <div className="relative inline-block mb-6">
+            <div className="absolute bg-yellow-100 w-3/4 h-8 top-8 left-0"></div>
+            <h2 className="font-title text-[48px] font-bold relative">
+              Domande Frequenti
+            </h2>
+          </div>
+          <p className="text-lg text-gray-700 mb-12">
+            Trova risposte alle domande più comuni sui nostri tour e servizi. 
+            Se non trovi quello che cerchi, non esitare a contattarci.
+          </p>
+
+          <div className="space-y-4">
+            {faqs.map((faq, index) => (
+              <div
+                key={index}
+                className="border border-gray-200 rounded-xl overflow-hidden transition-all hover:shadow-md"
+              >
+                <button
+                  onClick={() => toggleFaq(index)}
+                  className="w-full px-6 py-5 text-left flex items-center justify-between bg-white hover:bg-gray-50 transition-colors"
+                >
+                  <span className="font-semibold text-lg text-gray-800 pr-4">
+                    {faq.question}
+                  </span>
+                  <ChevronDown
+                    className={`w-5 h-5 text-accent flex-shrink-0 transition-transform ${
+                      openFaq === index ? 'transform rotate-180' : ''
+                    }`}
+                  />
+                </button>
+                <div
+                  className={`overflow-hidden transition-all duration-300 ${
+                    openFaq === index ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                  }`}
+                >
+                  <div className="px-6 py-4 bg-gray-50 text-gray-700 leading-relaxed">
+                    {faq.answer}
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </section>
       </div>

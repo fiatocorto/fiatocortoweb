@@ -10,17 +10,20 @@ import CalendarPage from './pages/CalendarPage';
 import BookingPage from './pages/BookingPage';
 import BookingDetailPage from './pages/BookingDetailPage';
 import AccountPage from './pages/AccountPage';
-import MyBookingsPage from './pages/MyBookingsPage';
+import { Navigate } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import AboutPage from './pages/AboutPage';
 import ContactsPage from './pages/ContactsPage';
 import TermsPage from './pages/TermsPage';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
+import CookiePolicyPage from './pages/CookiePolicyPage';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminTours from './pages/admin/AdminTours';
 import AdminEditTour from './pages/admin/AdminEditTour';
 import AdminCreateTour from './pages/admin/AdminCreateTour';
 import AdminBookings from './pages/admin/AdminBookings';
+import AdminBookingDetail from './pages/admin/AdminBookingDetail';
 import AdminCalendar from './pages/admin/AdminCalendar';
 import AdminQRScanner from './pages/admin/AdminQRScanner';
 import AdminUsers from './pages/admin/AdminUsers';
@@ -45,6 +48,8 @@ function AppContent() {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contacts" element={<ContactsPage />} />
           <Route path="/terms" element={<TermsPage />} />
+          <Route path="/privacy" element={<PrivacyPolicyPage />} />
+          <Route path="/cookie" element={<CookiePolicyPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           
@@ -65,10 +70,18 @@ function AppContent() {
             }
           />
           <Route
+            path="/account/:section"
+            element={
+              <ProtectedRoute>
+                <AccountPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/bookings"
             element={
               <ProtectedRoute>
-                <MyBookingsPage />
+                <Navigate to="/account/bookings" replace />
               </ProtectedRoute>
             }
           />
@@ -119,6 +132,14 @@ function AppContent() {
             element={
               <ProtectedRoute requireAdmin>
                 <AdminBookings />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/bookings/:id"
+            element={
+              <ProtectedRoute requireAdmin>
+                <AdminBookingDetail />
               </ProtectedRoute>
             }
           />

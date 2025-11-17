@@ -31,8 +31,8 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' }:
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-      <div className={`bg-white rounded-lg shadow-xl w-full ${sizeClasses[size]} max-h-[90vh] overflow-y-auto`}>
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/50">
+      <div className={`bg-white rounded-lg shadow-xl w-full ${sizeClasses[size]} max-h-[80vh] overflow-y-auto`}>
         {title && (
           <div className="flex items-center justify-between p-6 border-b">
             <h2 className="font-title text-2xl font-bold">{title}</h2>
