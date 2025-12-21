@@ -1,28 +1,27 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 model User {
-  id           String   @id @default(uuid())
-  firstName    String?  @map("first_name")
-  lastName     String?  @map("last_name")
-  name         String   // Keep for backward compatibility, will be firstName + lastName
-  email        String   @unique
-  passwordHash String?  @map("password_hash") // Optional for Google OAuth users
-  googleId     String?  @unique @map("google_id")
-  role         String   @default("CUSTOMER")
-  createdAt    DateTime @default(now()) @map("created_at")
+  id           String    @id @default(uuid())
+  firstName    String?   @map("first_name")
+  lastName     String?   @map("last_name")
+  name         String
+  email        String    @unique
+  passwordHash String?   @map("password_hash")
+  googleId     String?   @unique @map("google_id")
+  role         String    @default("CUSTOMER")
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  bookings     Booking[]
 
-  bookings Booking[]
-
+  @@index([createdAt])
+  @@index([email])
+  @@index([role])
   @@map("users")
 }
 
@@ -35,14 +34,14 @@ model Tour {
   priceChild    Float     @map("price_child")
   language      String
   coverImage    String    @map("cover_image")
-  images        String? // JSON array as string
+  images        String?
   gallery       String?
-  dateStart     DateTime  @map("date_start")
-  dateEnd       DateTime  @map("date_end")
+  dateStart     DateTime  @map("date_start") @db.Timestamptz(6)
+  dateEnd       DateTime  @map("date_end") @db.Timestamptz(6)
   itinerary     String
   terms         String
-  includes      String? // JSON array as string
-  excludes      String? // JSON array as string
+  includes      String?
+  excludes      String?
   durationValue Int?      @map("duration_value")
   durationUnit  String?   @map("duration_unit")
   maxSeats      Int       @map("max_seats")
@@ -53,10 +52,15 @@ model Tour {
   latitude      Float?    @map("latitude")
   longitude     Float?    @map("longitude")
   createdBy     String?   @map("created_by")
-  createdAt     DateTime? @default(now()) @map("created_at")
+  createdAt     DateTime? @default(now()) @map("created_at") @db.Timestamptz(6)
+  bookings      Booking[]
 
-  bookings Booking[]
-
+  @@index([createdAt])
+  @@index([createdBy])
+  @@index([dateEnd])
+  @@index([dateStart])
+  @@index([language])
+  @@index([slug])
   @@map("tours")
 }
 
@@ -72,20 +76,30 @@ model Booking {
   qrCode        String   @unique @map("qr_code")
   notes         String?
   checkedIn     Boolean  @default(false) @map("checked_in")
-  createdAt     DateTime @default(now()) @map("created_at")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  tour          Tour     @relation(fields: [tourId], references: [id], onDelete: Cascade)
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tour Tour @relation(fields: [tourId], references: [id], onDelete: Cascade)
-
+  @@index([checkedIn])
+  @@index([createdAt])
+  @@index([paymentStatus])
+  @@index([qrCode])
+  @@index([tourId])
+  @@index([userId, createdAt])
+  @@index([userId])
   @@map("bookings")
 }
 
 model Notification {
   id        String   @id @default(uuid())
   type      String
-  payload   String // JSON as string
+  payload   String
   seen      Boolean  @default(false)
-  createdAt DateTime @default(now()) @map("created_at")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
+  @@index([createdAt])
+  @@index([seen, createdAt])
+  @@index([seen])
+  @@index([type])
   @@map("notifications")
 }
