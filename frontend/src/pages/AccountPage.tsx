@@ -741,8 +741,18 @@ export default function AccountPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-32 pb-16">
+    <div className="min-h-screen bg-gray-50 pt-8 sm:pt-12 md:pt-16 pb-16">
       <div className="max-w-7xl mx-auto px-4">
+        {/* Page Title */}
+        <div className="mb-8 sm:mb-10 md:mb-12">
+          <div className="relative inline-block mb-4 sm:mb-5 md:mb-6">
+            <div className="absolute bg-yellow-100 w-3/4 h-4 sm:h-6 md:h-8 top-4 sm:top-6 md:top-8 left-0"></div>
+            <h2 className="font-title text-3xl sm:text-4xl md:text-5xl lg:text-[48px] font-bold relative">
+              Il mio account
+            </h2>
+          </div>
+        </div>
+        
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Sidebar Menu */}
           <div className="lg:w-64 flex-shrink-0">

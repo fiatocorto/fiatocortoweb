@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Search, Calendar, Users, Star, ArrowRight, ArrowLeft, User, ChevronLeft, ChevronRight, BadgeCheck, Compass, Mountain, Route } from 'lucide-react';
+import { Calendar, Users, Star, ArrowRight, ArrowLeft, User, ChevronLeft, ChevronRight, BadgeCheck, Compass, Mountain, Route, Shield } from 'lucide-react';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import api from '../utils/api';
 import CardTour from '../components/CardTour';
@@ -9,7 +9,6 @@ export default function HomePage() {
   const [tours, setTours] = useState<any[]>([]);
   const [currentSlide, setCurrentSlide] = useState(1); // Inizia da 1 perché la prima è la slide duplicata
   const [isTransitioning, setIsTransitioning] = useState(true);
-  const [currentTourIndex, setCurrentTourIndex] = useState(0);
   const [currentNextAdventuresIndex, setCurrentNextAdventuresIndex] = useState(0);
   const [currentReviewIndex, setCurrentReviewIndex] = useState(0);
   const carouselRef = useRef<HTMLDivElement>(null);
@@ -82,19 +81,19 @@ export default function HomePage() {
       targetValue: 280,
       suffix: '+',
       label: 'Escursionisti',
-      icon: <Users className="w-8 h-8 text-[#fbb017]" />,
+      icon: <Users className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 text-[#fbb017]" />,
     },
     {
       targetValue: 30,
       suffix: '+',
       label: 'Montagne conquistate',
-      icon: <Mountain className="w-8 h-8 text-[#fbb017]" />,
+      icon: <Mountain className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 text-[#fbb017]" />,
     },
     {
       targetValue: 2400,
       suffix: '',
       label: 'Km percorsi',
-      icon: <Route className="w-8 h-8 text-[#fbb017]" />,
+      icon: <Route className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 text-[#fbb017]" />,
     },
   ];
 
@@ -370,7 +369,7 @@ export default function HomePage() {
                 key={stat.label}
                 className="flex flex-col items-center justify-center gap-4 sm:gap-5"
               >
-                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#272728] flex items-center justify-center">
+                <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-full bg-[#272728] flex items-center justify-center">
                   {stat.icon}
                 </div>
                 <div className="text-center">
@@ -389,8 +388,12 @@ export default function HomePage() {
       {upcomingTours.length > 0 && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 md:py-16">
           <div className="text-center mb-8 sm:mb-10 md:mb-12">
-            <div className="text-accent uppercase font-semibold mb-2 text-sm sm:text-base">
-              ESCURSIONI
+            <div className="flex justify-center items-center mb-4 sm:mb-5 md:mb-6">
+              <img 
+                src="/resources/Icona Gialla.png" 
+                alt="" 
+                className="h-12 w-12 sm:h-16 sm:w-16 md:h-20 md:w-20 object-contain"
+              />
             </div>
             <div className="relative inline-block mb-4 sm:mb-5 md:mb-6">
               <div className="absolute bg-yellow-100 w-3/4 h-4 sm:h-6 md:h-8 top-4 sm:top-6 md:top-8 left-0"></div>
@@ -516,23 +519,23 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Destinazioni top */}
+      {/* Le nostre vette */}
       <section className="w-full py-16 sm:py-24 md:py-32 relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-10 md:gap-12 items-center">
             {/* Contenuto a sinistra */}
             <div>
               <div className="text-accent uppercase font-semibold mb-2 text-sm sm:text-base">
-                I nostri spot
+                MONTI E VETTE
               </div>
               <div className="relative inline-block mb-4 sm:mb-5 md:mb-6">
                 <div className="absolute bg-yellow-100 w-3/4 h-4 sm:h-6 md:h-8 top-4 sm:top-6 md:top-8 left-0"></div>
                 <h2 className="font-title text-3xl sm:text-4xl md:text-5xl lg:text-[48px] font-bold relative">
-                  Destinazioni top
+                  Le nostre vette
                 </h2>
               </div>
               <p className="text-muted mb-4 sm:mb-5 md:mb-6 text-base sm:text-lg max-w-lg">
-                Esplora le destinazioni più suggestive della Sicilia attraverso escursioni e trekking unici. Dalle vette delle Madonie ai sentieri di Ficuzza, scopri paesaggi mozzafiato e natura incontaminata che ti lasceranno senza fiato.
+                Conquista le vette più iconiche della Sicilia con le nostre escursioni guidate. Dalle cime più alte delle Madonie alle rocce scoscese, ogni vetta ti regalerà panorami unici e un senso di conquista indimenticabile.
               </p>
               <Link 
                 to="/tours" 
@@ -547,7 +550,7 @@ export default function HomePage() {
                   e.currentTarget.style.backgroundColor = '#f2f2f2';
                 }}
               >
-                Vedi tutte le escursioni
+                Portami lì
                 <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
               </Link>
             </div>
@@ -557,8 +560,8 @@ export default function HomePage() {
               {/* Prima foto */}
               <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden">
                 <img
-                  src="/resources/madonie.jpg"
-                  alt="Destinazione top"
+                  src="/resources/carbonara.webp"
+                  alt="Vetta"
                   className="w-full h-48 sm:h-56 md:h-64 object-cover rounded-2xl sm:rounded-3xl"
                 />
                 <div 
@@ -567,15 +570,15 @@ export default function HomePage() {
                     background: 'linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.4) 50%, transparent 100%)'
                   }}
                 >
-                  <h3 className="text-white text-lg sm:text-xl md:text-2xl font-bold">Madonie</h3>
+                  <h3 className="text-white text-lg sm:text-xl md:text-2xl font-bold">Pizzo Carbonara</h3>
                 </div>
               </div>
               
               {/* Seconda foto */}
               <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden">
                 <img
-                  src="/resources/ficuzza.jpg"
-                  alt="Destinazione top"
+                  src="/resources/roccabus.webp"
+                  alt="Vetta"
                   className="w-full h-48 sm:h-56 md:h-64 object-cover rounded-2xl sm:rounded-3xl"
                 />
                 <div 
@@ -584,7 +587,7 @@ export default function HomePage() {
                     background: 'linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.4) 50%, transparent 100%)'
                   }}
                 >
-                  <h3 className="text-white text-lg sm:text-xl md:text-2xl font-bold">Ficuzza</h3>
+                  <h3 className="text-white text-lg sm:text-xl md:text-2xl font-bold">Rocca Busambra</h3>
                 </div>
               </div>
             </div>
@@ -597,8 +600,8 @@ export default function HomePage() {
             {/* Foto a sinistra */}
             <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden">
               <img
-                src="/resources/inici.jpg"
-                alt="Destinazione"
+                src="/resources/cofano.jpg"
+                alt="Vetta"
                 className="w-full h-48 sm:h-56 md:h-64 object-cover rounded-2xl sm:rounded-3xl"
               />
               <div 
@@ -607,15 +610,15 @@ export default function HomePage() {
                   background: 'linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.4) 50%, transparent 100%)'
                 }}
               >
-                <h3 className="text-white text-lg sm:text-xl md:text-2xl font-bold">Inici</h3>
+                <h3 className="text-white text-lg sm:text-xl md:text-2xl font-bold">Monte Cofano</h3>
               </div>
             </div>
             
-            {/* Foto centrale (più larga) */}
+            {/* Foto centrale */}
             <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden sm:col-span-2 md:col-span-1">
               <img
-                src="/resources/57165.jpg"
-                alt="Destinazione"
+                src="/resources/cammarata.jpg"
+                alt="Vetta"
                 className="w-full h-48 sm:h-56 md:h-64 object-cover rounded-2xl sm:rounded-3xl"
               />
               <div 
@@ -624,15 +627,15 @@ export default function HomePage() {
                   background: 'linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.4) 50%, transparent 100%)'
                 }}
               >
-                <h3 className="text-white text-lg sm:text-xl md:text-2xl font-bold">Sicilia</h3>
+                <h3 className="text-white text-lg sm:text-xl md:text-2xl font-bold">Monte Cammarata</h3>
               </div>
             </div>
             
             {/* Foto a destra */}
             <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden sm:col-span-1">
               <img
-                src="/resources/28088.jpg"
-                alt="Destinazione"
+                src="/resources/pellegrino.jpg"
+                alt="Vetta"
                 className="w-full h-48 sm:h-56 md:h-64 object-cover rounded-2xl sm:rounded-3xl"
               />
               <div 
@@ -641,74 +644,10 @@ export default function HomePage() {
                   background: 'linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.4) 50%, transparent 100%)'
                 }}
               >
-                <h3 className="text-white text-lg sm:text-xl md:text-2xl font-bold">Natura</h3>
+                <h3 className="text-white text-lg sm:text-xl md:text-2xl font-bold">Monte Pellegrino</h3>
               </div>
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* best choices */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 md:py-16">
-        <div className="text-center mb-8 sm:mb-10 md:mb-12">
-          <div className="text-accent uppercase font-semibold mb-2 text-sm sm:text-base">
-            ESCURSIONI
-          </div>
-          <div className="relative inline-block mb-4 sm:mb-5 md:mb-6">
-            <div className="absolute bg-yellow-100 w-3/4 h-4 sm:h-6 md:h-8 top-4 sm:top-6 md:top-8 left-0"></div>
-            <h2 className="font-title text-3xl sm:text-4xl md:text-5xl lg:text-[48px] font-bold relative">
-              Le più scelte
-            </h2>
-          </div>
-        </div>
-        <div className="relative px-4 sm:px-8 md:px-12 lg:px-16">
-          <div className="overflow-hidden py-4 sm:py-6 md:py-10 px-2 sm:px-4">
-            <div 
-              className="flex gap-4 sm:gap-6 transition-transform duration-500 ease-in-out"
-              style={{ 
-                transform: `translateX(calc(-${currentTourIndex} * (100% / 1 + 1rem)))`
-              }}
-            >
-              {tours.slice(0, 5).map((tour) => (
-                <div key={tour.id} className="flex-shrink-0 w-full sm:w-1/2 lg:w-1/3">
-                  <CardTour tour={tour} />
-                </div>
-              ))}
-            </div>
-          </div>
-          
-          {/* Navigation buttons */}
-          <button
-            onClick={() => {
-              setCurrentTourIndex((prev) => {
-                const maxIndex = Math.max(0, tours.slice(0, 5).length - 1);
-                if (prev === 0) return maxIndex;
-                return prev - 1;
-              });
-            }}
-            className="absolute left-0 sm:left-2 md:left-0 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full bg-white shadow-lg flex items-center justify-center hover:bg-gray-100 transition-colors z-10"
-            aria-label="Card precedente"
-          >
-            <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-primary" />
-          </button>
-          <button
-            onClick={() => {
-              setCurrentTourIndex((prev) => {
-                const maxIndex = Math.max(0, tours.slice(0, 5).length - 1);
-                if (prev >= maxIndex) return 0;
-                return prev + 1;
-              });
-            }}
-            className="absolute right-0 sm:right-2 md:right-0 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full bg-white shadow-lg flex items-center justify-center hover:bg-gray-100 transition-colors z-10"
-            aria-label="Card successiva"
-          >
-            <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-primary" />
-          </button>
-        </div>
-        <div className="text-center mt-6 sm:mt-8">
-          <Link to="/tours" className="btn-secondary text-sm sm:text-base">
-            Vedi tutte le escursioni
-          </Link>
         </div>
       </section>
 
@@ -727,8 +666,12 @@ export default function HomePage() {
         ></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center mb-8 sm:mb-10 md:mb-12">
-            <div className="text-accent uppercase font-semibold mb-2 text-sm sm:text-base">
-              PERCHÉ
+            <div className="flex justify-center items-center mb-4 sm:mb-5 md:mb-6">
+              <img 
+                src="/resources/Icona Gialla.png" 
+                alt="" 
+                className="h-12 w-12 sm:h-16 sm:w-16 md:h-20 md:w-20 object-contain"
+              />
             </div>
             <div className="relative inline-block mb-4 sm:mb-5 md:mb-6">
               <div className="absolute bg-yellow-100 w-3/4 h-4 sm:h-6 md:h-8 top-4 sm:top-6 md:top-8 left-0"></div>
@@ -740,22 +683,22 @@ export default function HomePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
           {[
             {
-              icon: <Search className="w-6 h-6 sm:w-8 sm:h-8 text-accent" />,
-              title: 'Scegli la tua avventura',
+              icon: <BadgeCheck className="w-6 h-6 sm:w-8 sm:h-8 text-accent" />,
+              title: 'Guide esperte e professionali',
               description:
-                'Esplora la nostra selezione di escursioni e trova quella perfetta per te.',
+                'Guide certificate che ti accompagnano in sicurezza attraverso i sentieri più belli della Sicilia.',
             },
             {
-              icon: <Calendar className="w-6 h-6 sm:w-8 sm:h-8 text-accent" />,
-              title: 'Prenota la data',
+              icon: <Mountain className="w-6 h-6 sm:w-8 sm:h-8 text-accent" />,
+              title: 'Passione per la montagna',
               description:
-                'Seleziona la data che preferisci e completa la prenotazione in pochi click.',
+                'Conosciamo ogni sentiero e ogni vetta. La nostra passione si trasforma in esperienze autentiche.',
             },
             {
-              icon: <Users className="w-6 h-6 sm:w-8 sm:h-8 text-accent" />,
-              title: 'Vivi l\'esperienza',
+              icon: <Shield className="w-6 h-6 sm:w-8 sm:h-8 text-accent" />,
+              title: 'Sicurezza al primo posto',
               description:
-                'Parti per la tua avventura e crea ricordi indimenticabili.',
+                'Attrezzature professionali, percorsi testati e gruppi ridotti per la massima sicurezza.',
             },
           ].map((step, index) => (
             <div key={index} className="text-center">
@@ -780,16 +723,16 @@ export default function HomePage() {
             {/* Contenuto a sinistra */}
             <div>
               <div className="text-accent uppercase font-semibold mb-2 text-sm sm:text-base">
-                Appassionati di avventure in montagna
+                Appassionati di avventure
               </div>
               <div className="relative inline-block mb-4 sm:mb-5 md:mb-6">
                 <div className="absolute bg-yellow-100 w-3/4 h-4 sm:h-6 md:h-8 top-4 sm:top-6 md:top-8 left-0"></div>
                 <h2 className="font-title text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-[48px] font-bold relative">
-                  Viaggiare con standard più elevati di comfort e scoperta
+                  Trekking in montagna con passione e professionalità
                 </h2>
               </div>
               <p className="text-muted mb-6 sm:mb-8 text-base sm:text-lg">
-                Ogni escursione è pensata per offrirti il massimo del comfort senza rinunciare all'autenticità dell'esperienza. Le nostre guide esperte ti accompagnano alla scoperta di luoghi unici, garantendo sicurezza, professionalità e momenti indimenticabili immersi nella natura siciliana.
+                Ogni escursione è pensata per offrirti un'esperienza autentica e sicura tra le vette siciliane. Le nostre guide esperte ti accompagnano alla scoperta di sentieri unici e panorami mozzafiato, garantendo sicurezza, professionalità e momenti indimenticabili immersi nella natura incontaminata.
               </p>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">

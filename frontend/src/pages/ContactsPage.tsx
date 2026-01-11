@@ -44,7 +44,7 @@ export default function ContactsPage() {
     setOpenFaq(openFaq === index ? null : index);
   };
   return (
-    <div className="pt-16 sm:pt-24 md:pt-32 bg-white">
+    <div className="pt-8 sm:pt-12 md:pt-16 bg-white">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Sezione Contattaci */}
         <section className="mb-12 sm:mb-14 md:mb-16">
