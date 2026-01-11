@@ -33,7 +33,8 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+// Use relative URL to leverage Vite proxy in development, or VITE_API_URL if set
+const API_URL = import.meta.env.VITE_API_URL || '';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -141,7 +142,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.error('Backend sync error:', backendError);
         // If backend fails, we still have Firebase auth, but show a warning
         if (backendError.code === 'ECONNREFUSED' || backendError.message?.includes('Network Error')) {
-          throw new Error('Impossibile connettersi al server. Verifica che il backend sia in esecuzione su http://localhost:3001');
+          throw new Error('Impossibile connettersi al server. Verifica che il backend sia in esecuzione.');
         }
         throw backendError;
       }

@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Camera, CheckCircle, XCircle, Keyboard } from 'lucide-react';
 import { BrowserMultiFormatReader } from '@zxing/library';
 import api from '../../utils/api';
-import AdminSidebar from '../../components/admin/AdminSidebar';
+import AdminLayout from '../../components/admin/AdminLayout';
 
 export default function AdminQRScanner() {
   const [scanning, setScanning] = useState(false);
@@ -76,11 +76,8 @@ export default function AdminQRScanner() {
   };
 
   return (
-    <div>
-      <AdminSidebar />
-      <div className="ml-[300px] p-8">
-        <h1 className="font-title text-4xl font-bold mb-8">QR Code Scanner</h1>
-
+    <AdminLayout title="QR Code Scanner">
+      <div className="space-y-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div className="bg-white rounded-lg shadow-lg p-6">
             <h2 className="font-title text-2xl font-bold mb-4">Scanner Camera</h2>
@@ -130,14 +127,14 @@ export default function AdminQRScanner() {
         </div>
 
         {error && (
-          <div className="mt-6 bg-red-100 border border-red-400 text-red-800 px-4 py-3 rounded-lg flex items-center">
+          <div className="bg-red-100 border border-red-400 text-red-800 px-4 py-3 rounded-lg flex items-center">
             <XCircle className="w-5 h-5 mr-2" />
             {error}
           </div>
         )}
 
         {result && (
-          <div className="mt-6 bg-green-100 border border-green-400 text-green-800 px-6 py-4 rounded-lg">
+          <div className="bg-green-100 border border-green-400 text-green-800 px-6 py-4 rounded-lg">
             <div className="flex items-center mb-4">
               <CheckCircle className="w-6 h-6 mr-2" />
               <h3 className="font-bold text-lg">Prenotazione Verificata!</h3>
@@ -170,7 +167,7 @@ export default function AdminQRScanner() {
           </div>
         )}
 
-        <div className="mt-6 bg-blue-100 border border-blue-400 text-blue-800 px-4 py-3 rounded-lg">
+        <div className="bg-blue-100 border border-blue-400 text-blue-800 px-4 py-3 rounded-lg">
           <p className="text-sm">
             <strong>Nota:</strong> Per utilizzare lo scanner QR con la camera, è necessario
             accedere tramite HTTPS o localhost. In produzione, assicurati di avere un certificato
@@ -178,7 +175,7 @@ export default function AdminQRScanner() {
           </p>
         </div>
       </div>
-    </div>
+    </AdminLayout>
   );
 }
 

@@ -183,12 +183,17 @@ export default function ToursPage() {
       )}
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 md:py-16">
-        <div className="flex items-center justify-between mb-6 sm:mb-8">
-          <h1 className="font-title text-2xl sm:text-3xl md:text-4xl font-bold">Tutte le Escursioni</h1>
+        <div className="flex items-start justify-between mb-6 sm:mb-8">
+          <div className="relative inline-block mb-4 sm:mb-5 md:mb-6">
+            <div className="absolute bg-yellow-100 w-3/4 h-4 sm:h-6 md:h-8 top-4 sm:top-6 md:top-8 left-0"></div>
+            <h1 className="font-title text-3xl sm:text-4xl md:text-5xl lg:text-[48px] font-bold relative">
+              Tutte le Escursioni
+            </h1>
+          </div>
           {/* Mobile filter button */}
           <button
             onClick={() => setMobileFiltersOpen(!mobileFiltersOpen)}
-            className="lg:hidden flex items-center gap-2 px-4 py-2 bg-white rounded-lg shadow-sm border border-muted hover:bg-gray-50 transition-colors"
+            className="lg:hidden flex items-center gap-2 px-4 py-2 bg-white rounded-lg shadow-sm border border-muted hover:bg-gray-50 transition-colors flex-shrink-0"
           >
             <Filter className="w-5 h-5" />
             <span className="text-sm font-medium">Filtri</span>
@@ -198,7 +203,7 @@ export default function ToursPage() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
           {/* Colonna sinistra - Filtri */}
           <div className={`lg:col-span-1 ${mobileFiltersOpen ? 'fixed inset-y-0 left-0 w-80 bg-white z-50 shadow-2xl overflow-y-auto lg:static lg:w-auto lg:shadow-md lg:bg-transparent' : 'hidden lg:block'}`}>
-            <div className="bg-white rounded-2xl shadow-md p-4 sm:p-6 lg:sticky lg:top-4 max-h-[calc(100vh-120px)] overflow-y-auto">
+            <div className="bg-white rounded-2xl shadow-md p-4 sm:p-6">
               {/* Mobile close button */}
               <div className="flex justify-between items-center mb-4 lg:hidden border-b pb-4">
                 <h2 className="font-title text-xl font-bold">Filtri</h2>

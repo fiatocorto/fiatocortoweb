@@ -1,26 +1,24 @@
 import { Link } from 'react-router-dom';
-import { Search, MapPin, Calendar, Users, Star, ArrowRight, ArrowLeft, Plus, Minus, User, Baby, ChevronLeft, ChevronRight, BadgeCheck, Compass, ChevronDown } from 'lucide-react';
+import { Search, Calendar, Users, Star, ArrowRight, ArrowLeft, User, ChevronLeft, ChevronRight, BadgeCheck, Compass, Mountain, Route } from 'lucide-react';
 import { useState, useEffect, useRef, useMemo } from 'react';
-import DatePicker, { registerLocale } from 'react-datepicker';
-import { it } from 'date-fns/locale';
-import 'react-datepicker/dist/react-datepicker.css';
 import api from '../utils/api';
 import CardTour from '../components/CardTour';
 import Footer from '../components/Footer';
 
-registerLocale('it', it);
-
 export default function HomePage() {
   const [tours, setTours] = useState<any[]>([]);
-  const [allTours, setAllTours] = useState<any[]>([]);
   const [currentSlide, setCurrentSlide] = useState(1); // Inizia da 1 perché la prima è la slide duplicata
   const [isTransitioning, setIsTransitioning] = useState(true);
   const [currentTourIndex, setCurrentTourIndex] = useState(0);
   const [currentNextAdventuresIndex, setCurrentNextAdventuresIndex] = useState(0);
   const [currentReviewIndex, setCurrentReviewIndex] = useState(0);
-  const [isDestinationDropdownOpen, setIsDestinationDropdownOpen] = useState(false);
-  const destinationDropdownRef = useRef<HTMLDivElement>(null);
   const carouselRef = useRef<HTMLDivElement>(null);
+  const statsSectionRef = useRef<HTMLDivElement>(null);
+  const adventuresCarouselRef = useRef<HTMLDivElement>(null);
+  const reviewsCarouselRef = useRef<HTMLDivElement>(null);
+  const [animatedStats, setAnimatedStats] = useState([0, 0, 0]);
+  const [hasAnimated, setHasAnimated] = useState(false);
+  const [reviewGap, setReviewGap] = useState(1); // Gap in rem
   
   const reviews = [
     {
@@ -55,36 +53,6 @@ export default function HomePage() {
     },
   ];
   
-  const getTodayDate = () => {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
-
-  const [searchForm, setSearchForm] = useState({
-    destination: '',
-    adults: 1,
-    children: 0,
-    date: getTodayDate(),
-  });
-
-  const [datePickerDate, setDatePickerDate] = useState<Date | null>(
-    searchForm.date ? new Date(searchForm.date) : new Date()
-  );
-
-  const [calendarViewDate, setCalendarViewDate] = useState<Date>(
-    searchForm.date ? new Date(searchForm.date) : new Date()
-  );
-
-  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
-
-  const formatMonth = (date: Date): string => {
-    const months = ['Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu', 'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic'];
-    return months[date.getMonth()];
-  };
-
   const slides = [
     {
       title: 'Respira l\'avventura',
@@ -109,6 +77,27 @@ export default function HomePage() {
     },
   ];
 
+  const stats = [
+    {
+      targetValue: 280,
+      suffix: '+',
+      label: 'Escursionisti',
+      icon: <Users className="w-8 h-8 text-[#fbb017]" />,
+    },
+    {
+      targetValue: 30,
+      suffix: '+',
+      label: 'Montagne conquistate',
+      icon: <Mountain className="w-8 h-8 text-[#fbb017]" />,
+    },
+    {
+      targetValue: 2400,
+      suffix: '',
+      label: 'Km percorsi',
+      icon: <Route className="w-8 h-8 text-[#fbb017]" />,
+    },
+  ];
+
   // Calcola l'indice reale della slide per ottenere l'immagine di sfondo corretta
   const getRealSlideIndex = () => {
     if (currentSlide === 0) return slides.length - 1;
@@ -118,7 +107,6 @@ export default function HomePage() {
 
   useEffect(() => {
     fetchTours();
-    fetchAllTours();
   }, []);
 
   useEffect(() => {
@@ -145,19 +133,6 @@ export default function HomePage() {
     }
   }, [currentSlide, slides.length]);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (destinationDropdownRef.current && !destinationDropdownRef.current.contains(event.target as Node)) {
-        setIsDestinationDropdownOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
-
   const fetchTours = async () => {
     try {
       const response = await api.get('/api/tours');
@@ -169,37 +144,98 @@ export default function HomePage() {
     }
   };
 
-  // Filtra i tour per il mese corrente
-  const currentMonthTours = useMemo(() => {
+  // Animazione contatore per le statistiche
+  useEffect(() => {
+    if (hasAnimated) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !hasAnimated) {
+            setHasAnimated(true);
+            
+            // Anima ogni statistica
+            stats.forEach((stat, index) => {
+              const duration = 1200; // 1.2 secondi
+              let current = 0;
+              const startTime = Date.now();
+              
+              const animate = () => {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                // Usa easing function per animazione più smooth (ease-out)
+                const easedProgress = 1 - Math.pow(1 - progress, 3);
+                current = stat.targetValue * easedProgress;
+                
+                setAnimatedStats((prev) => {
+                  const newStats = [...prev];
+                  newStats[index] = Math.floor(current);
+                  return newStats;
+                });
+                
+                if (progress < 1) {
+                  requestAnimationFrame(animate);
+                } else {
+                  setAnimatedStats((prev) => {
+                    const newStats = [...prev];
+                    newStats[index] = stat.targetValue;
+                    return newStats;
+                  });
+                }
+              };
+              
+              requestAnimationFrame(animate);
+            });
+          }
+        });
+      },
+      { threshold: 0.3 }
+    );
+
+    if (statsSectionRef.current) {
+      observer.observe(statsSectionRef.current);
+    }
+
+    return () => {
+      if (statsSectionRef.current) {
+        observer.unobserve(statsSectionRef.current);
+      }
+    };
+  }, [hasAnimated, stats]);
+
+  // Filtra le 6 escursioni successive alla data corrente
+  const upcomingTours = useMemo(() => {
     const now = new Date();
-    const currentYear = now.getFullYear();
-    const currentMonth = now.getMonth();
+    now.setHours(0, 0, 0, 0); // Reset ore per confronto corretto
     
-    return tours.filter(tour => {
-      if (!tour.dateStart) return false;
-      const tourDate = new Date(tour.dateStart);
-      return tourDate.getFullYear() === currentYear && tourDate.getMonth() === currentMonth;
-    });
+    return tours
+      .filter(tour => {
+        if (!tour.dateStart) return false;
+        const tourDate = new Date(tour.dateStart);
+        tourDate.setHours(0, 0, 0, 0);
+        return tourDate >= now; // Solo tour futuri o di oggi
+      })
+      .sort((a, b) => {
+        // Ordina per data crescente
+        const dateA = new Date(a.dateStart).getTime();
+        const dateB = new Date(b.dateStart).getTime();
+        return dateA - dateB;
+      })
+      .slice(0, 6); // Prendi le prime 6
   }, [tours]);
 
-  const fetchAllTours = async () => {
-    try {
-      const response = await api.get('/api/tours');
-      setAllTours(response.data.tours || []);
-    } catch (error) {
-      console.error('Failed to fetch all tours:', error);
-      setAllTours([]);
-    }
-  };
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Navigate to tours page with filters
-    const params = new URLSearchParams();
-    if (searchForm.destination) params.append('destination', searchForm.destination);
-    if (searchForm.date) params.append('date', searchForm.date);
-    window.location.href = `/tours?${params.toString()}`;
-  };
+  // Calcola il gap per il carousel delle recensioni
+  useEffect(() => {
+    const updateGap = () => {
+      const gap = window.innerWidth >= 640 ? 1.5 : 1; // 1.5rem per sm+, 1rem per mobile
+      setReviewGap(gap);
+    };
+    
+    updateGap();
+    window.addEventListener('resize', updateGap);
+    return () => window.removeEventListener('resize', updateGap);
+  }, []);
 
   return (
     <div className="bg-white">
@@ -325,342 +361,32 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Quick Search */}
-      <section className="w-full">
-        <div className="bg-[#0f172a] p-4 sm:p-6 md:p-10">
-          <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-6 sm:gap-8 md:gap-12 lg:gap-16 w-full px-4 sm:px-6 lg:px-8 justify-center items-center">
-            <div className="flex-shrink-0 w-full md:w-auto">
-              <label className="block text-base sm:text-lg md:text-xl font-medium text-gray-300 mb-2 sm:mb-3 md:mb-4">
-                Destinazione
-              </label>
-              <div className="relative" ref={destinationDropdownRef}>
-                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-muted z-10" />
-                <button
-                  type="button"
-                  onClick={() => setIsDestinationDropdownOpen(!isDestinationDropdownOpen)}
-                  className="w-full md:w-auto md:min-w-[250px] lg:min-w-[300px] pl-8 sm:pl-10 pr-8 sm:pr-10 h-[50px] sm:h-[60px] bg-[#1e293b] rounded-lg focus:outline-none text-white placeholder:text-gray-400 flex items-center justify-between cursor-pointer hover:bg-[#253448] transition-colors text-sm sm:text-base"
-                >
-                  <span className={searchForm.destination ? 'text-white' : 'text-gray-400 truncate pr-2'}>
-                    {searchForm.destination || 'Dove vuoi andare?'}
-                  </span>
-                  <ChevronDown className={`w-4 h-4 sm:w-5 sm:h-5 text-muted transition-transform flex-shrink-0 ${isDestinationDropdownOpen ? 'rotate-180' : ''}`} />
-                </button>
-                {isDestinationDropdownOpen && (
-                  <div className="absolute top-full left-0 right-0 mt-2 bg-[#1e293b] rounded-lg shadow-lg max-h-[300px] overflow-y-auto z-50">
-                    {allTours.length === 0 ? (
-                      <div className="px-4 py-3 text-gray-400 text-sm">Nessuna escursione disponibile</div>
-                    ) : (
-                      allTours.map((tour) => (
-                        <button
-                          key={tour.id}
-                          type="button"
-                          onClick={() => {
-                            setSearchForm({ ...searchForm, destination: tour.title });
-                            setIsDestinationDropdownOpen(false);
-                          }}
-                          className="w-full px-4 py-3 text-left text-white hover:bg-[#253448] transition-colors flex items-start gap-3 text-sm sm:text-base"
-                        >
-                          <MapPin className="w-4 h-4 text-muted flex-shrink-0 mt-1" />
-                          <span className="flex-1">{tour.title}</span>
-                        </button>
-                      ))
-                    )}
+      {/* Numeri chiave */}
+      <section ref={statsSectionRef} className="w-full bg-[#0f172a] py-6 sm:py-8 md:py-10">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+            {stats.map((stat, index) => (
+              <div
+                key={stat.label}
+                className="flex flex-col items-center justify-center gap-4 sm:gap-5"
+              >
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#272728] flex items-center justify-center">
+                  {stat.icon}
+                </div>
+                <div className="text-center">
+                  <div className="text-6xl font-bold text-white leading-tight">
+                    {animatedStats[index]}{stat.suffix}
                   </div>
-                )}
-              </div>
-            </div>
-            <div className="hidden md:block h-16 border-l border-white/10 self-center"></div>
-            <div className="flex-shrink-0 w-full md:w-auto">
-              <label className="block text-base sm:text-lg md:text-xl font-medium text-gray-300 mb-2 sm:mb-3 md:mb-4">
-                Adulti
-              </label>
-              <div className="flex items-center justify-center gap-3 sm:gap-4">
-                <User className="w-6 h-6 sm:w-8 sm:h-8 text-accent flex-shrink-0" />
-                <span className="text-4xl sm:text-5xl md:text-[60px] font-medium text-white text-center leading-none">
-                  {searchForm.adults}
-                </span>
-                <div className="flex flex-col gap-1">
-                  <button
-                    type="button"
-                    onClick={() => setSearchForm({ ...searchForm, adults: searchForm.adults + 1 })}
-                    className="w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-lg text-gray-300 transition-colors"
-                  >
-                    <Plus className="w-3 h-3" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSearchForm({ ...searchForm, adults: Math.max(1, searchForm.adults - 1) })}
-                    className="w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-lg text-gray-300 transition-colors"
-                  >
-                    <Minus className="w-3 h-3" />
-                  </button>
+                  <div className="text-xl text-white/80 mt-1">{stat.label}</div>
                 </div>
               </div>
-            </div>
-            {/* <div className="h-16 border-l border-white/10 self-center"></div>
-            <div className="flex-shrink-0">
-              <label className="block text-xl font-medium text-gray-300 mb-4">
-                Bambini
-              </label>
-              <div className="flex items-center justify-center gap-4">
-                <Baby className="w-8 h-8 text-accent flex-shrink-0" />
-                <span className="text-[60px] font-medium text-white text-center" style={{ fontSize: '60px', lineHeight: '1' }}>
-                  {searchForm.children}
-                </span>
-                <div className="flex flex-col gap-1">
-                  <button
-                    type="button"
-                    onClick={() => setSearchForm({ ...searchForm, children: searchForm.children + 1 })}
-                    className="w-6 h-6 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-lg text-gray-300 transition-colors"
-                  >
-                    <Plus className="w-3 h-3" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSearchForm({ ...searchForm, children: Math.max(0, searchForm.children - 1) })}
-                    className="w-6 h-6 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-lg text-gray-300 transition-colors"
-                  >
-                    <Minus className="w-3 h-3" />
-                  </button>
-                </div>
-              </div>
-            </div>
-            <div className="h-16 border-l border-white/10 self-center"></div> */}
-            <div className="hidden md:block h-16 border-l border-white/10 self-center"></div>
-            <div className="flex-shrink-0 w-full md:w-auto">
-              <label className="block text-base sm:text-lg md:text-xl font-medium text-gray-300 mb-2 sm:mb-3 md:mb-4">
-                Data
-              </label>
-              <div className="flex items-center justify-center gap-3 sm:gap-4">
-                <Calendar className="w-6 h-6 sm:w-8 sm:h-8 text-accent flex-shrink-0" />
-                <div className="flex-shrink-0">
-                  <DatePicker
-                    key={`${calendarViewDate.getFullYear()}-${calendarViewDate.getMonth()}`}
-                    selected={datePickerDate}
-                    open={isDatePickerOpen}
-                    onInputClick={() => setIsDatePickerOpen(true)}
-                    onCalendarOpen={() => setIsDatePickerOpen(true)}
-                    onCalendarClose={() => setIsDatePickerOpen(false)}
-                    onChange={(date: Date | null) => {
-                      setDatePickerDate(date);
-                      if (date) {
-                        const year = date.getFullYear();
-                        const month = String(date.getMonth() + 1).padStart(2, '0');
-                        const day = String(date.getDate()).padStart(2, '0');
-                        setSearchForm({ ...searchForm, date: `${year}-${month}-${day}` });
-                      }
-                    }}
-                    onMonthChange={(date: Date) => {
-                      setCalendarViewDate(date);
-                      setDatePickerDate(date);
-                    }}
-                    onYearChange={(date: Date) => {
-                      setCalendarViewDate(date);
-                      setDatePickerDate(date);
-                    }}
-                    dateFormat="dd/MM/yyyy"
-                    calendarStartDay={1}
-                    locale="it"
-                    className="flex-shrink-0"
-                    popperClassName="z-[9999]"
-                    shouldCloseOnSelect={false}
-                  formatWeekDay={(name) => {
-                    const short = name.substring(0, 3);
-                    return short.charAt(0).toUpperCase() + short.slice(1);
-                  }}
-                  renderCustomHeader={({
-                    date,
-                    decreaseMonth,
-                    increaseMonth,
-                    decreaseYear,
-                    increaseYear,
-                    prevMonthButtonDisabled,
-                    nextMonthButtonDisabled,
-                  }) => {
-                    const months = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 
-                                   'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
-                    const today = new Date();
-                    const currentYear = today.getFullYear();
-                    const currentMonth = today.getMonth();
-                    const isCurrentYear = date.getFullYear() === currentYear;
-                    const isCurrentMonth = isCurrentYear && date.getMonth() === currentMonth;
-                    const isYearDisabled = date.getFullYear() <= currentYear;
-                    const isMonthDisabled = isCurrentYear && date.getMonth() <= currentMonth;
-                    
-                    return (
-                      <div className="react-datepicker__header-custom">
-                        <div className="flex items-center justify-between px-2 pb-2">
-                          <button
-                            type="button"
-                            onMouseDown={(e) => {
-                              e.stopPropagation();
-                              e.preventDefault();
-                              if (!isYearDisabled) {
-                                decreaseYear();
-                              }
-                            }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              e.preventDefault();
-                            }}
-                            disabled={isYearDisabled}
-                            className="react-datepicker__navigation react-datepicker__navigation--previous w-8 h-8 flex items-center justify-center hover:bg-gray-100 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                            aria-label="Anno precedente"
-                          >
-                            <ChevronLeft className="w-5 h-5 text-black" />
-                          </button>
-                          <div className="flex items-center gap-3">
-                            <select
-                              value={date.getMonth()}
-                              onChange={(e) => {
-                                const newDate = new Date(date);
-                                const newMonth = parseInt(e.target.value);
-                                newDate.setMonth(newMonth);
-                                // Assicurati che il giorno sia valido per il nuovo mese
-                                const lastDayOfMonth = new Date(newDate.getFullYear(), newMonth + 1, 0).getDate();
-                                if (newDate.getDate() > lastDayOfMonth) {
-                                  newDate.setDate(lastDayOfMonth);
-                                }
-                                setCalendarViewDate(newDate);
-                                setDatePickerDate(newDate);
-                                const year = newDate.getFullYear();
-                                const month = String(newDate.getMonth() + 1).padStart(2, '0');
-                                const day = String(newDate.getDate()).padStart(2, '0');
-                                setSearchForm({ 
-                                  ...searchForm, 
-                                  date: `${year}-${month}-${day}` 
-                                });
-                              }}
-                              className="react-datepicker__month-select"
-                            >
-                              {months.map((month, index) => {
-                                const isMonthOptionDisabled = isCurrentYear && index < currentMonth;
-                                return (
-                                  <option key={index} value={index} disabled={isMonthOptionDisabled}>
-                                    {month}
-                                  </option>
-                                );
-                              })}
-                            </select>
-                            <select
-                              value={date.getFullYear()}
-                              onChange={(e) => {
-                                const newDate = new Date(date);
-                                newDate.setFullYear(parseInt(e.target.value));
-                                setCalendarViewDate(newDate);
-                                setDatePickerDate(newDate);
-                                const year = newDate.getFullYear();
-                                const month = String(newDate.getMonth() + 1).padStart(2, '0');
-                                const day = String(newDate.getDate()).padStart(2, '0');
-                                setSearchForm({ 
-                                  ...searchForm, 
-                                  date: `${year}-${month}-${day}` 
-                                });
-                              }}
-                              className="react-datepicker__year-select"
-                            >
-                              {Array.from({ length: 6 }, (_, i) => currentYear + i).map((year) => (
-                                <option key={year} value={year}>
-                                  {year}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                          <button
-                            type="button"
-                            onMouseDown={(e) => {
-                              e.stopPropagation();
-                              e.preventDefault();
-                              increaseYear();
-                            }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              e.preventDefault();
-                            }}
-                            className="react-datepicker__navigation react-datepicker__navigation--next w-8 h-8 flex items-center justify-center hover:bg-gray-100 rounded transition-colors"
-                            aria-label="Anno successivo"
-                          >
-                            <ChevronRight className="w-5 h-5 text-black" />
-                          </button>
-                        </div>
-                        <div className="flex items-center justify-between px-2">
-                          <button
-                            type="button"
-                            onMouseDown={(e) => {
-                              e.stopPropagation();
-                              e.preventDefault();
-                              if (!isMonthDisabled) {
-                                decreaseMonth();
-                              }
-                            }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              e.preventDefault();
-                            }}
-                            disabled={isMonthDisabled}
-                            className="react-datepicker__navigation react-datepicker__navigation--previous w-8 h-8 flex items-center justify-center hover:bg-gray-100 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                            aria-label="Mese precedente"
-                          >
-                            <ChevronLeft className="w-5 h-5 text-black" />
-                          </button>
-                          <div className="flex-1"></div>
-                          <button
-                            type="button"
-                            onMouseDown={(e) => {
-                              e.stopPropagation();
-                              e.preventDefault();
-                              increaseMonth();
-                            }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              e.preventDefault();
-                            }}
-                            className="react-datepicker__navigation react-datepicker__navigation--next w-8 h-8 flex items-center justify-center hover:bg-gray-100 rounded transition-colors"
-                            aria-label="Mese successivo"
-                          >
-                            <ChevronRight className="w-5 h-5 text-black" />
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  }}
-                  customInput={
-                    <div className="flex items-center justify-center gap-2 sm:gap-4 cursor-pointer py-0">
-                      {searchForm.date ? (
-                        <>
-                          <span className="text-4xl sm:text-5xl md:text-[60px] font-medium text-white leading-none">
-                            {new Date(searchForm.date).getDate()}
-                          </span>
-                          <div className="flex flex-col items-start gap-1">
-                            <span className="text-sm sm:text-base text-gray-300">
-                              {formatMonth(new Date(searchForm.date))}
-                            </span>
-                            <span className="text-sm sm:text-base text-gray-300">
-                              {new Date(searchForm.date).getFullYear()}
-                            </span>
-                          </div>
-                        </>
-                      ) : (
-                        <span className="text-gray-400 text-sm sm:text-base">Seleziona data</span>
-                      )}
-                    </div>
-                }
-                  />
-                </div>
-            </div>
-            </div>
-            <div className="flex items-center justify-center w-full md:w-auto">
-              <button type="submit" className="btn-primary w-full md:w-auto px-8 sm:px-12 md:px-16 py-3 sm:py-4 md:py-5 text-sm sm:text-base">
-                <Search className="w-4 h-4 sm:w-5 sm:h-5 inline mr-2" />
-                Cerca
-              </button>
-            </div>
-          </form>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* Prossime avventure */}
-      {currentMonthTours.length > 0 && (
+      {upcomingTours.length > 0 && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 md:py-16">
           <div className="text-center mb-8 sm:mb-10 md:mb-12">
             <div className="text-accent uppercase font-semibold mb-2 text-sm sm:text-base">
@@ -674,15 +400,16 @@ export default function HomePage() {
             </div>
           </div>
           <div className="relative px-4 sm:px-8 md:px-12 lg:px-16">
-            <div className="overflow-hidden py-4 sm:py-6 md:py-10 px-2 sm:px-4">
+            <div className="overflow-hidden py-4 sm:py-6 md:py-10">
               <div 
-                className="flex gap-4 sm:gap-6 transition-transform duration-500 ease-in-out"
+                ref={adventuresCarouselRef}
+                className="flex gap-4 sm:gap-4 lg:gap-6 transition-transform duration-500 ease-in-out"
                 style={{ 
-                  transform: `translateX(calc(-${currentNextAdventuresIndex} * (100% / 1 + 1rem)))`
+                  transform: `translateX(calc(-${currentNextAdventuresIndex} * (calc((100% - 3rem) / 3) + 1.5rem)))`
                 }}
               >
-                {currentMonthTours.slice(0, 5).map((tour) => (
-                  <div key={tour.id} className="flex-shrink-0 w-full sm:w-1/2 lg:w-1/3">
+                {upcomingTours.map((tour) => (
+                  <div key={tour.id} className="flex-shrink-0 w-full sm:w-1/2 lg:w-[calc((100%-3rem)/3)]">
                     <CardTour tour={tour} />
                   </div>
                 ))}
@@ -690,12 +417,12 @@ export default function HomePage() {
             </div>
             
             {/* Navigation buttons - solo se ci sono più di 3 tour */}
-            {currentMonthTours.length > 3 && (
+            {upcomingTours.length > 3 && (
               <>
                 <button
                   onClick={() => {
                     setCurrentNextAdventuresIndex((prev) => {
-                      const maxIndex = Math.max(0, currentMonthTours.slice(0, 5).length - 1);
+                      const maxIndex = Math.max(0, upcomingTours.length - 3);
                       if (prev === 0) return maxIndex;
                       return prev - 1;
                     });
@@ -708,7 +435,7 @@ export default function HomePage() {
                 <button
                   onClick={() => {
                     setCurrentNextAdventuresIndex((prev) => {
-                      const maxIndex = Math.max(0, currentMonthTours.slice(0, 5).length - 1);
+                      const maxIndex = Math.max(0, upcomingTours.length - 3);
                       if (prev >= maxIndex) return 0;
                       return prev + 1;
                     });
@@ -1171,13 +898,14 @@ export default function HomePage() {
             <div className="relative">
               <div className="overflow-hidden py-4">
                 <div 
+                  ref={reviewsCarouselRef}
                   className="flex gap-4 sm:gap-6 transition-transform duration-500 ease-in-out"
                   style={{ 
-                    transform: `translateX(calc(-${currentReviewIndex} * (100% + 1rem)))`
+                    transform: `translateX(calc(-${currentReviewIndex} * (100% + ${reviewGap}rem)))`
                   }}
                 >
                   {reviews.map((review, index) => (
-                    <div key={index} className="flex-shrink-0 w-full md:w-auto md:min-w-[calc(50%-0.75rem)]">
+                    <div key={index} className="flex-shrink-0 w-full">
                       <div className="card p-6 sm:p-8 md:p-10 shadow-none h-full flex flex-col" style={{ filter: 'none' }}>
                         <div className="flex items-center mb-4 sm:mb-6">
                           {[...Array(review.rating)].map((_, i) => (

@@ -61,7 +61,7 @@ export default function CardTour({ tour, variant = 'default', viewMode = 'grid' 
     // List view layout: no image, just content
     if (isListView) {
       return (
-        <div className="bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden transition-all duration-300 hover:-translate-y-1">
           <Link 
             to={`/tours/${tour.slug}`} 
             className="block"
@@ -112,7 +112,7 @@ export default function CardTour({ tour, variant = 'default', viewMode = 'grid' 
     
     // Grid view layout: image on top, content below
     return (
-      <div className="bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden transition-all duration-300 hover:-translate-y-1">
         <Link 
           to={`/tours/${tour.slug}`} 
           className="block"
@@ -167,7 +167,7 @@ export default function CardTour({ tour, variant = 'default', viewMode = 'grid' 
     <div 
       className="rounded-2xl transition-transform duration-300 hover:-translate-y-2"
     >
-      <div className="card rounded-2xl overflow-hidden">
+      <div className="card rounded-2xl overflow-hidden border border-gray-200">
         <Link 
           to={`/tours/${tour.slug}`} 
           className="block"

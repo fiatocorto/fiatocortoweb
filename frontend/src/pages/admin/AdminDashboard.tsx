@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, Users, DollarSign, MapPin, ArrowRight } from 'lucide-react';
 import api from '../../utils/api';
-import AdminSidebar from '../../components/admin/AdminSidebar';
+import AdminLayout from '../../components/admin/AdminLayout';
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState<any>(null);
@@ -25,22 +25,16 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div>
-        <AdminSidebar />
-        <div className="ml-[300px] p-8 text-center">
-          <p className="text-muted">Caricamento...</p>
-        </div>
-      </div>
+      <AdminLayout title="Dashboard">
+        <div className="text-center text-muted">Caricamento...</div>
+      </AdminLayout>
     );
   }
 
   return (
-    <div>
-      <AdminSidebar />
-      <div className="ml-[300px] p-8">
-        <h1 className="font-title text-4xl font-bold mb-8">Dashboard</h1>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <AdminLayout title="Dashboard">
+      <div className="space-y-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <div className="bg-white rounded-2xl shadow-md p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -108,7 +102,7 @@ export default function AdminDashboard() {
           </Link>
         </div>
       </div>
-    </div>
+    </AdminLayout>
   );
 }
 

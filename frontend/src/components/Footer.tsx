@@ -9,7 +9,7 @@ export default function Footer() {
           <div>
             <div className="mb-4">
               <img 
-                src="/resources/Completo Bianco.png" 
+                src="/resources/Bianco.png" 
                 alt="Fiato Corto" 
                 className="h-12 w-auto"
               />
@@ -92,7 +92,7 @@ export default function Footer() {
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="text-white text-sm">
-              &copy; 2025 Fiato Corto. Tutti i diritti riservati.
+              &copy; 2026 Fiato Corto. Tutti i diritti riservati.
             </div>
             <div className="flex items-center gap-6">
               <Link to="/privacy" className="text-white text-sm hover:text-accent transition-colors">

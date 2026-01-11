@@ -5,7 +5,7 @@ import DatePicker, { registerLocale } from 'react-datepicker';
 import { it } from 'date-fns/locale';
 import 'react-datepicker/dist/react-datepicker.css';
 import api from '../../utils/api';
-import AdminSidebar from '../../components/admin/AdminSidebar';
+import AdminLayout from '../../components/admin/AdminLayout';
 import Modal from '../../components/Modal';
 
 registerLocale('it', it);
@@ -65,6 +65,7 @@ export default function AdminCreateTour() {
   const [uploadingGallery, setUploadingGallery] = useState(false);
   const [uploadingGpx, setUploadingGpx] = useState(false);
   const [showBrowserBackWarning, setShowBrowserBackWarning] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const gpxInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
 
@@ -206,20 +207,26 @@ export default function AdminCreateTour() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
+    setErrorMessage(null);
+
+    if (!formData.coverImage) {
+      setErrorMessage('Carica un\'immagine di copertina prima di salvare.');
+      setSubmitting(false);
+      return;
+    }
 
     try {
       const submitData = {
         ...formData,
         dateStart: formData.dateStart?.toISOString(),
         dateEnd: formData.dateEnd?.toISOString(),
-        images: JSON.stringify(formData.images),
-        includes: JSON.stringify(formData.includes),
-        excludes: JSON.stringify(formData.excludes),
       };
       await api.post('/api/tours', submitData);
       navigate('/admin/tours');
     } catch (error) {
-      alert('Errore nel salvataggio');
+      const msg = (error as any)?.response?.data?.error || 'Errore nel salvataggio';
+      setErrorMessage(msg);
+      alert(msg);
     } finally {
       setSubmitting(false);
     }
@@ -280,84 +287,97 @@ export default function AdminCreateTour() {
     }
     
     setSubmitting(true);
+    setErrorMessage(null);
+
+    if (!formData.coverImage) {
+      setErrorMessage('Carica un\'immagine di copertina prima di salvare.');
+      setSubmitting(false);
+      return;
+    }
+
     try {
       const submitData = {
         ...formData,
         dateStart: formData.dateStart?.toISOString(),
         dateEnd: formData.dateEnd?.toISOString(),
-        images: JSON.stringify(formData.images),
-        includes: JSON.stringify(formData.includes),
-        excludes: JSON.stringify(formData.excludes),
       };
       await api.post('/api/tours', submitData);
       setShowBrowserBackWarning(false);
       navigate('/admin/tours');
     } catch (error) {
-      alert('Errore nel salvataggio');
+      const msg = (error as any)?.response?.data?.error || 'Errore nel salvataggio';
+      setErrorMessage(msg);
+      alert(msg);
     } finally {
       setSubmitting(false);
     }
   };
 
+  const primaryAction = (
+    <button 
+      type="submit" 
+      form="create-tour-form"
+      disabled={submitting} 
+      className="px-6 py-3 bg-accent text-white rounded-full hover:bg-accent/90 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      {submitting ? 'Salvataggio...' : 'Crea Tour'}
+    </button>
+  );
+
   return (
-    <div>
-      <AdminSidebar />
-      <div className="ml-[300px] p-8">
-        {/* Browser back warning modal */}
-        <Modal
-          isOpen={showBrowserBackWarning}
-          onClose={() => setShowBrowserBackWarning(false)}
-          title="Attenzione"
-          size="md"
-        >
-          <div className="space-y-4">
-            <p className="text-muted">
-              Vuoi davvero abbandonare la pagina? Così facendo perderai le modifiche.
-            </p>
-            <div className="flex gap-4 justify-end">
-              <button
-                onClick={handleExitWithoutSaving}
-                className="px-6 py-2 border border-gray-300 rounded-full hover:bg-gray-50 transition-colors"
-              >
-                Esci senza salvare
-              </button>
-              <button
-                onClick={handleSaveAndExit}
-                disabled={submitting}
-                className="px-6 py-2 bg-accent text-white rounded-full hover:bg-accent/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {submitting ? 'Salvataggio...' : 'Salva ed esci'}
-              </button>
-            </div>
-          </div>
-        </Modal>
-        <div className="mb-8">
-          <div>
-            <Link 
-              to="/admin/tours" 
-              className="inline-flex items-center text-muted hover:text-primary transition-colors mb-4"
+    <AdminLayout title="Crea nuovo tour" actions={primaryAction}>
+      {/* Browser back warning modal */}
+      <Modal
+        isOpen={showBrowserBackWarning}
+        onClose={() => setShowBrowserBackWarning(false)}
+        title="Attenzione"
+        size="md"
+      >
+        <div className="space-y-4">
+          <p className="text-muted">
+            Vuoi davvero abbandonare la pagina? Così facendo perderai le modifiche.
+          </p>
+          <div className="flex gap-4 justify-end">
+            <button
+              onClick={handleExitWithoutSaving}
+              className="px-6 py-2 border border-gray-300 rounded-full hover:bg-gray-50 transition-colors"
             >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Torna alla lista
-            </Link>
-          </div>
-          <div className="flex items-start justify-between">
-            <div>
-              <h1 className="font-title text-4xl font-bold text-primary">Crea nuovo tour</h1>
-              <p className="text-muted mt-2">Inserisci le informazioni per creare un nuovo tour</p>
-            </div>
-            <button 
-              type="submit" 
-              form="create-tour-form"
-              disabled={submitting} 
-              className="px-6 py-3 bg-accent text-white rounded-full hover:bg-accent/90 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+              Esci senza salvare
+            </button>
+            <button
+              onClick={handleSaveAndExit}
+              disabled={submitting}
+              className="px-6 py-2 bg-accent text-white rounded-full hover:bg-accent/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {submitting ? 'Salvataggio...' : 'Crea Tour'}
+              {submitting ? 'Salvataggio...' : 'Salva ed esci'}
             </button>
           </div>
         </div>
+      </Modal>
+      <div className="mb-8">
+        <div>
+          <Link 
+            to="/admin/tours" 
+            className="inline-flex items-center text-muted hover:text-primary transition-colors mb-4"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Torna alla lista
+          </Link>
+        </div>
+        <div className="flex items-start justify-between">
+          <div>
+            <p className="text-muted mt-2">Inserisci le informazioni per creare un nuovo tour</p>
+          </div>
+        </div>
+      </div>
 
-        <form id="create-tour-form" onSubmit={handleSubmit} className="space-y-8">
+      {errorMessage && (
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm">
+          {errorMessage}
+        </div>
+      )}
+
+      <form id="create-tour-form" onSubmit={handleSubmit} className="space-y-8">
           {/* Informazioni Base */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
             <div className="flex items-center mb-6">
@@ -1005,7 +1025,6 @@ export default function AdminCreateTour() {
               </div>
           </div>
         </form>
-      </div>
-    </div>
+    </AdminLayout>
   );
 }

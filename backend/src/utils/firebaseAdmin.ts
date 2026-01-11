@@ -15,9 +15,13 @@ export function initializeFirebaseAdmin(): admin.app.App {
     const serviceAccountEnv = process.env.FIREBASE_SERVICE_ACCOUNT;
     if (serviceAccountEnv) {
       const serviceAccount = JSON.parse(serviceAccountEnv);
+      const bucketFromEnv = process.env.FIREBASE_STORAGE_BUCKET;
+      const bucketName =
+        bucketFromEnv ||
+        (serviceAccount.project_id ? `${serviceAccount.project_id}.appspot.com` : undefined);
       firebaseApp = admin.initializeApp({
         credential: admin.credential.cert(serviceAccount),
-        storageBucket: process.env.FIREBASE_STORAGE_BUCKET || 'fiato-corto-ba53e.firebasestorage.app',
+        storageBucket: bucketName,
       });
       console.log('✅ Firebase Admin initialized from environment variable');
       return firebaseApp;
@@ -34,11 +38,12 @@ export function initializeFirebaseAdmin(): admin.app.App {
       for (const possiblePath of possiblePaths) {
         if (fs.existsSync(possiblePath)) {
           const serviceAccount = JSON.parse(fs.readFileSync(possiblePath, 'utf8'));
+          const bucketName =
+            process.env.FIREBASE_STORAGE_BUCKET ||
+            (serviceAccount.project_id ? `${serviceAccount.project_id}.appspot.com` : undefined);
           firebaseApp = admin.initializeApp({
             credential: admin.credential.cert(serviceAccount),
-            storageBucket: serviceAccount.project_id 
-              ? `${serviceAccount.project_id}.firebasestorage.app`
-              : 'fiato-corto-ba53e.firebasestorage.app',
+            storageBucket: bucketName,
           });
           console.log('✅ Firebase Admin initialized from service account file:', possiblePath);
           return firebaseApp;

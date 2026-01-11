@@ -1,14 +1,11 @@
-import AdminSidebar from '../../components/admin/AdminSidebar';
+import AdminLayout from '../../components/admin/AdminLayout';
 import CalendarPage from '../CalendarPage';
 
 export default function AdminCalendar() {
   return (
-    <div>
-      <AdminSidebar />
-      <div className="ml-[300px]">
-        <CalendarPage />
-      </div>
-    </div>
+    <AdminLayout title="Calendario">
+      <CalendarPage />
+    </AdminLayout>
   );
 }
 

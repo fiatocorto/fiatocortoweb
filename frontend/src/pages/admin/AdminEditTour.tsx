@@ -5,7 +5,7 @@ import DatePicker, { registerLocale } from 'react-datepicker';
 import { it } from 'date-fns/locale';
 import 'react-datepicker/dist/react-datepicker.css';
 import api from '../../utils/api';
-import AdminSidebar from '../../components/admin/AdminSidebar';
+import AdminLayout from '../../components/admin/AdminLayout';
 import Modal from '../../components/Modal';
 
 registerLocale('it', it);
@@ -269,28 +269,35 @@ export default function AdminEditTour() {
     };
   }, [formData, originalData, showBrowserBackWarning]);
 
+  const saveButton = (
+    <button 
+      type="submit" 
+      form="edit-tour-form"
+      disabled={submitting || !hasChanges()} 
+      className="px-6 py-3 bg-accent text-white rounded-full hover:bg-accent/90 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      {submitting ? 'Salvataggio...' : 'Salva Modifiche'}
+    </button>
+  );
+
   if (loading) {
     return (
-      <div>
-        <AdminSidebar />
-        <div className="ml-[300px] p-8 text-center">
-          <p className="text-muted">Caricamento...</p>
-        </div>
-      </div>
+      <AdminLayout title="Modifica Tour">
+        <div className="text-center text-muted">Caricamento...</div>
+      </AdminLayout>
     );
   }
 
   if (!tour) {
     return (
-      <div>
-        <AdminSidebar />
-        <div className="ml-[300px] p-8 text-center">
+      <AdminLayout title="Modifica Tour">
+        <div className="text-center">
           <p className="text-muted">Tour non trovato</p>
           <Link to="/admin/tours" className="text-accent hover:text-accent/80 mt-4 inline-block">
             Torna alla lista tour
           </Link>
         </div>
-      </div>
+      </AdminLayout>
     );
   }
 
@@ -386,86 +393,75 @@ export default function AdminEditTour() {
   };
 
   return (
-    <div>
-      <AdminSidebar />
-      <div className="ml-[300px] p-8">
-        {/* Browser back warning modal */}
-        <Modal
-          isOpen={showBrowserBackWarning}
-          onClose={() => setShowBrowserBackWarning(false)}
-          title="Attenzione"
-          size="md"
-        >
-          <div className="space-y-4">
-            <p className="text-muted">
-              Vuoi davvero abbandonare la pagina? Così facendo perderai le modifiche.
-            </p>
-            <div className="flex gap-4 justify-end">
-              <button
-                onClick={handleExitWithoutSaving}
-                className="px-6 py-2 border border-gray-300 rounded-full hover:bg-gray-50 transition-colors"
-              >
-                Esci senza salvare
-              </button>
-              <button
-                onClick={handleSaveAndExit}
-                disabled={submitting}
-                className="px-6 py-2 bg-accent text-white rounded-full hover:bg-accent/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {submitting ? 'Salvataggio...' : 'Salva ed esci'}
-              </button>
-            </div>
-          </div>
-        </Modal>
-        <div className="mb-8">
-          <div>
-            <Link 
-              to="/admin/tours" 
-              onClick={handleBackClick}
-              className="inline-flex items-center text-muted hover:text-primary transition-colors mb-4"
+    <AdminLayout title="Modifica Tour" actions={saveButton}>
+      {/* Browser back warning modal */}
+      <Modal
+        isOpen={showBrowserBackWarning}
+        onClose={() => setShowBrowserBackWarning(false)}
+        title="Attenzione"
+        size="md"
+      >
+        <div className="space-y-4">
+          <p className="text-muted">
+            Vuoi davvero abbandonare la pagina? Così facendo perderai le modifiche.
+          </p>
+          <div className="flex gap-4 justify-end">
+            <button
+              onClick={handleExitWithoutSaving}
+              className="px-6 py-2 border border-gray-300 rounded-full hover:bg-gray-50 transition-colors"
             >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Torna alla lista
-            </Link>
-            {showUnsavedWarning && (
-              <p className="text-sm text-red-600 mt-1 mb-4">Ci sono delle modifiche da salvare</p>
-            )}
-          </div>
-          <div className="flex items-start justify-between">
-            <div>
-              <h1 className="font-title text-4xl font-bold text-primary">Modifica Tour</h1>
-              <p className="text-muted mt-2">Modifica le informazioni del tour</p>
-            </div>
-            <div className="flex items-center gap-4">
-              {showSavedMessage && (
-                <span className="text-green-600 font-medium">
-                  Modifiche salvate
-                </span>
-              )}
-              <button 
-                type="submit" 
-                form="edit-tour-form"
-                disabled={submitting || !hasChanges()} 
-                className="px-6 py-3 bg-accent text-white rounded-full hover:bg-accent/90 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {submitting ? 'Salvataggio...' : 'Salva Modifiche'}
-              </button>
-              {tour && (
-                <Link
-                  to={`/tours/${tour.slug || tour.id}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-3 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors"
-                  title="Visualizza tour nel frontend"
-                >
-                  <Eye className="w-5 h-5 text-primary" />
-                </Link>
-              )}
-            </div>
+              Esci senza salvare
+            </button>
+            <button
+              onClick={handleSaveAndExit}
+              disabled={submitting}
+              className="px-6 py-2 bg-accent text-white rounded-full hover:bg-accent/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {submitting ? 'Salvataggio...' : 'Salva ed esci'}
+            </button>
           </div>
         </div>
+      </Modal>
+      <div className="mb-8">
+        <div>
+          <Link 
+            to="/admin/tours" 
+            onClick={handleBackClick}
+            className="inline-flex items-center text-muted hover:text-primary transition-colors mb-4"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Torna alla lista
+          </Link>
+          {showUnsavedWarning && (
+            <p className="text-sm text-red-600 mt-1 mb-4">Ci sono delle modifiche da salvare</p>
+          )}
+        </div>
+        <div className="flex items-start justify-between">
+          <div>
+            <p className="text-muted mt-2">Modifica le informazioni del tour</p>
+          </div>
+          <div className="flex items-center gap-4">
+            {showSavedMessage && (
+              <span className="text-green-600 font-medium">
+                Modifiche salvate
+              </span>
+            )}
+            {tour && (
+              <Link
+                to={`/tours/${tour.slug || tour.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-3 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors"
+                title="Visualizza tour nel frontend"
+              >
+                <Eye className="w-5 h-5 text-primary" />
+              </Link>
+            )}
+          </div>
+        </div>
+      </div>
 
-        <form id="edit-tour-form" onSubmit={handleSubmit} className="space-y-8">
+      <form id="edit-tour-form" onSubmit={handleSubmit} className="space-y-8">
           {/* Informazioni Base */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
             <div className="flex items-center mb-6">
@@ -1113,8 +1109,7 @@ export default function AdminEditTour() {
               </div>
           </div>
         </form>
-      </div>
-    </div>
+    </AdminLayout>
   );
 }
 

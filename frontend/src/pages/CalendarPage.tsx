@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Calendar as CalendarIcon } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay } from 'date-fns';
 import { it } from 'date-fns/locale';
 import api from '../utils/api';
@@ -52,8 +52,41 @@ export default function CalendarPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      <h1 className="font-title text-4xl font-bold mb-8">Calendario Escursioni</h1>
+    <div className="bg-white">
+      {/* Hero Section */}
+      <section className="relative h-[25vh] sm:h-[27vh] md:h-[30vh] flex items-center justify-center text-white overflow-hidden">
+        <div
+          className="absolute inset-0 bg-cover bg-no-repeat"
+          style={{
+            backgroundImage: 'url(/resources/IMG_5093.JPEG)',
+            backgroundPosition: 'center center',
+          }}
+        >
+          <div 
+            className="absolute inset-0" 
+            style={{ 
+              backgroundImage: 'linear-gradient(rgb(15 23 42 / 0%), rgb(0 21 67 / 65%))'
+            }} 
+          />
+        </div>
+        
+        <div className="relative z-10 text-center px-4 sm:px-6 lg:px-8">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-8xl font-bold mb-3 sm:mb-4 px-4">
+            Calendario escursioni
+          </h1>
+          <p className="text-base sm:text-lg md:text-xl lg:text-2xl max-w-3xl mx-auto px-4">
+            Scopri tutte le escursioni disponibili e prenota la tua prossima avventura
+          </p>
+        </div>
+      </section>
+
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="relative inline-block mb-4 sm:mb-5 md:mb-6">
+          <div className="absolute bg-yellow-100 w-3/4 h-4 sm:h-6 md:h-8 top-4 sm:top-6 md:top-8 left-0"></div>
+          <h2 className="font-title text-3xl sm:text-4xl md:text-5xl lg:text-[48px] font-bold relative">
+            Le nostre attività
+          </h2>
+        </div>
 
       <div className="bg-white rounded-lg shadow-lg p-6">
         <div className="flex items-center justify-between mb-6">
@@ -117,8 +150,13 @@ export default function CalendarPage() {
       >
         <div className="space-y-4">
           {dayTours.map((tour) => (
-            <div key={tour.id} className="border rounded-lg p-4">
-              <h3 className="font-bold text-lg mb-2">{tour.title}</h3>
+            <Link
+              key={tour.id}
+              to={`/tours/${tour.slug}`}
+              onClick={() => setSelectedDay(null)}
+              className="block border rounded-lg p-4 hover:border-accent transition-all cursor-pointer"
+            >
+              <h3 className="font-bold text-lg mb-2 hover:text-accent transition-colors">{tour.title}</h3>
               <p className="text-sm text-muted mb-2">
                 {format(new Date(tour.dateStart), 'HH:mm', { locale: it })} -{' '}
                 {tour.dateEnd
@@ -143,10 +181,11 @@ export default function CalendarPage() {
                     : `${tour.availableSeats} posti`}
                 </span>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </Modal>
+      </div>
     </div>
   );
 }
