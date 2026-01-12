@@ -1,12 +1,15 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Calendar, Users, Star, ArrowRight, ArrowLeft, User, ChevronLeft, ChevronRight, BadgeCheck, Compass, Mountain, Route, Shield } from 'lucide-react';
 import { useState, useEffect, useRef, useMemo } from 'react';
+import Lottie from 'lottie-react';
 import api from '../utils/api';
 import CardTour from '../components/CardTour';
 import Footer from '../components/Footer';
 
 export default function HomePage() {
+  const navigate = useNavigate();
   const [tours, setTours] = useState<any[]>([]);
+  const [scrollDownAnimation, setScrollDownAnimation] = useState<any>(null);
   const [currentSlide, setCurrentSlide] = useState(1); // Inizia da 1 perché la prima è la slide duplicata
   const [isTransitioning, setIsTransitioning] = useState(true);
   const [currentNextAdventuresIndex, setCurrentNextAdventuresIndex] = useState(0);
@@ -106,6 +109,11 @@ export default function HomePage() {
 
   useEffect(() => {
     fetchTours();
+    // Carica l'animazione Lottie
+    fetch('/resources/Scroll Down.json')
+      .then(res => res.json())
+      .then(data => setScrollDownAnimation(data))
+      .catch(err => console.error('Failed to load scroll animation:', err));
   }, []);
 
   useEffect(() => {
@@ -237,127 +245,81 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="bg-white">
-      {/* Hero Section */}
-      <section className="relative h-[60vh] sm:h-[70vh] md:h-[calc(100vh-120px)] flex items-center justify-center text-white overflow-hidden">
-        {/* Background images carousel */}
-        <div className="absolute inset-0">
-          {slides.map((slide, index) => {
-            const realIndex = index;
-            const isActive = getRealSlideIndex() === realIndex;
-            return (
-              <div
-                key={index}
-                className="absolute inset-0 bg-cover bg-no-repeat bg-center"
-                style={{
-                  backgroundImage: `url(${slide.backgroundImage})`,
-                  opacity: isActive ? 1 : 0,
-                  transition: isTransitioning ? 'opacity 1s ease-in-out' : 'none',
-                  zIndex: isActive ? 1 : 0,
-                }}
-              />
-            );
-          })}
-          {/* Duplica la prima immagine per il loop */}
-          <div
-            className="absolute inset-0 bg-cover bg-no-repeat bg-center"
-            style={{
-              backgroundImage: `url(${slides[0].backgroundImage})`,
-              opacity: getRealSlideIndex() === 0 && currentSlide > slides.length ? 1 : 0,
-              transition: isTransitioning ? 'opacity 1s ease-in-out' : 'none',
-              zIndex: getRealSlideIndex() === 0 && currentSlide > slides.length ? 1 : 0,
-            }}
-          />
-        </div>
+    <div className="bg-white -mt-20">
+      {/* Nuova Hero Section con Video */}
+      <section className="relative h-screen flex items-center justify-center text-white overflow-hidden">
+        {/* Video Background */}
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover z-0"
+        >
+          <source src="/resources/loopvideo.mp4" type="video/mp4" />
+          Il tuo browser non supporta il tag video.
+        </video>
+        
+        {/* Overlay verde scuro per leggibilità */}
         <div 
           className="absolute inset-0 z-10" 
           style={{ 
-            backgroundImage: 'linear-gradient(rgb(15 23 42 / 0%), rgb(0 21 67 / 65%))'
+            backgroundImage: 'linear-gradient(rgb(0 0 0 / 50%), rgb(0 28 11 / 80%))'
           }} 
         />
         
-        {/* Carousel */}
-        <div className="relative z-10 w-full h-full overflow-hidden">
-          <div 
-            ref={carouselRef}
-            className="flex h-full"
-            style={{ 
-              transform: `translateX(-${currentSlide * 100}%)`,
-              transition: isTransitioning ? 'transform 1s ease-in-out' : 'none'
-            }}
+        {/* Contenuto centrato */}
+        <div className="relative z-20 text-center px-4 sm:px-6 md:px-8">
+          <div className="flex justify-center items-center mb-4 sm:mb-5 md:mb-6">
+            <img 
+              src="/resources/Icona Gialla.png" 
+              alt="" 
+              className="h-12 w-12 sm:h-16 sm:w-16 md:h-20 md:w-20 object-contain"
+            />
+          </div>
+          <h1 className="text-[72px] font-medium mb-4 sm:mb-6 md:mb-8" style={{ fontFamily: 'Nohemi, sans-serif' }}>
+            Vivi la montagna<br />in Sicilia
+          </h1>
+          
+          {/* Barra di ricerca */}
+           <form 
+             className="w-full max-w-md mx-auto mb-6 sm:mb-8"
+             onSubmit={(e) => {
+               e.preventDefault();
+               navigate('/tours');
+             }}
           >
-            {/* Duplica l'ultima slide all'inizio per il loop infinito */}
-            {slides[slides.length - 1] && (
-              <div
-                className="min-w-full flex flex-col items-center justify-center text-center px-4 sm:px-6 md:px-8"
-              >
-                <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-[100px] font-bold mb-2 sm:mb-3 md:mb-4">{slides[slides.length - 1].title}</h1>
-                <p className="text-base sm:text-lg md:text-xl lg:text-2xl mb-4 sm:mb-6 md:mb-8 px-4">{slides[slides.length - 1].subtitle}</p>
-                <Link
-                  to={slides[slides.length - 1].buttonLink}
-                  className="btn-primary text-sm sm:text-base md:text-lg px-4 sm:px-6 md:px-8 py-2 sm:py-3 md:py-4 flex items-center gap-2"
-                >
-                  {slides[slides.length - 1].buttonText}
-                  <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
-                </Link>
-              </div>
-            )}
-            {/* Slide originali */}
-            {slides.map((slide, index) => (
-              <div
-                key={index}
-                className="min-w-full flex flex-col items-center justify-center text-center px-4 sm:px-6 md:px-8"
-              >
-                <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-[100px] font-bold mb-2 sm:mb-3 md:mb-4">{slide.title}</h1>
-                <p className="text-base sm:text-lg md:text-xl lg:text-2xl mb-4 sm:mb-6 md:mb-8 px-4">{slide.subtitle}</p>
-                <Link
-                  to={slide.buttonLink}
-                  className="btn-primary text-sm sm:text-base md:text-lg px-4 sm:px-6 md:px-8 py-2 sm:py-3 md:py-4 flex items-center gap-2"
-                >
-                  {slide.buttonText}
-                  <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
-          </Link>
-              </div>
-            ))}
-            {/* Duplica la prima slide alla fine per il loop infinito */}
-            {slides[0] && (
-              <div
-                className="min-w-full flex flex-col items-center justify-center text-center px-4 sm:px-6 md:px-8"
-              >
-                <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-[100px] font-bold mb-2 sm:mb-3 md:mb-4">{slides[0].title}</h1>
-                <p className="text-base sm:text-lg md:text-xl lg:text-2xl mb-4 sm:mb-6 md:mb-8 px-4">{slides[0].subtitle}</p>
-                <Link
-                  to={slides[0].buttonLink}
-                  className="btn-primary text-sm sm:text-base md:text-lg px-4 sm:px-6 md:px-8 py-2 sm:py-3 md:py-4 flex items-center gap-2"
-                >
-                  {slides[0].buttonText}
-                  <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
-                </Link>
-              </div>
-            )}
-          </div>
-
-          {/* Carousel Indicators */}
-          <div className="absolute bottom-4 sm:bottom-6 md:bottom-8 left-1/2 transform -translate-x-1/2 flex flex-row space-x-2">
-            {slides.map((_, index) => {
-              // Calcola l'indice reale considerando che currentSlide parte da 1
-              const realIndex = currentSlide === 0 ? slides.length - 1 : (currentSlide - 1) % slides.length;
-              return (
-                <button
-                  key={index}
-                  onClick={() => {
-                    setIsTransitioning(true);
-                    setCurrentSlide(index + 1); // +1 perché la prima slide è duplicata
-                  }}
-                  className={`h-2 sm:h-3 rounded-full transition-all ${
-                    index === realIndex ? 'bg-accent w-6 sm:w-8' : 'bg-white/50 w-2 sm:w-3'
-                  }`}
-                  aria-label={`Go to slide ${index + 1}`}
-                />
-              );
-            })}
-          </div>
+             <div className="flex items-center bg-white/90 backdrop-blur-sm rounded-full shadow-lg" style={{ padding: '8px 6px 8px 16px' }}>
+               <img 
+                 src="/resources/trekkingicon.svg" 
+                 alt="" 
+                 className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0"
+               />
+               <span className="flex-1 text-primary text-sm sm:text-base ml-2 text-left">
+                 Portami a esplorare le montagne
+               </span>
+               <button
+                 type="submit"
+                 className="flex items-center gap-2 bg-accent hover:bg-accent/90 text-white rounded-full transition-colors font-medium text-sm sm:text-base group"
+                 style={{ padding: '12px 24px' }}
+               >
+                 <span>Esplora</span>
+                 <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+               </button>
+             </div>
+          </form>
         </div>
+        
+        {/* Animazione Lottie Scroll Down */}
+        {scrollDownAnimation && (
+          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-30">
+            <Lottie
+              animationData={scrollDownAnimation}
+              loop={true}
+              style={{ width: 35, height: 55 }}
+            />
+          </div>
+        )}
       </section>
 
       {/* Numeri chiave */}

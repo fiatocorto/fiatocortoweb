@@ -147,7 +147,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      
+
 
       {/* Mappa Sicilia */}
       <section className="w-full pt-8 sm:pt-12 md:pt-16 pb-16 sm:pb-24 md:pb-32 relative">

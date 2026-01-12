@@ -8,6 +8,7 @@ export default function NavBar() {
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isOnLightBackground, setIsOnLightBackground] = useState(false);
   const isScrolled = true; // Sempre in stato "scrolled" per dimensioni fisse
 
   // Helper function to check if a path is active
@@ -26,59 +27,88 @@ export default function NavBar() {
 
   // Check if we're on an admin route
   const isAdminRoute = location.pathname.startsWith('/admin');
+  const isHomePage = location.pathname === '/';
+
+  // Monitor scroll position to detect light background sections
+  useEffect(() => {
+    if (isAdminRoute) {
+      setIsOnLightBackground(false);
+      return;
+    }
+
+    // If not on homepage (no hero section), set light background by default
+    if (!isHomePage) {
+      setIsOnLightBackground(true);
+      return;
+    }
+
+    // On homepage, check if we've scrolled past the hero section
+    const handleScroll = () => {
+      // Hero section is 100vh, we want to switch after completely passing it
+      const heroHeight = window.innerHeight;
+      const scrollY = window.scrollY;
+      const navbarHeight = 80; // h-20 = 80px
+      
+      // If scrolled past hero section (including navbar height), we're on light background
+      setIsOnLightBackground(scrollY + navbarHeight >= heroHeight);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    handleScroll(); // Check initial state
+
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [isAdminRoute, isHomePage]);
 
   return (
-    <nav className={`${isAdminRoute ? 'bg-accent' : 'bg-primary'} text-white shadow-lg z-[100] transition-all duration-300 ${!isAdminRoute ? 'fixed top-0 left-0 right-0 shadow-xl h-20' : 'relative h-20'}`}>
-      <div className="w-full">
-        <div className="flex items-stretch">
+    <nav 
+      className={`${isAdminRoute ? 'bg-accent' : ''} text-white z-[100] transition-all duration-300 ${!isAdminRoute ? 'fixed top-0 left-0 right-0 h-20' : 'relative h-20'} ${isOnLightBackground && !isAdminRoute ? 'shadow-md' : ''}`}
+      style={!isAdminRoute ? { background: isOnLightBackground ? 'white' : 'transparent' } : {}}
+    >
+      <div className="w-full h-full" style={{ background: !isAdminRoute && isOnLightBackground ? 'white' : 'transparent' }}>
+        <div className="flex items-center h-full w-full">
           {/* Logo Section - Hidden on admin routes */}
           {!isAdminRoute && (
-          <div className={`relative flex items-center pl-4 sm:pl-6 md:pl-6 lg:pl-8 pr-4 sm:pr-6 md:pr-8 lg:pr-16 py-2 sm:py-3 md:py-4 overflow-hidden bg-[#0f172a] transition-all duration-300 w-[200px] sm:w-[250px] md:w-[300px]`}>
-            <Link to="/" className="flex items-center relative z-10 w-full">
-              <img 
-                src="/resources/Bianco.png" 
-                alt="Fiato Corto" 
-                className="w-auto max-w-full object-contain transition-all duration-300 h-10 sm:h-12 md:h-14"
-              />
+          <Link to="/" className="flex items-center relative z-10 flex-shrink-0 pl-4 sm:pl-6 md:pl-6 lg:pl-8 pr-4 sm:pr-6 md:pr-8 lg:pr-16 w-[200px] sm:w-[250px] md:w-[300px] h-full">
+            <img 
+              src={isOnLightBackground ? "/resources/Nero.png" : "/resources/Bianco.png"} 
+              alt="Fiato Corto" 
+              className="w-auto max-w-full object-contain transition-all duration-300 h-10 sm:h-12 md:h-14"
+            />
           </Link>
-
-          </div>
           )}
 
-          {/* Right side: Menu Bar */}
-          <div className={`flex-1 flex flex-col ${isAdminRoute ? 'bg-accent' : ''}`}>
-            {/* Menu Bar - Hidden on admin routes */}
-            {!isAdminRoute && (
-            <div className={`hidden lg:flex justify-between items-center transition-all duration-300 pl-2 sm:pl-4 md:pl-6 lg:pl-8 pr-2 sm:pr-4 md:pr-6 lg:pr-8 bg-white text-primary py-4 sm:py-5 shadow-md`}>
+          {/* Menu Bar - Hidden on admin routes */}
+          {!isAdminRoute && (
+          <div className="hidden lg:flex justify-between items-center flex-1 transition-all duration-300 pl-2 sm:pl-4 md:pl-6 lg:pl-8 pr-2 sm:pr-4 md:pr-6 lg:pr-8 text-white h-full">
               {/* Navigation menu */}
               <div className="flex-1 flex justify-start items-center space-x-3 sm:space-x-4 md:space-x-6">
                 <Link 
                   to="/" 
-                  className={`nav-link-underline transition-colors font-medium text-sm sm:text-base pb-1 ${isActive('/') ? 'text-accent active' : 'text-primary hover:text-accent'}`}
+                  className={`nav-link-underline transition-colors font-medium text-sm sm:text-base pb-1 ${isActive('/') ? 'text-accent active' : isOnLightBackground ? 'text-[#1c1a18] hover:text-accent' : 'text-white hover:text-accent'}`}
                 >
                   Home
                 </Link>
                 <Link 
                   to="/tours" 
-                  className={`nav-link-underline transition-colors font-medium text-sm sm:text-base pb-1 ${isActive('/tours') ? 'text-accent active' : 'text-primary hover:text-accent'}`}
+                  className={`nav-link-underline transition-colors font-medium text-sm sm:text-base pb-1 ${isActive('/tours') ? 'text-accent active' : isOnLightBackground ? 'text-[#1c1a18] hover:text-accent' : 'text-white hover:text-accent'}`}
                 >
                   Escursioni
                 </Link>
                 <Link 
                   to="/calendar" 
-                  className={`nav-link-underline transition-colors font-medium text-sm sm:text-base pb-1 ${isActive('/calendar') ? 'text-accent active' : 'text-primary hover:text-accent'}`}
+                  className={`nav-link-underline transition-colors font-medium text-sm sm:text-base pb-1 ${isActive('/calendar') ? 'text-accent active' : isOnLightBackground ? 'text-[#1c1a18] hover:text-accent' : 'text-white hover:text-accent'}`}
                 >
                   Calendario
                 </Link>
                 <Link 
                   to="/about" 
-                  className={`nav-link-underline transition-colors font-medium text-sm sm:text-base pb-1 ${isActive('/about') ? 'text-accent active' : 'text-primary hover:text-accent'}`}
+                  className={`nav-link-underline transition-colors font-medium text-sm sm:text-base pb-1 ${isActive('/about') ? 'text-accent active' : isOnLightBackground ? 'text-[#1c1a18] hover:text-accent' : 'text-white hover:text-accent'}`}
                 >
                   Chi siamo
                 </Link>
                 <Link 
                   to="/contacts" 
-                  className={`nav-link-underline transition-colors font-medium text-sm sm:text-base pb-1 ${isActive('/contacts') ? 'text-accent active' : 'text-primary hover:text-accent'}`}
+                  className={`nav-link-underline transition-colors font-medium text-sm sm:text-base pb-1 ${isActive('/contacts') ? 'text-accent active' : isOnLightBackground ? 'text-[#1c1a18] hover:text-accent' : 'text-white hover:text-accent'}`}
                 >
                   Contatti
                 </Link>
@@ -91,12 +121,12 @@ export default function NavBar() {
                     {user.role === 'ADMIN' && (
                       <Link
                         to="/admin"
-                        className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full transition-colors text-sm sm:text-base font-medium ${isActive('/admin') ? 'text-accent' : 'text-primary hover:text-accent'}`}
+                        className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full transition-colors text-sm sm:text-base font-medium ${isActive('/admin') ? 'text-accent' : isOnLightBackground ? 'text-[#1c1a18] hover:text-accent' : 'text-white hover:text-accent'}`}
                       >
                         Gestisci
                       </Link>
                     )}
-                    <Link to="/account" className="btn-primary text-sm sm:text-base px-6 sm:px-8 md:px-10 lg:px-12 py-2 sm:py-2.5 md:py-3 font-medium">
+                    <Link to="/account" className="btn-primary text-sm sm:text-base px-6 sm:px-8 md:px-10 lg:px-12 py-2 sm:py-2.5 md:py-3 font-medium" style={{ borderRadius: '16px' }}>
                       Il mio account
                       </Link>
                   </>
@@ -104,7 +134,7 @@ export default function NavBar() {
                   <>
                     <Link
                       to="/login"
-                      className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-full transition-colors text-sm sm:text-base font-medium text-primary hover:text-accent"
+                      className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full transition-colors text-sm sm:text-base font-medium ${isOnLightBackground ? 'text-[#1c1a18] hover:text-accent' : 'text-white hover:text-accent'}`}
                     >
                       Login
                     </Link>
@@ -116,12 +146,11 @@ export default function NavBar() {
                 </div>
             </div>
             )}
-          </div>
 
           {/* Mobile menu button - Hidden on admin routes */}
           {!isAdminRoute && (
           <button
-            className="lg:hidden ml-auto p-2 sm:p-3 mr-2 sm:mr-4 text-white hover:text-accent transition-colors"
+            className={`lg:hidden ml-auto p-2 sm:p-3 mr-2 sm:mr-4 hover:text-accent transition-colors ${isOnLightBackground ? 'text-[#1c1a18]' : 'text-white'}`}
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Toggle menu"
           >
@@ -132,7 +161,7 @@ export default function NavBar() {
 
         {/* Mobile menu - Hidden on admin routes */}
         {!isAdminRoute && mobileMenuOpen && (
-          <div className="lg:hidden py-4 sm:py-6 space-y-3 sm:space-y-4 border-t border-white/10 px-4 sm:px-6 max-h-[calc(100vh-120px)] overflow-y-auto">
+          <div className={`lg:hidden py-4 sm:py-6 space-y-3 sm:space-y-4 border-t px-4 sm:px-6 max-h-[calc(100vh-120px)] overflow-y-auto ${isOnLightBackground ? 'border-[#1c1a18]/10' : 'border-white/10'}`}>
             {/* Mobile navigation */}
             <div className="space-y-1 sm:space-y-2">
             <Link
@@ -174,10 +203,10 @@ export default function NavBar() {
 
             {/* Admin link - after navigation */}
             {user && user.role === 'ADMIN' && (
-              <div className="pt-2 sm:pt-3 border-t border-white/10">
+              <div className={`pt-2 sm:pt-3 border-t ${isOnLightBackground ? 'border-[#1c1a18]/10' : 'border-white/10'}`}>
                 <Link
                   to="/admin"
-                  className={`nav-link-underline block transition-colors py-2 sm:py-2.5 text-sm sm:text-base font-medium ${isActive('/admin') ? 'text-accent active' : 'hover:text-accent'}`}
+                  className={`nav-link-underline block transition-colors py-2 sm:py-2.5 text-sm sm:text-base font-medium ${isActive('/admin') ? 'text-accent active' : isOnLightBackground ? 'text-[#1c1a18] hover:text-accent' : 'text-white hover:text-accent'}`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Gestisci
@@ -187,7 +216,7 @@ export default function NavBar() {
 
             {/* Mobile auth */}
             {user ? (
-              <div className="pt-3 sm:pt-4 border-t border-white/10">
+              <div className={`pt-3 sm:pt-4 border-t ${isOnLightBackground ? 'border-[#1c1a18]/10' : 'border-white/10'}`}>
                 <div className="flex items-center justify-between">
                   <Link
                     to="/account"
@@ -200,8 +229,8 @@ export default function NavBar() {
                       </span>
                     </div>
                     <div>
-                      <p className="text-white text-xs sm:text-sm font-medium">{user.name || 'Utente'}</p>
-                      <p className="text-white/70 text-xs">{user.email}</p>
+                      <p className={`text-xs sm:text-sm font-medium ${isOnLightBackground ? 'text-[#1c1a18]' : 'text-white'}`}>{user.name || 'Utente'}</p>
+                      <p className={`text-xs ${isOnLightBackground ? 'text-[#1c1a18]/70' : 'text-white/70'}`}>{user.email}</p>
                     </div>
                   </Link>
                   <button
@@ -209,14 +238,14 @@ export default function NavBar() {
                       handleLogout();
                       setMobileMenuOpen(false);
                     }}
-                    className="text-xs sm:text-sm text-white/70 hover:text-accent transition-colors ml-2"
+                    className={`text-xs sm:text-sm hover:text-accent transition-colors ml-2 ${isOnLightBackground ? 'text-[#1c1a18]/70' : 'text-white/70'}`}
                   >
                     Esci
                   </button>
                 </div>
               </div>
             ) : (
-              <div className="space-y-2 sm:space-y-3 pt-3 sm:pt-4 border-t border-white/10">
+              <div className={`space-y-2 sm:space-y-3 pt-3 sm:pt-4 border-t ${isOnLightBackground ? 'border-[#1c1a18]/10' : 'border-white/10'}`}>
                 <Link
                   to="/login"
                   className="block px-4 sm:px-6 py-2 sm:py-2.5 rounded-full hover:bg-white/10 transition-colors text-center text-sm sm:text-base"
@@ -235,7 +264,7 @@ export default function NavBar() {
             )}
 
             {/* Mobile CTA */}
-            <div className="pt-3 sm:pt-4 border-t border-white/10">
+            <div className={`pt-3 sm:pt-4 border-t ${isOnLightBackground ? 'border-[#1c1a18]/10' : 'border-white/10'}`}>
               <Link
                 to="/tours"
                 className="block btn-primary text-center text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-2.5"

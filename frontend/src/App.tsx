@@ -41,7 +41,7 @@ function AppContent() {
       <ScrollToTop />
       <NavBar />
       <div className="pt-20">
-        <Routes>
+      <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/tours" element={<ToursPage />} />
           <Route path="/tours/:slug" element={<TourDetailPage />} />
@@ -168,7 +168,7 @@ function AppContent() {
               </ProtectedRoute>
             }
           />
-        </Routes>
+      </Routes>
       </div>
     </div>
   );
