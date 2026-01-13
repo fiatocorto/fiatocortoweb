@@ -955,7 +955,9 @@ export default function AdminEditTour() {
                   >
                     <option value="">Seleziona difficoltà</option>
                     <option value="Facile">Facile</option>
+                    <option value="Medio-Facile">Medio-Facile</option>
                     <option value="Intermedio">Intermedio</option>
+                    <option value="Medio-Difficile">Medio-Difficile</option>
                     <option value="Difficile">Difficile</option>
                   </select>
                 </div>

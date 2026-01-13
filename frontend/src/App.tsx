@@ -28,6 +28,8 @@ import AdminCalendar from './pages/admin/AdminCalendar';
 import AdminQRScanner from './pages/admin/AdminQRScanner';
 import AdminUsers from './pages/admin/AdminUsers';
 import ProtectedRoute from './components/ProtectedRoute';
+import CookieBanner from './components/CookieBanner';
+import ScrollToTopButton from './components/ScrollToTopButton';
 
 function AppContent() {
   const { isLoading } = useAuth();
@@ -40,6 +42,8 @@ function AppContent() {
     <div className="min-h-screen bg-background">
       <ScrollToTop />
       <NavBar />
+      <CookieBanner />
+      <ScrollToTopButton />
       <div className="pt-20">
       <Routes>
           <Route path="/" element={<HomePage />} />

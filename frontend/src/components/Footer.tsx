@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 
 export default function Footer() {
   return (
-    <footer className="bg-primary text-white">
+    <footer className="text-white" style={{ backgroundColor: '#4f3e2d' }}>
       <div className="max-w-7xl mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Prima colonna: Logo */}
@@ -103,7 +103,7 @@ export default function Footer() {
       </div>
       
       {/* Copyright Footer */}
-      <div style={{ backgroundColor: '#1e293b' }} className="py-4">
+      <div style={{ backgroundColor: '#31271d' }} className="py-4">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="text-white text-sm">

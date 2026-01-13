@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Calendar, Activity } from 'lucide-react';
+import { Calendar, Activity, ArrowRight, User, Droplet } from 'lucide-react';
 
 interface Tour {
   id: string;
@@ -39,6 +39,23 @@ export default function CardTour({ tour, variant = 'default', viewMode = 'grid' 
     if (availableSeats === 0) return 'badge-danger';
     if (availableSeats <= 10) return 'badge-danger';
     return 'badge-accent';
+  };
+
+  const getDifficultyDrops = () => {
+    switch (tour.difficulty) {
+      case 'Facile':
+        return 1;
+      case 'Medio-Facile':
+        return 2;
+      case 'Intermedio':
+        return 3;
+      case 'Medio-Difficile':
+        return 4;
+      case 'Difficile':
+        return 5;
+      default:
+        return 0;
+    }
   };
 
   const isCompact = variant === 'compact';
@@ -164,58 +181,54 @@ export default function CardTour({ tour, variant = 'default', viewMode = 'grid' 
   }
 
   return (
-    <div 
-      className="rounded-2xl transition-transform duration-300 hover:-translate-y-2"
-    >
-      <div className="card rounded-2xl overflow-hidden border border-gray-200">
+    <div className="group relative">
+      <div className="card overflow-hidden border border-gray-200/50 transition-transform duration-300 hover:-translate-y-3" style={{ borderRadius: '2rem' }}>
+        
         <Link 
           to={`/tours/${tour.slug}`} 
-          className="block"
+          className="block relative"
         >
-          <div className="relative overflow-hidden rounded-t-2xl">
-            <img
-              src={tour.coverImage}
-              alt={tour.title}
-              className="w-full h-64 object-cover"
-            />
-            <div className="absolute top-2 right-2">
-              <span className={`badge ${getSeatsBadgeClass()}`}>
-                {availableSeats === 0
-                  ? 'Esaurito'
-                  : `${availableSeats} posti`}
-              </span>
-            </div>
-          </div>
-          <div className="p-4">
-            <h3 className="font-title text-xl font-bold mb-2 line-clamp-1">{tour.title}</h3>
-            <p className="text-sm text-muted mb-3 line-clamp-2">{tour.description}</p>
-            <div className="flex items-center justify-between text-sm text-muted mb-3">
-              <div className="flex items-center space-x-4">
-                <span className="flex items-center">
-                  <Calendar className="w-4 h-4 mr-1" />
-                  {formatDate(nextDate)}
+          <img
+            src={tour.coverImage}
+            alt={tour.title}
+            className="w-full h-full object-cover aspect-[4/5]"
+          />
+          {/* Difficoltà in alto a sinistra */}
+          {tour.difficulty && (
+            <div className="absolute top-3 sm:top-4 md:top-5 left-3 sm:left-4 md:left-5 z-10">
+              <div className="flex flex-col gap-1.5 sm:gap-2">
+                <span className="bg-accent text-white px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs sm:text-sm font-semibold" style={{ fontFamily: 'Nohemi, sans-serif' }}>
+                  {tour.difficulty}
                 </span>
-                <span className="flex items-center">
-                  <Activity className="w-4 h-4 mr-1" />
-                  {tour.difficulty || 'N/A'}
-                </span>
+                {/* Gocce difficoltà */}
+                {getDifficultyDrops() > 0 && (
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: getDifficultyDrops() }).map((_, index) => (
+                      <Droplet key={index} className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white" fill="white" />
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-2xl font-bold text-accent">
-                {formatPrice(tour.priceAdult)}
+          )}
+          {/* Posti disponibili in alto a destra */}
+          <div className="absolute top-3 sm:top-4 md:top-5 right-3 sm:right-4 md:right-5 z-10">
+            <div className="flex items-center gap-2 sm:gap-2.5 drop-shadow-lg" style={{ filter: 'drop-shadow(0 1px 8px rgba(0, 0, 0, 0.9))' }}>
+              <User className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-white" />
+              <span className="text-white text-sm sm:text-base md:text-lg font-semibold" style={{ fontFamily: 'Nohemi, sans-serif' }}>
+                {availableSeats === 0 ? 'Esaurito' : `${availableSeats} posti`}
               </span>
-              {tour.priceAdult !== 0 && tour.priceAdult !== null && tour.priceAdult !== undefined && (
-                <span className="text-sm text-muted">a persona</span>
-              )}
             </div>
           </div>
-        </Link>
-        <Link 
-          to={`/tours/${tour.slug}`}
-          className="block bg-accent text-white text-center py-3 px-4 rounded-full hover:bg-accent/90 transition-colors font-semibold mx-4 mb-4"
-        >
-          Esplora
+          {/* Overlay con titolo e freccia */}
+          <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-5 md:p-6 bg-gradient-to-t from-black/70 via-black/50 to-transparent">
+            <div className="flex items-end justify-between gap-3 sm:gap-4">
+              <h3 className="font-title text-lg sm:text-xl md:text-2xl font-bold text-white line-clamp-3 flex-1" style={{ fontFamily: 'Nohemi, sans-serif' }}>
+                {tour.title}
+              </h3>
+              <ArrowRight className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-accent flex-shrink-0" />
+            </div>
+          </div>
         </Link>
       </div>
     </div>

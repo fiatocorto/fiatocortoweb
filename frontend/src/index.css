@@ -106,6 +106,17 @@
   h3 {
     @apply text-3xl font-bold;
   }
+
+  /* Selezione testo personalizzata */
+  ::selection {
+    background-color: #fbb017;
+    color: white;
+  }
+
+  ::-moz-selection {
+    background-color: #fbb017;
+    color: white;
+  }
 }
 
 @layer components {

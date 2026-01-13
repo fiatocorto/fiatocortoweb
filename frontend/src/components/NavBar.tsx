@@ -126,7 +126,17 @@ export default function NavBar() {
                         Gestisci
                       </Link>
                     )}
-                    <Link to="/account" className="btn-primary text-sm sm:text-base px-6 sm:px-8 md:px-10 lg:px-12 py-2 sm:py-2.5 md:py-3 font-medium" style={{ borderRadius: '16px' }}>
+                    <Link 
+                      to="/account" 
+                      className="btn-primary text-white text-sm sm:text-base px-6 sm:px-8 md:px-10 lg:px-12 py-2 sm:py-2.5 md:py-3 font-medium transition-colors" 
+                      style={{ borderRadius: '16px' }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = '#976e19';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = '';
+                      }}
+                    >
                       Il mio account
                       </Link>
                   </>
