@@ -388,7 +388,7 @@ export default function HomePage() {
 
       {/* Prossime avventure */}
       {upcomingTours.length > 0 && (
-        <section className="w-full pt-24 pb-24" style={{ backgroundColor: '#f5f3ec' }}>
+        <section className="w-full pb-24" style={{ backgroundColor: '#f5f3ec' }}>
           <div className="w-full px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-4 sm:mb-5 md:mb-6">
               <div className="flex justify-center items-center mb-4 sm:mb-5 md:mb-6">
