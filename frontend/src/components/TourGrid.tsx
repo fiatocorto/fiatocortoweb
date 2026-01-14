@@ -27,7 +27,7 @@ interface TourGridProps {
 export default function TourGrid({ tours, viewMode = 'grid', variant = 'default' }: TourGridProps) {
   if (viewMode === 'list') {
     return (
-      <div className="space-y-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {tours.map((tour) => (
           <CardTour key={tour.id} tour={tour} variant={variant} viewMode={viewMode} />
         ))}
@@ -36,7 +36,7 @@ export default function TourGrid({ tours, viewMode = 'grid', variant = 'default'
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
       {tours.map((tour) => (
         <CardTour key={tour.id} tour={tour} variant={variant} />
       ))}

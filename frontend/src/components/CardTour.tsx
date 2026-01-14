@@ -74,58 +74,68 @@ export default function CardTour({ tour, variant = 'default', viewMode = 'grid' 
 
   const nextDate = tour.dateStart;
 
-  if (isCompact) {
-    // List view layout: no image, just content
-    if (isListView) {
-      return (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden transition-all duration-300 hover:-translate-y-1">
-          <Link 
-            to={`/tours/${tour.slug}`} 
-            className="block"
-          >
-            <div className="p-3 sm:p-4">
-              <div className="flex items-start justify-between gap-3 sm:gap-4">
-                {/* Contenuto principale */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <h3 className="font-title text-sm sm:text-base font-bold line-clamp-1 text-primary flex-1">{tour.title}</h3>
-                    <span className={`badge text-[10px] sm:text-xs flex-shrink-0 ${getSeatsBadgeClass()}`}>
-                      {availableSeats === 0
-                        ? 'Esaurito'
-                        : `${availableSeats} posti`}
-                    </span>
-                  </div>
-                  <p className="text-xs text-muted mb-2 line-clamp-2">{tour.description}</p>
-                  <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-[10px] sm:text-xs text-muted mb-2">
-                    <span className="flex items-center">
-                      <Calendar className="w-3 h-3 mr-1" />
-                      {formatDate(nextDate)}
-                    </span>
-                    <span className="flex items-center">
-                      <Activity className="w-3 h-3 mr-1" />
-                      {tour.difficulty || 'N/A'}
-                    </span>
-                  </div>
+  // List view layout: foto quadrata a sinistra, dettagli a destra (per entrambi i variant)
+  if (isListView) {
+    return (
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden transition-all duration-300 hover:-translate-y-1 shadow-sm">
+        <Link 
+          to={`/tours/${tour.slug}`} 
+          className="block"
+        >
+          <div className="flex items-stretch">
+            {/* Foto a sinistra - riquadro quadrato che riempie l'altezza */}
+            <div className="relative flex-shrink-0 w-48 sm:w-56 md:w-64" style={{ aspectRatio: '1 / 1', minHeight: '100%' }}>
+              <img
+                src={tour.coverImage}
+                alt={tour.title}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute top-2 right-2">
+                <span className={`badge text-[10px] sm:text-xs ${getSeatsBadgeClass()}`}>
+                  {availableSeats === 0
+                    ? 'Esaurito'
+                    : `${availableSeats} posti`}
+                </span>
+              </div>
+            </div>
+            
+            {/* Dettagli a destra */}
+            <div className="flex-1 p-4 sm:p-5 flex flex-col justify-between">
+              <div>
+                <h3 className="font-title text-base sm:text-lg font-bold mb-2 line-clamp-1 text-primary">{tour.title}</h3>
+                <p className="text-xs sm:text-sm text-muted mb-3 line-clamp-2">{tour.description}</p>
+                <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs sm:text-sm text-muted">
+                  <span className="flex items-center">
+                    <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5" />
+                    {formatDate(nextDate)}
+                  </span>
+                  <span className="flex items-center">
+                    <Activity className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5" />
+                    {tour.difficulty || 'N/A'}
+                  </span>
                 </div>
               </div>
-              <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+              <div className="flex items-center justify-between pt-3 border-t border-gray-100 mt-3">
                 <div>
-                  <span className="text-base sm:text-lg font-bold text-accent">
+                  <span className="text-lg sm:text-xl font-bold text-accent">
                     {formatPrice(tour.priceAdult)}
                   </span>
                   {tour.priceAdult !== 0 && tour.priceAdult !== null && tour.priceAdult !== undefined && (
-                    <span className="text-[10px] sm:text-xs text-muted ml-1">a persona</span>
+                    <span className="text-xs sm:text-sm text-muted ml-1">a persona</span>
                   )}
                 </div>
-                <span className="text-xs sm:text-sm font-semibold text-accent hover:text-accent/80 transition-colors">
+                <span className="text-sm font-semibold text-accent hover:text-accent/80 transition-colors">
                   Dettagli →
                 </span>
               </div>
             </div>
-          </Link>
-        </div>
-      );
-    }
+          </div>
+        </Link>
+      </div>
+    );
+  }
+
+  if (isCompact) {
     
     // Grid view layout: image on top, content below
     return (
@@ -222,11 +232,20 @@ export default function CardTour({ tour, variant = 'default', viewMode = 'grid' 
           </div>
           {/* Overlay con titolo e freccia */}
           <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-5 md:p-6 bg-gradient-to-t from-black/70 via-black/50 to-transparent">
-            <div className="flex items-end justify-between gap-3 sm:gap-4">
-              <h3 className="font-title text-lg sm:text-xl md:text-2xl font-bold text-white line-clamp-3 flex-1" style={{ fontFamily: 'Nohemi, sans-serif' }}>
-                {tour.title}
-              </h3>
-              <ArrowRight className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-accent flex-shrink-0" />
+            <div className="flex flex-col gap-2 sm:gap-3">
+              {/* Data sopra il titolo */}
+              <div className="flex items-center gap-2">
+                <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                <span className="text-white text-sm sm:text-base font-medium" style={{ fontFamily: 'Nohemi, sans-serif' }}>
+                  {formatDate(nextDate)}
+                </span>
+              </div>
+              <div className="flex items-end justify-between gap-3 sm:gap-4">
+                <h3 className="font-title text-lg sm:text-xl md:text-2xl font-bold text-white line-clamp-3 flex-1" style={{ fontFamily: 'Nohemi, sans-serif' }}>
+                  {tour.title}
+                </h3>
+                <ArrowRight className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-accent flex-shrink-0" />
+              </div>
             </div>
           </div>
         </Link>

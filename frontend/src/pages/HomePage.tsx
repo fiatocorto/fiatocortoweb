@@ -524,7 +524,7 @@ export default function HomePage() {
           className="absolute -bottom-8 sm:-bottom-12 md:-bottom-16 lg:-bottom-24 -right-16 sm:-right-24 md:-right-32 lg:-right-48 w-48 h-48 sm:w-64 sm:h-64 md:w-96 md:h-96 lg:w-[500px] lg:h-[500px] object-contain z-10 pointer-events-none opacity-50 sm:opacity-75 md:opacity-100"
         />
         <div className="w-9/12 mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-10 md:gap-12 items-center">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 sm:gap-16 md:gap-20 lg:gap-24 items-center">
           {/* Immagine a sinistra */}
           <div className="order-2 md:order-1 relative flex justify-center md:justify-start">
             <div className="relative">
@@ -817,7 +817,7 @@ export default function HomePage() {
       {/* Viaggiare con standard più elevati */}
       <section className="w-full pt-24 pb-24 relative" style={{ backgroundColor: '#f5f3ec' }}>
         <div className="w-9/12 mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-10 md:gap-12 items-center">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 sm:gap-16 md:gap-20 lg:gap-24 items-center">
             {/* Contenuto a sinistra */}
             <div>
               <div className="text-accent uppercase font-semibold mb-2 text-sm sm:text-base">

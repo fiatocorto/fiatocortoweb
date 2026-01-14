@@ -28,6 +28,11 @@ export default function NavBar() {
   // Check if we're on an admin route
   const isAdminRoute = location.pathname.startsWith('/admin');
   const isHomePage = location.pathname === '/';
+  const isToursPage = location.pathname === '/tours';
+  const isCalendarPage = location.pathname === '/calendar';
+  const isAboutPage = location.pathname === '/about';
+  const isContactsPage = location.pathname === '/contacts';
+  const hasHeroSection = isHomePage || isToursPage || isCalendarPage || isAboutPage || isContactsPage;
 
   // Monitor scroll position to detect light background sections
   useEffect(() => {
@@ -36,16 +41,16 @@ export default function NavBar() {
       return;
     }
 
-    // If not on homepage (no hero section), set light background by default
-    if (!isHomePage) {
+    // If not on a page with hero section, set light background by default
+    if (!hasHeroSection) {
       setIsOnLightBackground(true);
       return;
     }
 
-    // On homepage, check if we've scrolled past the hero section
+    // On pages with hero section, check if we've scrolled past the hero section
     const handleScroll = () => {
-      // Hero section is 100vh, we want to switch after completely passing it
-      const heroHeight = window.innerHeight;
+      // Hero section height: 100vh for home page, 33vh for tours and calendar pages
+      const heroHeight = isHomePage ? window.innerHeight : window.innerHeight / 3;
       const scrollY = window.scrollY;
       const navbarHeight = 80; // h-20 = 80px
       
@@ -57,7 +62,7 @@ export default function NavBar() {
     handleScroll(); // Check initial state
 
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [isAdminRoute, isHomePage]);
+  }, [isAdminRoute, hasHeroSection]);
 
   return (
     <nav 
